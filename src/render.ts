@@ -1,7 +1,7 @@
 import type { DailyResult } from "./store.ts";
 import { cellName } from "./solver.ts";
 
-const SITE_NAME = process.env.SITE_NAME || "Daily Sudoku Results";
+const SITE_TITLE = process.env.SITE_TITLE || "Daily Sudoku Results";
 
 const esc = (s: unknown) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -91,7 +91,7 @@ function layout(title: string, description: string, body: string, canonicalPath:
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}">
 <style>${STYLES}</style>
 </head><body><div class="wrap">
-<header class="top"><a class="brand" href="/">${esc(SITE_NAME)}</a><nav><a href="/">Today</a><a href="/archive">Archive</a></nav></header>
+<header class="top"><a class="brand" href="/">${esc(SITE_TITLE)}</a><nav><a href="/">Today</a><a href="/archive">Archive</a></nav></header>
 ${body}
 <footer>Puzzles from the sudoku.com Daily Challenge. Solutions computed independently by our logic solver.</footer>
 </div></body></html>`;
