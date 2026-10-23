@@ -1,0 +1,20 @@
+{
+  "name": "sudoku-game-results",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "netlify dev",
+    "typecheck": "tsc",
+    "test:solver": "tsx scripts/test-solver.ts",
+    "crawl:local": "netlify functions:invoke daily-crawl"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.6",
+    "@netlify/functions": "^6.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
