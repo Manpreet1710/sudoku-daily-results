@@ -3,13 +3,13 @@ import { cellName } from "./solver.ts";
 
 const SITE_TITLE = process.env.SITE_TITLE || "Daily Sudoku Results";
 
-const esc = (s: unknown) =>
+export const esc = (s: unknown) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 export const RESULT_PREFIX = "/sudoku-daily-result";
 export const resultPath = (date: string) => `${RESULT_PREFIX}/${date}`;
 
-const prettyDate = (iso: string) =>
+export const prettyDate = (iso: string) =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -81,7 +81,28 @@ ol.steps .t{font-weight:600}
 footer{margin-top:48px;color:var(--muted);font-size:13px}
 `;
 
-function layout(title: string, description: string, body: string, canonicalPath: string, noindex = false) {
+// Per-game page chrome: brand, nav links, footer and any extra CSS
+export interface Chrome {
+  brand: string;
+  brandHref: string;
+  nav: [href: string, label: string][];
+  footer: string;
+  css?: string;
+}
+
+const SUDOKU_CHROME: Chrome = {
+  brand: SITE_TITLE,
+  brandHref: "/",
+  nav: [
+    ["/", "Today"],
+    ["/archive", "Archive"],
+    ["/wordle", "Wordle"],
+    ["/connections", "Connections"],
+  ],
+  footer: "Puzzles from the sudoku.com Daily Challenge. Solutions computed independently by our logic solver.",
+};
+
+export function layout(title: string, description: string, body: string, canonicalPath: string, noindex = false, chrome = SUDOKU_CHROME) {
   return `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -89,11 +110,11 @@ function layout(title: string, description: string, body: string, canonicalPath:
 <meta name="description" content="${esc(description)}">${noindex ? '\n<meta name="robots" content="noindex">' : ""}
 <link rel="canonical" href="${esc((process.env.URL ?? "") + canonicalPath)}">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}">
-<style>${STYLES}</style>
+<style>${STYLES}${chrome.css ?? ""}</style>
 </head><body><div class="wrap">
-<header class="top"><a class="brand" href="/">${esc(SITE_TITLE)}</a><nav><a href="/">Today</a><a href="/archive">Archive</a></nav></header>
+<header class="top"><a class="brand" href="${chrome.brandHref}">${esc(chrome.brand)}</a><nav>${chrome.nav.map(([href, label]) => `<a href="${href}">${esc(label)}</a>`).join("")}</nav></header>
 ${body}
-<footer>Puzzles from the sudoku.com Daily Challenge. Solutions computed independently by our logic solver.</footer>
+<footer>${esc(chrome.footer)}</footer>
 </div></body></html>`;
 }
 
@@ -240,9 +261,9 @@ export function renderNotFound(date?: string) {
   );
 }
 
-export function renderSitemap(dates: string[]) {
+export function renderSitemap(dates: string[], extraPaths: string[] = []) {
   const base = process.env.URL ?? "";
-  const urls = ["/", "/archive", ...dates.map(resultPath)];
+  const urls = ["/", "/archive", ...dates.map(resultPath), ...extraPaths];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${esc(base + u)}</loc></url>`).join("\n")}

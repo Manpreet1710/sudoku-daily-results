@@ -6,7 +6,11 @@
     "dev": "netlify dev",
     "typecheck": "tsc",
     "test:solver": "tsx scripts/test-solver.ts",
-    "crawl:local": "netlify functions:invoke daily-crawl"
+    "test:wordle": "tsx scripts/test-wordle.ts",
+    "crawl:local": "netlify functions:invoke daily-crawl",
+    "crawl:wordle": "netlify functions:invoke wordle-daily-crawl",
+    "test:connections": "tsx scripts/test-connections.ts",
+    "crawl:connections": "netlify functions:invoke connections-daily-crawl"
   },
   "dependencies": {
     "@netlify/blobs": "^11.1.6",

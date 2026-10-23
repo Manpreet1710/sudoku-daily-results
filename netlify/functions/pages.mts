@@ -1,6 +1,10 @@
 import type { Config } from "@netlify/functions";
 import { isIsoDate } from "../../src/crawl.ts";
 import { getResult, listDates } from "../../src/store.ts";
+import { listWordleDates } from "../../src/wordle/store.ts";
+import { wordleSitemapPaths } from "../../src/wordle/render.ts";
+import { listConnectionsDates } from "../../src/connections/store.ts";
+import { connectionsSitemapPaths } from "../../src/connections/render.ts";
 import { RESULT_PREFIX, renderArchive, renderNotFound, renderResult, renderSitemap, resultPath } from "../../src/render.ts";
 
 const html = (body: string, tag: string, maxAge: number) =>
@@ -17,7 +21,7 @@ export default async (req: Request) => {
   const path = new URL(req.url).pathname.replace(/\/+$/, "") || "/";
 
   if (path === "/sitemap.xml") {
-    const res = html(renderSitemap(await listDates()), "sudoku-index", 3600);
+    const res = html(renderSitemap(await listDates(), [...wordleSitemapPaths(await listWordleDates()), ...connectionsSitemapPaths(await listConnectionsDates())]), "sudoku-index", 3600);
     res.headers.set("Content-Type", "application/xml; charset=utf-8");
     return res;
   }
