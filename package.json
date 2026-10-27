@@ -10,7 +10,15 @@
     "crawl:local": "netlify functions:invoke daily-crawl",
     "crawl:wordle": "netlify functions:invoke wordle-daily-crawl",
     "test:connections": "tsx scripts/test-connections.ts",
-    "crawl:connections": "netlify functions:invoke connections-daily-crawl"
+    "crawl:connections": "netlify functions:invoke connections-daily-crawl",
+    "test:spelling-bee": "tsx scripts/test-spelling-bee.ts",
+    "crawl:spelling-bee": "netlify functions:invoke spelling-bee-daily-crawl",
+    "test:queens": "tsx scripts/test-queens.ts",
+    "crawl:queens": "netlify functions:invoke queens-daily-crawl",
+    "test:tango": "tsx scripts/test-tango.ts",
+    "crawl:tango": "netlify functions:invoke tango-daily-crawl",
+    "test:zip": "tsx scripts/test-zip.ts",
+    "crawl:zip": "netlify functions:invoke zip-daily-crawl"
   },
   "dependencies": {
     "@netlify/blobs": "^11.1.6",

@@ -5,6 +5,14 @@ import { listWordleDates } from "../../src/wordle/store.ts";
 import { wordleSitemapPaths } from "../../src/wordle/render.ts";
 import { listConnectionsDates } from "../../src/connections/store.ts";
 import { connectionsSitemapPaths } from "../../src/connections/render.ts";
+import { listSpellingBeeDates } from "../../src/spelling-bee/store.ts";
+import { spellingBeeSitemapPaths } from "../../src/spelling-bee/render.ts";
+import { listQueensDates } from "../../src/queens/store.ts";
+import { queensSitemapPaths } from "../../src/queens/render.ts";
+import { listTangoDates } from "../../src/tango/store.ts";
+import { tangoSitemapPaths } from "../../src/tango/render.ts";
+import { listZipDates } from "../../src/zip/store.ts";
+import { zipSitemapPaths } from "../../src/zip/render.ts";
 import { RESULT_PREFIX, renderArchive, renderNotFound, renderResult, renderSitemap, resultPath } from "../../src/render.ts";
 
 const html = (body: string, tag: string, maxAge: number) =>
@@ -21,7 +29,7 @@ export default async (req: Request) => {
   const path = new URL(req.url).pathname.replace(/\/+$/, "") || "/";
 
   if (path === "/sitemap.xml") {
-    const res = html(renderSitemap(await listDates(), [...wordleSitemapPaths(await listWordleDates()), ...connectionsSitemapPaths(await listConnectionsDates())]), "sudoku-index", 3600);
+    const res = html(renderSitemap(await listDates(), [...wordleSitemapPaths(await listWordleDates()), ...connectionsSitemapPaths(await listConnectionsDates()), ...spellingBeeSitemapPaths(await listSpellingBeeDates()), ...queensSitemapPaths(await listQueensDates()), ...tangoSitemapPaths(await listTangoDates()), ...zipSitemapPaths(await listZipDates())]), "sudoku-index", 3600);
     res.headers.set("Content-Type", "application/xml; charset=utf-8");
     return res;
   }

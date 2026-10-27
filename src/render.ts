@@ -98,6 +98,10 @@ const SUDOKU_CHROME: Chrome = {
     ["/archive", "Archive"],
     ["/wordle", "Wordle"],
     ["/connections", "Connections"],
+    ["/spelling-bee", "Spelling Bee"],
+    ["/queens", "Queens"],
+    ["/tango", "Tango"],
+    ["/zip", "Zip"],
   ],
   footer: "Puzzles from the sudoku.com Daily Challenge. Solutions computed independently by our logic solver.",
 };
