@@ -11,6 +11,12 @@ import { listQueensDates } from "../../src/queens/store.ts";
 import { queensSitemapPaths } from "../../src/queens/render.ts";
 import { listTangoDates } from "../../src/tango/store.ts";
 import { tangoSitemapPaths } from "../../src/tango/render.ts";
+import { listStrandsDates } from "../../src/strands/store.ts";
+import { strandsSitemapPaths } from "../../src/strands/render.ts";
+import { listMiniDates } from "../../src/mini-crossword/store.ts";
+import { miniSitemapPaths } from "../../src/mini-crossword/render.ts";
+import { listMiniSudokuDates } from "../../src/mini-sudoku/store.ts";
+import { miniSudokuSitemapPaths } from "../../src/mini-sudoku/render.ts";
 import { listZipDates } from "../../src/zip/store.ts";
 import { zipSitemapPaths } from "../../src/zip/render.ts";
 import { RESULT_PREFIX, renderArchive, renderNotFound, renderResult, renderSitemap, resultPath } from "../../src/render.ts";
@@ -29,7 +35,7 @@ export default async (req: Request) => {
   const path = new URL(req.url).pathname.replace(/\/+$/, "") || "/";
 
   if (path === "/sitemap.xml") {
-    const res = html(renderSitemap(await listDates(), [...wordleSitemapPaths(await listWordleDates()), ...connectionsSitemapPaths(await listConnectionsDates()), ...spellingBeeSitemapPaths(await listSpellingBeeDates()), ...queensSitemapPaths(await listQueensDates()), ...tangoSitemapPaths(await listTangoDates()), ...zipSitemapPaths(await listZipDates())]), "sudoku-index", 3600);
+    const res = html(renderSitemap(await listDates(), [...wordleSitemapPaths(await listWordleDates()), ...connectionsSitemapPaths(await listConnectionsDates()), ...spellingBeeSitemapPaths(await listSpellingBeeDates()), ...queensSitemapPaths(await listQueensDates()), ...tangoSitemapPaths(await listTangoDates()), ...strandsSitemapPaths(await listStrandsDates()), ...miniSitemapPaths(await listMiniDates()), ...miniSudokuSitemapPaths(await listMiniSudokuDates()), ...zipSitemapPaths(await listZipDates())]), "sudoku-index", 3600);
     res.headers.set("Content-Type", "application/xml; charset=utf-8");
     return res;
   }

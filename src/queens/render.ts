@@ -1,131 +1,348 @@
-import { esc, layout, prettyDate, type Chrome } from "../render.ts";
+import { esc, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import type { QueensPuzzleResult, QueensResult } from "./store.ts";
 
 export const QUEENS_HOME = "/queens";
 export const queensPath = (date: string) => `${QUEENS_HOME}/${date}`;
-export const queensSitemapPaths = (dates: string[]) => [QUEENS_HOME, `${QUEENS_HOME}/archive`, ...dates.map(queensPath)];
+export const queensSitemapPaths = (dates: string[]) => [
+  QUEENS_HOME,
+  `${QUEENS_HOME}/archive`,
+  ...dates.map(queensPath),
+];
 
 const CHROME: Chrome = {
   brand: "Queens Game Answers",
   brandHref: QUEENS_HOME,
+  gameIcon: "👑",
   nav: [
     [QUEENS_HOME, "Today"],
     [`${QUEENS_HOME}/archive`, "Archive"],
-    ["/wordle", "Wordle"],
-    ["/connections", "Connections"],
-    ["/spelling-bee", "Spelling Bee"],
-    ["/tango", "Tango"],
-    ["/zip", "Zip"],
-    ["/", "Sudoku"],
   ],
-  footer: "Hints and solutions for the daily Queens puzzles on playqueensgame.com, computed by our own logic solver. Not affiliated with or endorsed by that site.",
+  footer:
+    "Hints and step-by-step solutions for daily Queens puzzles on playqueensgame.com, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn or playqueensgame.com.",
   css: /* css */ `
-.qboard{width:min(440px,100%);display:block;margin:12px 0;border-radius:6px}
-.qboard text{font-size:24px;text-anchor:middle;dominant-baseline:central;fill:#1d1d1b}
-details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:8px}
-details summary{cursor:pointer;font-weight:600}
-details p{margin:10px 0 0;color:var(--muted)}
-.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 0;padding:0;list-style:none;font-size:14px;color:var(--muted)}
-.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;border:1px solid rgba(0,0,0,.25)}
-.qsteps{margin:10px 0 0;padding-left:22px;color:var(--muted)}
-.qsteps li{margin-bottom:6px}
-.qsteps li b{color:var(--ink)}
+.qboard-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 28px;
+  box-shadow: var(--shadow);
+}
+.qboard {
+  width: min(440px, 100%);
+  display: block;
+  margin: 16px auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.qboard text {
+  font-size: 26px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  fill: #0f172a;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 12px 0 16px;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--muted);
+}
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  background: var(--soft);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.legend i {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+.jump-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 24px;
+}
+.jump-pill {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s ease;
+}
+.jump-pill:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+.coord-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 13px;
+  margin: 2px 4px;
+}
+ol.qsteps {
+  padding-left: 20px;
+  margin-top: 14px;
+  color: var(--ink-2);
+}
+ol.qsteps li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
 `,
 };
 
 const PALETTE: Record<string, string> = {
-  orange: "#ffc98b", blue: "#9ec5fe", purple: "#c9a7eb", green: "#a8d8a0", gray: "#cfcfcf", yellow: "#fff08a",
-  red: "#f28b82", brown: "#c9a27c", pink: "#f9b8d4", gold: "#e6c84f", teal: "#7fd6cf", lime: "#d4ee8a",
+  orange: "#fed7aa",
+  blue: "#bfdbfe",
+  purple: "#e9d5ff",
+  green: "#bbf7d0",
+  gray: "#e2e8f0",
+  yellow: "#fef08a",
+  red: "#fecaca",
+  brown: "#fed7aa",
+  pink: "#fbcfe8",
+  gold: "#fde047",
+  teal: "#99f6e4",
+  lime: "#d9f99d",
 };
 const fill = (name: string, i: number) => PALETTE[name] ?? `hsl(${(i * 47) % 360} 65% 78%)`;
 
 const LEVELS = ["", "Easy", "Medium", "Hard", "Expert"];
 
 function boardSvg(p: QueensPuzzleResult) {
-  const n = p.size, u = 40, W = n * u;
-  const rects = p.grid.flatMap((row, r) => row.map((g, c) => `<rect x="${c * u}" y="${r * u}" width="${u}" height="${u}" fill="${fill(p.colors[g], g)}"/>`)).join("");
-  // Thick lines only where two regions meet, thin grid elsewhere
-  let thin = "", thick = "";
+  const n = p.size,
+    u = 40,
+    W = n * u;
+  const rects = p.grid
+    .flatMap((row, r) =>
+      row.map((g, c) => `<rect x="${c * u}" y="${r * u}" width="${u}" height="${u}" fill="${fill(p.colors[g], g)}"/>`)
+    )
+    .join("");
+
+  let thin = "",
+    thick = "";
   for (let r = 0; r < n; r++)
     for (let c = 0; c < n; c++) {
       if (c < n - 1) {
         const l = `M${(c + 1) * u} ${r * u}v${u}`;
-        if (p.grid[r][c] === p.grid[r][c + 1]) thin += l; else thick += l;
+        if (p.grid[r][c] === p.grid[r][c + 1]) thin += l;
+        else thick += l;
       }
       if (r < n - 1) {
         const l = `M${c * u} ${(r + 1) * u}h${u}`;
-        if (p.grid[r][c] === p.grid[r + 1][c]) thin += l; else thick += l;
+        if (p.grid[r][c] === p.grid[r + 1][c]) thin += l;
+        else thick += l;
       }
     }
-  const queens = p.queens.map(([r, c]) => `<text x="${c * u + u / 2}" y="${r * u + u / 2 + 1}">♛</text>`).join("");
-  const label = `${n} by ${n} Queens solution: ${p.queens.map(([r, c]) => `row ${r + 1} column ${c + 1}`).join("; ")}`;
-  return `<svg class="qboard" viewBox="-2 -2 ${W + 4} ${W + 4}" role="img" aria-label="${esc(label)}">${rects}<path d="${thin}" stroke="#00000033" stroke-width="1" fill="none"/><path d="${thick}" stroke="#1d1d1b" stroke-width="3" fill="none"/><rect x="0" y="0" width="${W}" height="${W}" fill="none" stroke="#1d1d1b" stroke-width="3"/>${queens}</svg>`;
+  const queens = p.queens
+    .map(([r, c]) => `<text x="${c * u + u / 2}" y="${r * u + u / 2 + 1}">♛</text>`)
+    .join("");
+  const label = `${n} by ${n} Queens solution: ${p.queens
+    .map(([r, c]) => `row ${r + 1} column ${c + 1}`)
+    .join("; ")}`;
+
+  return `<svg class="qboard" viewBox="-2 -2 ${W + 4} ${W + 4}" role="img" aria-label="${esc(
+    label
+  )}">${rects}<path d="${thin}" stroke="#00000025" stroke-width="1" fill="none"/><path d="${thick}" stroke="#0f172a" stroke-width="3" fill="none"/><rect x="0" y="0" width="${W}" height="${W}" fill="none" stroke="#0f172a" stroke-width="3.5" rx="6"/>${queens}</svg>`;
 }
 
 function puzzleSection(p: QueensPuzzleResult) {
   const id = `${p.size}x${p.size}`;
-  // Early deduction steps double as hints, mildest first; they are collapsed so nothing spoils until opened
-  const hints = p.steps.slice(0, 3).map((s, i) => `<details><summary>Hint ${i + 1}</summary><p>${esc(s.text)}</p></details>`).join("");
+  const hints = p.steps
+    .slice(0, 3)
+    .map(
+      (s, i) =>
+        `<details><summary><span class="badge" style="margin-right:6px">Hint ${i + 1}</span> Deduction</summary><p style="margin-top:12px;font-size:15px">${esc(
+          s.text
+        )}</p></details>`
+    )
+    .join("");
   const smallest = Math.min(...p.colors.map((_, i) => p.grid.flat().filter((g) => g === i).length));
-  const legend = `<ul class="legend">${p.colors.map((c, i) => `<li><i style="background:${fill(c, i)}"></i>${esc(c)}</li>`).join("")}</ul>`;
+  const legend = `<ul class="legend">${p.colors
+    .map((c, i) => `<li><i style="background:${fill(c, i)}"></i>${esc(c)}</li>`)
+    .join("")}</ul>`;
+
+  const coords = p.queens
+    .map(([r, c]) => `<span class="coord-badge">Row ${r + 1}, Col ${c + 1}</span>`)
+    .join(" ");
+
   return `
-<h2 id="${id}">${p.size}×${p.size} Queens</h2>
-<p class="sub"><span class="badge">${LEVELS[p.level]}</span> · ${p.size} queens, ${p.colors.length} color regions · smallest region has ${smallest} cell${smallest === 1 ? "" : "s"}</p>
-${hints}
-<details><summary>Show the solution (spoiler)</summary>
-${boardSvg(p)}
-${legend}
-<p>Queen positions (row, column): ${p.queens.map(([r, c]) => `<b>${r + 1}, ${c + 1}</b>`).join(" · ")}</p>
-${p.unique ? "" : "<p>Note: this board has more than one valid arrangement; this is one of them.</p>"}
-</details>
-<details><summary>Step-by-step logic (${p.steps.length} steps)</summary><ol class="qsteps">${p.steps.map((s) => `<li>${esc(s.text)}</li>`).join("")}</ol></details>`;
+<section class="qboard-card" id="${id}">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <h2 style="margin:0">👑 ${p.size}×${p.size} Queens Puzzle</h2>
+    <span class="badge ${p.level >= 3 ? "warn" : "good"}">${LEVELS[p.level] || "Standard"}</span>
+  </div>
+  <p class="sub" style="margin-top:6px;font-size:13px">
+    <span>${p.size} queens to place</span> · 
+    <span>${p.colors.length} color regions</span> · 
+    <span>Smallest region has ${smallest} cell${smallest === 1 ? "" : "s"}</span>
+  </p>
+
+  ${hints}
+
+  <details>
+    <summary style="color:var(--accent);font-weight:700">👑 Reveal ${p.size}×${p.size} Solution Board (Spoiler)</summary>
+    <div style="margin-top:16px">
+      ${boardSvg(p)}
+      <div style="margin-top:12px">${legend}</div>
+      <p style="margin-top:12px;font-size:14px"><b>Queen Coordinates:</b><br>${coords}</p>
+      ${p.unique ? "" : '<p style="font-size:13px;color:var(--muted)">Note: Multiple valid solutions exist; this is one proven arrangement.</p>'}
+    </div>
+  </details>
+
+  <details>
+    <summary>Step-by-Step Logical Proof (${p.steps.length} steps)</summary>
+    <ol class="qsteps">${p.steps.map((s) => `<li>${esc(s.text)}</li>`).join("")}</ol>
+  </details>
+</section>`;
 }
 
-export function renderQueensResult(r: QueensResult, nav: { newer: string | null; older: string | null }, isHome: boolean) {
+export function renderQueensResult(
+  r: QueensResult,
+  nav: { newer: string | null; older: string | null },
+  isHome: boolean
+) {
   const sizes = r.puzzles.map((p) => `${p.size}×${p.size}`);
-  const jump = r.puzzles.map((p) => `<a href="#${p.size}x${p.size}">${p.size}×${p.size}</a>`).join(" · ");
+  const jump = r.puzzles
+    .map((p) => `<a href="#${p.size}x${p.size}" class="jump-pill">Jump to ${p.size}×${p.size}</a>`)
+    .join("");
+
   const body = `
-<h1>${isHome ? "Today's " : ""}Queens Game Answers &amp; Solutions</h1>
-<p class="sub">${esc(prettyDate(r.date))} · <span class="badge">Queens Daily</span> · Jump to ${jump}</p>
-<p>Place one queen in every row, column and color region, with no two queens touching, not even diagonally. Open the hints one at a time, or reveal the full solution for each board.</p>
+<div class="page-header">
+  <h1>${isHome ? "Today's " : ""}Queens Game Answers &amp; Solutions</h1>
+  <div class="sub">
+    <span>📅 ${esc(prettyDate(r.date))}</span>
+    <span class="badge">Queens Daily</span>
+    <span class="badge good">${r.puzzles.length} Puzzle Sizes</span>
+  </div>
+</div>
+
+<p class="sub" style="font-size:15px; color:var(--ink-2); line-height:1.6">
+  <b>Rules:</b> Place exactly one queen in every row, column, and color region, with no two queens touching (not even diagonally). Jump to any board size below:
+</p>
+
+<div class="jump-nav">${jump}</div>
+
 ${r.puzzles.map(puzzleSection).join("")}
 
 <div class="datenav">
-  <span>${nav.older ? `<a href="${queensPath(nav.older)}">← ${esc(prettyDate(nav.older))}</a>` : ""}</span>
-  <span>${nav.newer ? `<a href="${queensPath(nav.newer)}">${esc(prettyDate(nav.newer))} →</a>` : ""}</span>
+  <span>${
+    nav.older
+      ? `<a href="${queensPath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>`
+      : ""
+  }</span>
+  <span class="datenav-hint">Tip: Use <b>← / →</b> arrow keys to jump between days</span>
+  <span>${
+    nav.newer
+      ? `<a href="${queensPath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>`
+      : ""
+  }</span>
 </div>`;
 
   return layout(
     `Queens Game Answers Today (${prettyDate(r.date)}) – Daily Solutions`,
-    `Hints, step-by-step logic and queen positions for the ${sizes.join(", ")} daily Queens puzzles on ${prettyDate(r.date)}.`,
+    `Step-by-step logic, hints and verified queen coordinates for the ${sizes.join(
+      ", "
+    )} daily Queens puzzles on ${prettyDate(r.date)}.`,
     body,
     queensPath(r.date),
     false,
-    CHROME,
+    CHROME
   );
 }
 
 export function renderQueensArchive(dates: string[]) {
   const list = dates.length
-    ? `<ul class="archive">${dates.map((d) => `<li><a href="${queensPath(d)}"><b>${esc(prettyDate(d))}</b><br><span style="color:var(--muted)">${d}</span></a></li>`).join("")}</ul>`
-    : `<p class="sub">No results yet. Check back after the first daily crawl.</p>`;
+    ? `<ul class="archive" id="archiveGrid">${dates
+        .map(
+          (d) =>
+            `<li data-date="${d}"><a href="${queensPath(d)}">` +
+            `<b>${esc(prettyDate(d))}</b>` +
+            `<span class="date-tag">📅 ${d}</span></a></li>`
+        )
+        .join("")}</ul>`
+    : `<p class="sub">No Queens puzzles recorded yet.</p>`;
+
+  const body = `
+<div class="page-header">
+  <h1>Queens Game Answers Archive</h1>
+  <p class="sub">${dates.length} days of daily Queens puzzles and solutions</p>
+</div>
+
+<div class="archive-controls">
+  <input type="search" id="archiveSearch" class="search-input" placeholder="Search date (e.g. 2026-10 or Oct)..." aria-label="Search archive">
+</div>
+
+${list}
+
+<script>
+(() => {
+  const search = document.getElementById("archiveSearch");
+  const items = [...document.querySelectorAll("#archiveGrid li")];
+  if (search && items.length) {
+    search.addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      items.forEach((li) => {
+        const text = li.textContent.toLowerCase();
+        li.style.display = text.includes(q) ? "" : "none";
+      });
+    });
+  }
+})();
+</script>`;
+
   return layout(
     "Queens Game Answers Archive – Past Daily Solutions",
-    "Hints and solutions for every past daily Queens puzzle.",
-    `<h1>Archive</h1><p class="sub">${dates.length} days of Queens puzzles</p>${list}`,
+    "Hints and step-by-step solutions for every past daily Queens puzzle.",
+    body,
     `${QUEENS_HOME}/archive`,
     false,
-    CHROME,
+    CHROME
   );
 }
 
 export function renderQueensNotFound(date?: string) {
   return layout(
-    "Queens puzzle not found",
+    "Queens Puzzle Not Found",
     "This Queens puzzle is not available yet.",
-    `<h1>Not available yet</h1><p class="sub">${date ? `No puzzle for ${esc(date)} yet.` : "No puzzles have been crawled yet."} <a href="${QUEENS_HOME}/archive">Browse the archive</a>.</p>`,
+    `<div class="card" style="text-align:center;padding:48px 24px;max-width:540px;margin:40px auto">
+      <div style="font-size:48px;margin-bottom:12px">👑</div>
+      <h1>Puzzle Not Available Yet</h1>
+      <p class="sub" style="justify-content:center">${
+        date ? `No puzzle for <b>${esc(date)}</b> has been published yet.` : "No Queens puzzles are available."
+      }</p>
+      <div style="margin-top:24px;display:flex;gap:12px;justify-content:center">
+        <a href="${QUEENS_HOME}" class="nav-link" style="background:var(--accent);color:#fff;padding:8px 20px">View Today's Puzzle</a>
+        <a href="${QUEENS_HOME}/archive" class="nav-link" style="background:var(--soft);padding:8px 20px">Browse Archive</a>
+      </div>
+    </div>`,
     QUEENS_HOME,
     true,
-    CHROME,
+    CHROME
   );
 }

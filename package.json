@@ -18,6 +18,12 @@
     "test:tango": "tsx scripts/test-tango.ts",
     "crawl:tango": "netlify functions:invoke tango-daily-crawl",
     "test:zip": "tsx scripts/test-zip.ts",
+    "add:mini-sudoku": "tsx scripts/add-mini-sudoku.ts",
+    "crawl:mini-sudoku": "netlify functions:invoke mini-sudoku-daily-crawl",
+    "test:strands": "tsx scripts/test-strands.ts",
+    "test:mini-crossword": "tsx scripts/test-mini-crossword.ts",
+    "crawl:mini-crossword": "netlify functions:invoke mini-crossword-daily-crawl",
+    "crawl:strands": "netlify functions:invoke strands-daily-crawl",
     "crawl:zip": "netlify functions:invoke zip-daily-crawl"
   },
   "dependencies": {
