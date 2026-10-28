@@ -304,6 +304,16 @@ a:hover { color: var(--accent-ink); }
   box-shadow: var(--shadow-lg);
   z-index: 60;
 }
+.games-group-title {
+  grid-column: 1 / -1;
+  padding: 8px 12px 2px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.games-group-title:first-child { padding-top: 2px; }
 .game-tab {
   display: flex;
   align-items: center;
@@ -905,17 +915,22 @@ const SUDOKU_CHROME: Chrome = {
   gameIcon: "🔢",
 };
 
-export const GAMES: { href: string; label: string; icon: string; tag: string }[] = [
-  { href: "/", label: "Sudoku", icon: "🔢", tag: "Daily" },
-  { href: "/wordle", label: "Wordle", icon: "🟩", tag: "NYT" },
-  { href: "/connections", label: "Connections", icon: "🟨", tag: "NYT" },
-  { href: "/spelling-bee", label: "Spelling Bee", icon: "🐝", tag: "NYT" },
-  { href: "/strands", label: "Strands", icon: "🔤", tag: "NYT" },
-  { href: "/mini-crossword", label: "Mini Crossword", icon: "✏️", tag: "Daily" },
-  { href: "/mini-sudoku", label: "Mini Sudoku", icon: "🧩", tag: "LinkedIn" },
-  { href: "/queens", label: "Queens", icon: "👑", tag: "LinkedIn" },
-  { href: "/tango", label: "Tango", icon: "☀️", tag: "LinkedIn" },
-  { href: "/zip", label: "Zip", icon: "⚡", tag: "LinkedIn" },
+export type GameGroup = "NYT" | "LinkedIn" | "More puzzles";
+
+export const GAMES: { href: string; label: string; icon: string; tag: string; group: GameGroup }[] = [
+  { href: "/wordle", label: "Wordle", icon: "🟩", tag: "NYT", group: "NYT" },
+  { href: "/connections", label: "Connections", icon: "🟨", tag: "NYT", group: "NYT" },
+  { href: "/spelling-bee", label: "Spelling Bee", icon: "🐝", tag: "NYT", group: "NYT" },
+  { href: "/strands", label: "Strands", icon: "🔤", tag: "NYT", group: "NYT" },
+  { href: "/linkedin-queens", label: "Queens", icon: "👑", tag: "LinkedIn", group: "LinkedIn" },
+  { href: "/linkedin-tango", label: "Tango", icon: "☀️", tag: "LinkedIn", group: "LinkedIn" },
+  { href: "/linkedin-zip", label: "Zip", icon: "⚡", tag: "LinkedIn", group: "LinkedIn" },
+  { href: "/mini-sudoku", label: "Mini Sudoku", icon: "🧩", tag: "LinkedIn", group: "LinkedIn" },
+  { href: "/", label: "Sudoku", icon: "🔢", tag: "Daily", group: "More puzzles" },
+  { href: "/mini-crossword", label: "Mini Crossword", icon: "✏️", tag: "Daily", group: "More puzzles" },
+  { href: "/queens", label: "Queens Unlimited", icon: "👑", tag: "Unlimited", group: "More puzzles" },
+  { href: "/tango", label: "Tango Unlimited", icon: "☀️", tag: "Unlimited", group: "More puzzles" },
+  { href: "/zip", label: "Zip Unlimited", icon: "⚡", tag: "Unlimited", group: "More puzzles" },
 ];
 
 export function layout(
@@ -927,12 +942,13 @@ export function layout(
   chrome = SUDOKU_CHROME
 ) {
   const here = (href: string) => (href === canonicalPath ? ' aria-current="page"' : "");
-  const games = GAMES.map(
-    (g) =>
-      `<a href="${g.href}" class="game-tab"${g.href === chrome.brandHref ? ' aria-current="page"' : ""}>` +
-      `<span class="tab-icon">${g.icon}</span><span class="tab-name">${esc(g.label)}</span>` +
-      `<span class="tag">${g.tag}</span></a>`
-  ).join("");
+  const tab = (g: (typeof GAMES)[number]) =>
+    `<a href="${g.href}" class="game-tab"${g.href === chrome.brandHref ? ' aria-current="page"' : ""}>` +
+    `<span class="tab-icon">${g.icon}</span><span class="tab-name">${esc(g.label)}</span>` +
+    `<span class="tag">${g.tag}</span></a>`;
+  const games = (["NYT", "LinkedIn", "More puzzles"] as const)
+    .map((group) => `<div class="games-group-title">${group}</div>${GAMES.filter((g) => g.group === group).map(tab).join("")}`)
+    .join("");
 
   const sub = chrome.nav
     .slice(0, 2)

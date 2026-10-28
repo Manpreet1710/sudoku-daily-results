@@ -18,6 +18,7 @@
     "test:tango": "tsx scripts/test-tango.ts",
     "crawl:tango": "netlify functions:invoke tango-daily-crawl",
     "test:zip": "tsx scripts/test-zip.ts",
+    "test:linkedin": "tsx scripts/test-linkedin.ts",
     "add:mini-sudoku": "tsx scripts/add-mini-sudoku.ts",
     "crawl:mini-sudoku": "netlify functions:invoke mini-sudoku-daily-crawl",
     "test:strands": "tsx scripts/test-strands.ts",

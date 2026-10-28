@@ -1,11 +1,11 @@
-import { todayIn, type CrawlOutcome } from "../crawl.ts";
+import type { CrawlOutcome } from "../crawl.ts";
+import { LINKEDIN_TZ, linkedinToday } from "../linkedin/date.ts";
 import { solveMiniSudoku } from "./solver.ts";
 import { getMiniSudokuResult, saveMiniSudokuResult } from "./store.ts";
 
-// LinkedIn rolls its games over at midnight Pacific time, so that is the date a puzzle belongs to
-export const MINI_SUDOKU_TZ = process.env.MINI_SUDOKU_TIMEZONE || "America/Los_Angeles";
+export const MINI_SUDOKU_TZ = LINKEDIN_TZ;
 
-export const miniSudokuToday = (offsetDays = 0) => todayIn(MINI_SUDOKU_TZ, offsetDays);
+export const miniSudokuToday = linkedinToday;
 
 // Hand-entered fallback (row by row, 0 or . for empty) for a day the daily crawl missed; standard 2x3 boxes.
 // The solver must find exactly one solution before anything is published.
