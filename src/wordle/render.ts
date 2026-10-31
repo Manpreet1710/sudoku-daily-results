@@ -1,8 +1,8 @@
-import { esc, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import { wordleFacts, wordleHints } from "./hints.ts";
 import type { WordleResult } from "./store.ts";
 
-export const WORDLE_HOME = "/wordle";
+export const WORDLE_HOME = "/today-wordle-answer";
 export const wordlePath = (date: string) => `${WORDLE_HOME}/${date}`;
 export const wordleSitemapPaths = (dates: string[]) => [
   WORDLE_HOME,
@@ -73,6 +73,13 @@ const CHROME: Chrome = {
   font-weight: 700;
   margin-right: 8px;
 }
+.tile.blank {
+  background: var(--soft);
+  color: var(--muted);
+  border: 2px solid var(--line);
+  box-shadow: none;
+  animation: none;
+}
 .spoiler-box {
   background: var(--surface);
   border: 2px dashed var(--muted);
@@ -123,38 +130,35 @@ export function renderWordleResult(
   const tiles = [...r.solution.toUpperCase()]
     .map((c) => `<div class="tile">${esc(c)}</div>`)
     .join("");
+  const blanks = [...r.solution].map(() => `<div class="tile blank">?</div>`).join("");
 
   const body = `
 <div class="page-header">
   <h1>${isHome ? "Today's " : ""}Wordle Hints &amp; Answer</h1>
   <div class="sub">
-    <span>📅 ${esc(prettyDate(r.date))}</span>
     <span class="badge">Wordle #${r.number}</span>
     <span class="badge good">NYT Daily</span>
   </div>
 </div>
 
-<div class="stats">
-  <div class="stat"><div class="k">Puzzle Number</div><div class="v">#${r.number}</div></div>
-  <div class="stat"><div class="k">Vowel Count</div><div class="v">${facts.vowels}</div></div>
-  <div class="stat"><div class="k">Unique Letters</div><div class="v">${facts.unique}</div></div>
-  <div class="stat"><div class="k">Repeated Letter</div><div class="v">${
-    facts.repeated ? '<span style="color:var(--warning)">Yes</span>' : '<span style="color:var(--good)">No</span>'
-  }</div></div>
-</div>
-
-<h2>Progressive Hints</h2>
-<p class="sub" style="font-size:14px; margin-bottom:12px">Need a gentle nudge? Open one hint at a time to solve it yourself without spoiling the answer.</p>
-${hints}
-
-<h2>Today's Wordle Solution</h2>
-<details>
-  <summary style="color:var(--good);font-weight:700">Reveal the 5-Letter Word (Spoiler Warning)</summary>
-  <div class="tiles-wrap">
-    <div class="tiles">${tiles}</div>
-    <p style="font-size:14px;color:var(--muted);margin-top:8px">Wordle #${r.number} solution for ${esc(prettyDate(r.date))}</p>
+<div class="gm-app">
+  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: wordlePath, archive: `${WORDLE_HOME}/archive` })}
+  <div class="gm-stage">
+    <div class="gm-card">
+      <p class="gm-meta"><span>Wordle #${r.number}</span><span>${facts.vowels} vowel${facts.vowels === 1 ? "" : "s"} · ${facts.unique} unique letters · ${facts.repeated ? "repeated letter" : "no repeats"}</span></p>
+      <div class="tiles-wrap" data-gm-view="puzzle"><div class="tiles">${blanks}</div></div>
+      <div class="tiles-wrap" data-gm-view="solution" hidden><div class="tiles">${tiles}</div></div>
+    </div>
+    <div>
+      <p class="gm-help">Open <b>one hint at a time</b> for a gentle nudge, or reveal the full word when you are ready.</p>
+      ${hints}
+      <div class="gm-actions">
+        <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
+      </div>
+      <p data-gm-solution-only hidden style="font-size:14px;color:var(--muted);margin-top:12px">Wordle #${r.number} solution for ${esc(prettyDate(r.date))}</p>
+    </div>
   </div>
-</details>
+</div>
 
 <div class="datenav">
   <span>${
@@ -162,13 +166,13 @@ ${hints}
       ? `<a href="${wordlePath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>`
       : ""
   }</span>
-  <span class="datenav-hint">Tip: Use <b>← / →</b> arrow keys to jump between days</span>
   <span>${
     nav.newer
       ? `<a href="${wordlePath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>`
       : ""
   }</span>
-</div>`;
+</div>
+${GM_REVEAL_SCRIPT}`;
 
   return layout(
     `Wordle #${r.number} Answer Today (${prettyDate(r.date)}) – Hints & Solution`,

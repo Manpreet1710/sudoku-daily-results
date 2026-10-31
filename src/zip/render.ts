@@ -1,7 +1,7 @@
-import { esc, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import type { ZipResult } from "./store.ts";
 
-export const ZIP_HOME = "/zip";
+export const ZIP_HOME = "/zip-unlimited";
 export const zipPath = (date: string) => `${ZIP_HOME}/${date}`;
 export const zipSitemapPaths = (dates: string[]) => [
   ZIP_HOME,
@@ -20,16 +20,9 @@ const CHROME: Chrome = {
   footer:
     "Hints and step-by-step route solutions for daily Zip puzzles on zipgameunlimited.com, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn or zipgameunlimited.com.",
   css: /* css */ `
-.zboard-wrap {
-  display: flex;
-  justify-content: center;
-  margin: 16px 0 24px;
-}
 .zboard {
   width: min(420px, 100%);
   display: block;
-  border-radius: 14px;
-  overflow: hidden;
   box-shadow: var(--shadow-lg);
 }
 .zboard text {
@@ -119,9 +112,9 @@ function boardSvg(r: ZipResult, withPath: boolean) {
     ? `Solved Zip grid: path visits ${r.numbers.length} numbered checkpoints and fills all ${n * n} cells`
     : `Zip grid ${n}x${n} with ${r.numbers.length} numbered checkpoints and ${r.walls.length} barriers`;
 
-  return `<div class="zboard-wrap"><svg class="zboard" viewBox="-3 -3 ${W + 6} ${W + 6}" role="img" aria-label="${esc(
+  return `<svg class="zboard" viewBox="-3 -3 ${W + 6} ${W + 6}" role="img" aria-label="${esc(
     label
-  )}"><rect x="0" y="0" width="${W}" height="${W}" fill="${bg}"/><path d="${grid}" stroke="#e2e8f0" stroke-width="1.5" fill="none"/>${route}<path d="${walls}" stroke="#0f172a" stroke-width="6" stroke-linecap="round" fill="none"/><rect x="0" y="0" width="${W}" height="${W}" fill="none" stroke="#0f172a" stroke-width="4" rx="8"/>${nums}</svg></div>`;
+  )}"><rect x="0" y="0" width="${W}" height="${W}" fill="${bg}"/><path d="${grid}" stroke="#e2e8f0" stroke-width="1.5" fill="none"/>${route}<path d="${walls}" stroke="#0f172a" stroke-width="6" stroke-linecap="round" fill="none"/><rect x="0" y="0" width="${W}" height="${W}" fill="none" stroke="#0f172a" stroke-width="4" rx="8"/>${nums}</svg>`;
 }
 
 const where = (n: number, [row, col]: [number, number]) => `Row ${row + 1}, Col ${col + 1}`;
@@ -174,68 +167,60 @@ export function renderZipResult(
 <div class="page-header">
   <h1>${isHome ? "Today's " : ""}Zip Answers &amp; Solution</h1>
   <div class="sub">
-    <span>📅 ${esc(prettyDate(r.date))}</span>
     <span class="badge">${LEVELS[r.difficulty] || "Normal"}</span>
-    <span class="badge good">LinkedIn / Zip Daily</span>
+    <span class="badge good">Zip Daily</span>
   </div>
 </div>
 
-<div class="stats">
-  <div class="stat"><div class="k">Difficulty</div><div class="v" style="font-size:20px">${LEVELS[r.difficulty] || "Normal"}</div></div>
-  <div class="stat"><div class="k">Grid Size</div><div class="v">${r.size}×${r.size}</div></div>
-  <div class="stat"><div class="k">Checkpoints</div><div class="v">${r.numbers.length}</div></div>
-  <div class="stat"><div class="k">Thick Walls</div><div class="v">${r.walls.length}</div></div>
-</div>
-
-<h2>${isHome ? "Today's Grid" : "The Grid"}</h2>
-<p class="sub" style="font-size:14px; margin-bottom:12px">
-  Draw a single continuous line starting at 1, visiting each numbered checkpoint in order, filling every cell exactly once without crossing any thick black walls.
-</p>
-${boardSvg(r, false)}
-
-<h2>Progressive Hints</h2>
-<p class="sub" style="font-size:14px; margin-bottom:12px">Step-by-step guidance to help steer your route without giving away the full maze.</p>
-${hints
-  .map(
-    (h, i) =>
-      `<details><summary><span class="badge" style="margin-right:6px">Hint ${i + 1}</span> Clue</summary><p style="margin-top:12px;font-size:15px">${esc(
-        h
-      )}</p></details>`
-  )
-  .join("")}
-
-<h2>Verified Route Solution</h2>
-<details>
-  <summary style="color:var(--accent);font-weight:700">⚡ Reveal Complete Zip Route (Spoiler)</summary>
-  <div style="margin-top:16px">
-    ${boardSvg(r, true)}
-    <h3 style="margin:20px 0 10px;font-size:16px">Turn-by-Turn GPS Waypoints:</h3>
-    <div class="route-list">
-      ${route
+<div class="gm-app">
+  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: zipPath, archive: `${ZIP_HOME}/archive` })}
+  <div class="gm-stage">
+    <div class="gm-card">
+      <p class="gm-meta"><span>${r.size}×${r.size} · ${r.numbers.length} checkpoints · ${r.walls.length} walls</span><span>${LEVELS[r.difficulty] || "Normal"}</span></p>
+      <div class="gm-board" data-gm-view="puzzle">${boardSvg(r, false)}</div>
+      <div class="gm-board" data-gm-view="solution" hidden>${boardSvg(r, true)}</div>
+    </div>
+    <div>
+      <p class="gm-help">Draw <b>one continuous line</b> from 1, through each numbered checkpoint in order, filling every cell exactly once without crossing a thick wall.</p>
+      ${hints
         .map(
-          (s) =>
-            `<div class="route-item"><span class="route-node">${s.from} ➔ ${s.to}</span><span>${esc(
-              s.text
-            )}</span></div>`
+          (h, i) =>
+            `<details><summary><span class="badge" style="margin-right:6px">Hint ${i + 1}</span> Clue</summary><p style="margin-top:12px;font-size:15px">${esc(
+              h
+            )}</p></details>`
         )
         .join("")}
+      <details>
+        <summary>Step-by-Step Logic Proof (${r.steps.length} steps)</summary>
+        <ol class="steps" style="margin-top:14px">${r.steps
+          .map(
+            (s, i) =>
+              `<li><span class="n">${i + 1}</span><div><span class="t">Step ${i + 1}</span><br><span style="color:var(--ink-2);font-size:14px">${esc(
+                s.text
+              )}</span></div></li>`
+          )
+          .join("")}</ol>
+        ${r.logical ? "" : '<p style="font-size:13px;color:var(--muted);margin-top:8px">The remaining stretch was validated by exhaustive branch verification.</p>'}
+      </details>
+      <div class="gm-actions">
+        <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
+      </div>
+      <div data-gm-solution-only hidden>
+        <div class="route-list">
+          ${route
+            .map(
+              (s) =>
+                `<div class="route-item"><span class="route-node">${s.from} ➔ ${s.to}</span><span>${esc(
+                  s.text
+                )}</span></div>`
+            )
+            .join("")}
+        </div>
+        ${r.unique ? "" : '<p style="font-size:13px;color:var(--muted);margin-top:12px">Note: Multiple valid paths exist; this is one verified solution.</p>'}
+      </div>
     </div>
-    ${r.unique ? "" : '<p style="font-size:13px;color:var(--muted);margin-top:12px">Note: Multiple valid paths exist; this is one verified solution.</p>'}
   </div>
-</details>
-
-<details>
-  <summary>Step-by-Step Logic Proof (${r.steps.length} steps)</summary>
-  <ol class="steps" style="margin-top:14px">${r.steps
-    .map(
-      (s, i) =>
-        `<li><span class="n">${i + 1}</span><div><span class="t">Step ${i + 1}</span><br><span style="color:var(--ink-2);font-size:14px">${esc(
-          s.text
-        )}</span></div></li>`
-    )
-    .join("")}</ol>
-  ${r.logical ? "" : '<p style="font-size:13px;color:var(--muted);margin-top:8px">The remaining stretch was validated by exhaustive branch verification.</p>'}
-</details>
+</div>
 
 <div class="datenav">
   <span>${
@@ -243,13 +228,13 @@ ${hints
       ? `<a href="${zipPath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>`
       : ""
   }</span>
-  <span class="datenav-hint">Tip: Use <b>← / →</b> arrow keys to jump between days</span>
   <span>${
     nav.newer
       ? `<a href="${zipPath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>`
       : ""
   }</span>
-</div>`;
+</div>
+${GM_REVEAL_SCRIPT}`;
 
   return layout(
     `Zip Answers Today (${prettyDate(r.date)}) – Daily Solution & Hints`,

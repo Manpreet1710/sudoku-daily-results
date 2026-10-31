@@ -11,6 +11,8 @@ const STORES: { game: string; prefix: string }[] = [
   { game: "connections", prefix: "c/" },
   { game: "spelling-bee", prefix: "s/" },
   { game: "strands", prefix: "s/" },
+  { game: "pips", prefix: "p/" },
+  { game: "nyt-sudoku", prefix: "n/" },
   { game: "mini-crossword", prefix: "m/" },
   { game: "mini-sudoku", prefix: "m/" },
   { game: "queens", prefix: "q/" },

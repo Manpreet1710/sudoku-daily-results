@@ -37,6 +37,6 @@ export default async (req: Request) => {
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with ZIP_HOME)
-  path: ["/zip", "/zip/archive", "/zip/:date"],
+  path: ["/zip-unlimited", "/zip-unlimited/archive", "/zip-unlimited/:date"],
   method: "GET",
 };

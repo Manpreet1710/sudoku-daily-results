@@ -1,7 +1,7 @@
-import { esc, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import type { ConnectionsResult } from "./store.ts";
 
-export const CONNECTIONS_HOME = "/connections";
+export const CONNECTIONS_HOME = "/connections-hint-today";
 export const connectionsPath = (date: string) => `${CONNECTIONS_HOME}/${date}`;
 export const connectionsSitemapPaths = (dates: string[]) => [
   CONNECTIONS_HOME,
@@ -24,8 +24,7 @@ const CHROME: Chrome = {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
-  max-width: 600px;
-  margin: 16px 0 28px;
+  margin: 4px 0 0;
 }
 .word-card {
   background: var(--surface);
@@ -136,16 +135,22 @@ export function renderConnectionsResult(
     )
     .join("");
 
+  const solved = r.groups
+    .map(
+      (g, i) =>
+        `<div class="group-card ${COLORS[i].badge}" style="margin-bottom:10px"><div style="font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.04em">${esc(
+          g.title
+        )}</div><div style="font-weight:700;font-size:14px;margin-top:4px">${g.words.map((w) => esc(w)).join(" · ")}</div></div>`
+    )
+    .join("");
+
   const answers = r.groups
     .map(
       (g, i) =>
-        `<details><summary>${label(i)} – Solution</summary>` +
-        `<div style="margin-top:12px">` +
-        `<p style="margin-bottom:8px">Category: <b>${esc(g.title)}</b></p>` +
+        `<div style="margin-top:12px"><p style="margin-bottom:8px">${label(i)}: <b>${esc(g.title)}</b></p>` +
         `<div class="gw">${g.words
           .map((w) => `<span class="gw-word ${COLORS[i].badge}">${esc(w)}</span>`)
-          .join("")}</div>` +
-        `</div></details>`
+          .join("")}</div></div>`
     )
     .join("");
 
@@ -153,23 +158,29 @@ export function renderConnectionsResult(
 <div class="page-header">
   <h1>${isHome ? "Today's " : ""}Connections Hints &amp; Answers</h1>
   <div class="sub">
-    <span>📅 ${esc(prettyDate(r.date))}</span>
     <span class="badge">NYT Connections</span>
     <span class="badge good">4 Categories</span>
   </div>
 </div>
 
-<h2>The 16 Words</h2>
-<p class="sub" style="font-size:14px; margin-bottom:12px">Today's words in their starting scrambled layout:</p>
-<div class="words-grid">${words}</div>
-
-<h2>Category Hints</h2>
-<p class="sub" style="font-size:14px; margin-bottom:12px">Reveals category titles without giving away which words belong together.</p>
-${hints}
-
-<h2>Group Solutions</h2>
-<p class="sub" style="font-size:14px; margin-bottom:12px">Full solutions for all 4 groups, ordered from straightforward to trickiest.</p>
-${answers}
+<div class="gm-app">
+  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: connectionsPath, archive: `${CONNECTIONS_HOME}/archive` })}
+  <div class="gm-stage">
+    <div class="gm-card">
+      <p class="gm-meta"><span>16 words · 4 groups</span><span>Starting layout</span></p>
+      <div class="words-grid" data-gm-view="puzzle">${words}</div>
+      <div data-gm-view="solution" hidden>${solved}</div>
+    </div>
+    <div>
+      <p class="gm-help">Find <b>four groups of four</b> words that share something in common. Open a hint to see a category title without the words.</p>
+      ${hints}
+      <div class="gm-actions">
+        <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
+      </div>
+      <div data-gm-solution-only hidden>${answers}</div>
+    </div>
+  </div>
+</div>
 
 <div class="datenav">
   <span>${
@@ -177,13 +188,13 @@ ${answers}
       ? `<a href="${connectionsPath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>`
       : ""
   }</span>
-  <span class="datenav-hint">Tip: Use <b>← / →</b> arrow keys to jump between days</span>
   <span>${
     nav.newer
       ? `<a href="${connectionsPath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>`
       : ""
   }</span>
-</div>`;
+</div>
+${GM_REVEAL_SCRIPT}`;
 
   return layout(
     `Connections Hints & Answers Today (${prettyDate(r.date)}) – NYT Daily Puzzle`,

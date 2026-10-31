@@ -25,7 +25,13 @@ import { listLinkedInZipDates } from "../../src/linkedin-zip/store.ts";
 import { linkedinZipSitemapPaths } from "../../src/linkedin-zip/render.ts";
 import { listZipDates } from "../../src/zip/store.ts";
 import { zipSitemapPaths } from "../../src/zip/render.ts";
-import { RESULT_PREFIX, renderArchive, renderNotFound, renderResult, renderSitemap, resultPath } from "../../src/render.ts";
+import { listPipsDates } from "../../src/pips/store.ts";
+import { pipsSitemapPaths } from "../../src/pips/render.ts";
+import { listNytSudokuDates } from "../../src/nyt-sudoku/store.ts";
+import { nytSudokuSitemapPaths } from "../../src/nyt-sudoku/render.ts";
+import { hubSitemapPaths } from "../../src/hub/render.ts";
+import { wordSearchSitemapPaths } from "../../src/word-search/render.ts";
+import { ARCHIVE_PATH, RESULT_PREFIX, renderArchive, renderNotFound, renderResult, renderSitemap, resultPath } from "../../src/render.ts";
 
 const html = (body: string, tag: string, maxAge: number) =>
   new Response(body, {
@@ -41,12 +47,12 @@ export default async (req: Request) => {
   const path = new URL(req.url).pathname.replace(/\/+$/, "") || "/";
 
   if (path === "/sitemap.xml") {
-    const res = html(renderSitemap(await listDates(), [...wordleSitemapPaths(await listWordleDates()), ...connectionsSitemapPaths(await listConnectionsDates()), ...spellingBeeSitemapPaths(await listSpellingBeeDates()), ...queensSitemapPaths(await listQueensDates()), ...tangoSitemapPaths(await listTangoDates()), ...strandsSitemapPaths(await listStrandsDates()), ...miniSitemapPaths(await listMiniDates()), ...miniSudokuSitemapPaths(await listMiniSudokuDates()), ...zipSitemapPaths(await listZipDates()), ...linkedinQueensSitemapPaths(await listLinkedInQueensDates()), ...linkedinTangoSitemapPaths(await listLinkedInTangoDates()), ...linkedinZipSitemapPaths(await listLinkedInZipDates())]), "sudoku-index", 3600);
+    const res = html(renderSitemap(await listDates(), [...wordleSitemapPaths(await listWordleDates()), ...connectionsSitemapPaths(await listConnectionsDates()), ...spellingBeeSitemapPaths(await listSpellingBeeDates()), ...queensSitemapPaths(await listQueensDates()), ...tangoSitemapPaths(await listTangoDates()), ...strandsSitemapPaths(await listStrandsDates()), ...miniSitemapPaths(await listMiniDates()), ...miniSudokuSitemapPaths(await listMiniSudokuDates()), ...zipSitemapPaths(await listZipDates()), ...linkedinQueensSitemapPaths(await listLinkedInQueensDates()), ...linkedinTangoSitemapPaths(await listLinkedInTangoDates()), ...linkedinZipSitemapPaths(await listLinkedInZipDates()), ...pipsSitemapPaths(await listPipsDates()), ...nytSudokuSitemapPaths(await listNytSudokuDates()), ...wordSearchSitemapPaths(), ...hubSitemapPaths()]), "sudoku-index", 3600);
     res.headers.set("Content-Type", "application/xml; charset=utf-8");
     return res;
   }
 
-  if (path === "/archive") {
+  if (path === ARCHIVE_PATH) {
     return html(renderArchive(await listDates()), "sudoku-index", 3600);
   }
 
@@ -72,6 +78,6 @@ export default async (req: Request) => {
 };
 
 export const config: Config = {
-  path: ["/", "/archive", "/sudoku-daily-result/:date", "/results/:date", "/sitemap.xml"],
+  path: ["/daily-sudoku", "/daily-sudoku/archive", "/daily-sudoku/:date", "/results/:date", "/sitemap.xml"],
   method: "GET",
 };

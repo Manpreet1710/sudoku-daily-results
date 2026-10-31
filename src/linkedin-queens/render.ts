@@ -1,4 +1,4 @@
-import { esc, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, gameBar, GM_REVEAL_SCRIPT, GM_TABS_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import type { QueensPuzzleResult, LinkedInQueensResult } from "./store.ts";
 
 export const LINKEDIN_QUEENS_HOME = "/linkedin-queens";
@@ -20,20 +20,10 @@ const CHROME: Chrome = {
   footer:
     "Hints and step-by-step solutions for the daily LinkedIn Queens puzzle, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn.",
   css: /* css */ `
-.qboard-card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  margin-bottom: 28px;
-  box-shadow: var(--shadow);
-}
 .qboard {
   width: min(440px, 100%);
   display: block;
-  margin: 16px auto;
-  border-radius: 12px;
-  overflow: hidden;
+  margin: 0 auto;
   box-shadow: var(--shadow);
 }
 .qboard text {
@@ -70,29 +60,6 @@ const CHROME: Chrome = {
   border-radius: 50%;
   margin-right: 6px;
   border: 1px solid rgba(0, 0, 0, 0.2);
-}
-.jump-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 14px 0 24px;
-}
-.jump-pill {
-  padding: 6px 14px;
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  color: var(--ink);
-  font-size: 13px;
-  font-weight: 700;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.15s ease;
-}
-.jump-pill:hover {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent);
-  transform: translateY(-1px);
 }
 .coord-badge {
   display: inline-block;
@@ -134,7 +101,7 @@ const fill = (name: string, i: number) => PALETTE[name] ?? `hsl(${(i * 47) % 360
 
 const LEVELS = ["", "Easy", "Medium", "Hard", "Expert"];
 
-function boardSvg(p: QueensPuzzleResult) {
+function boardSvg(p: QueensPuzzleResult, solved: boolean) {
   const n = p.size,
     u = 40,
     W = n * u;
@@ -159,67 +126,62 @@ function boardSvg(p: QueensPuzzleResult) {
         else thick += l;
       }
     }
-  const queens = p.queens
+  const queens = (solved ? p.queens : [])
     .map(([r, c]) => `<text x="${c * u + u / 2}" y="${r * u + u / 2 + 1}">♛</text>`)
     .join("");
-  const label = `${n} by ${n} Queens solution: ${p.queens
-    .map(([r, c]) => `row ${r + 1} column ${c + 1}`)
-    .join("; ")}`;
+  const label = solved
+    ? `${n} by ${n} Queens solution: ${p.queens.map(([r, c]) => `row ${r + 1} column ${c + 1}`).join("; ")}`
+    : `${n} by ${n} Queens board with ${p.colors.length} colour regions`;
 
   return `<svg class="qboard" viewBox="-2 -2 ${W + 4} ${W + 4}" role="img" aria-label="${esc(
     label
   )}">${rects}<path d="${thin}" stroke="#00000025" stroke-width="1" fill="none"/><path d="${thick}" stroke="#0f172a" stroke-width="3" fill="none"/><rect x="0" y="0" width="${W}" height="${W}" fill="none" stroke="#0f172a" stroke-width="3.5" rx="6"/>${queens}</svg>`;
 }
 
-function puzzleSection(p: QueensPuzzleResult) {
+function puzzleSection(p: QueensPuzzleResult, i: number) {
   const id = `${p.size}x${p.size}`;
   const hints = p.steps
     .slice(0, 3)
     .map(
-      (s, i) =>
-        `<details><summary><span class="badge" style="margin-right:6px">Hint ${i + 1}</span> Deduction</summary><p style="margin-top:12px;font-size:15px">${esc(
+      (s, k) =>
+        `<details><summary><span class="badge" style="margin-right:6px">Hint ${k + 1}</span> Deduction</summary><p style="margin-top:12px;font-size:15px">${esc(
           s.text
         )}</p></details>`
     )
     .join("");
-  const smallest = Math.min(...p.colors.map((_, i) => p.grid.flat().filter((g) => g === i).length));
+  const smallest = Math.min(...p.colors.map((_, k) => p.grid.flat().filter((g) => g === k).length));
   const legend = `<ul class="legend">${p.colors
-    .map((c, i) => `<li><i style="background:${fill(c, i)}"></i>${esc(c)}</li>`)
+    .map((c, k) => `<li><i style="background:${fill(c, k)}"></i>${esc(c)}</li>`)
     .join("")}</ul>`;
-
   const coords = p.queens
     .map(([r, c]) => `<span class="coord-badge">Row ${r + 1}, Col ${c + 1}</span>`)
     .join(" ");
 
   return `
-<section class="qboard-card" id="${id}">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-    <h2 style="margin:0">👑 ${p.size}×${p.size} Queens Puzzle</h2>
-    <span class="badge ${p.level >= 3 ? "warn" : "good"}">${LEVELS[p.level] || "Standard"}</span>
+<div class="gm-stage" data-gm-panel="${id}" id="${id}"${i === 0 ? "" : " hidden"}>
+  <div class="gm-card">
+    <p class="gm-meta"><span>${p.size}×${p.size} · ${p.colors.length} colour regions</span><span>${LEVELS[p.level] || "Standard"} · smallest region ${smallest} cell${smallest === 1 ? "" : "s"}</span></p>
+    <div class="gm-board" data-gm-view="puzzle">${boardSvg(p, false)}</div>
+    <div class="gm-board" data-gm-view="solution" hidden>${boardSvg(p, true)}</div>
+    ${legend}
   </div>
-  <p class="sub" style="margin-top:6px;font-size:13px">
-    <span>${p.size} queens to place</span> · 
-    <span>${p.colors.length} color regions</span> · 
-    <span>Smallest region has ${smallest} cell${smallest === 1 ? "" : "s"}</span>
-  </p>
-
-  ${hints}
-
-  <details>
-    <summary style="color:var(--accent);font-weight:700">👑 Reveal ${p.size}×${p.size} Solution Board (Spoiler)</summary>
-    <div style="margin-top:16px">
-      ${boardSvg(p)}
-      <div style="margin-top:12px">${legend}</div>
-      <p style="margin-top:12px;font-size:14px"><b>Queen Coordinates:</b><br>${coords}</p>
-      ${p.unique ? "" : '<p style="font-size:13px;color:var(--muted)">Note: Multiple valid solutions exist; this is one proven arrangement.</p>'}
+  <div>
+    <p class="gm-help"><b>Place ${p.size} queens</b> – one in every row, column and colour region, with no two touching, not even diagonally.</p>
+    ${hints}
+    <details>
+      <summary>Step-by-Step Logical Proof (${p.steps.length} steps)</summary>
+      <ol class="qsteps">${p.steps.map((s) => `<li>${esc(s.text)}</li>`).join("")}</ol>
+    </details>
+    <div class="gm-actions">
+      <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
     </div>
-  </details>
-
-  <details>
-    <summary>Step-by-Step Logical Proof (${p.steps.length} steps)</summary>
-    <ol class="qsteps">${p.steps.map((s) => `<li>${esc(s.text)}</li>`).join("")}</ol>
-  </details>
-</section>`;
+    <div data-gm-solution-only hidden style="margin-top:14px">
+      <p style="font-size:14px;margin:0 0 6px"><b>Queen Coordinates</b></p>
+      ${coords}
+      ${p.unique ? "" : '<p style="font-size:13px;color:var(--muted);margin-top:8px">Note: Multiple valid solutions exist; this is one proven arrangement.</p>'}
+    </div>
+  </div>
+</div>`;
 }
 
 export function renderLinkedInQueensResult(
@@ -228,27 +190,27 @@ export function renderLinkedInQueensResult(
   isHome: boolean
 ) {
   const sizes = r.puzzles.map((p) => `${p.size}×${p.size}`);
-  const jump = r.puzzles
-    .map((p) => `<a href="#${p.size}x${p.size}" class="jump-pill">Jump to ${p.size}×${p.size}</a>`)
-    .join("");
 
   const body = `
 <div class="page-header">
-  <h1>${isHome ? "Today's " : ""}LinkedIn Queens Answers &amp; Solutions</h1>
+  <h1>${isHome ? "Today's " : ""}Queens Game Answers &amp; Solutions</h1>
   <div class="sub">
-    <span>📅 ${esc(prettyDate(r.date))}</span>
     <span class="badge">LinkedIn Queens #${r.puzzleId}</span>
-    <span class="badge good">${r.puzzles[0].size}×${r.puzzles[0].size} Grid</span>
+    <span class="badge good">${r.puzzles.length} Puzzle Size${r.puzzles.length === 1 ? "" : "s"}</span>
   </div>
 </div>
 
-<p class="sub" style="font-size:15px; color:var(--ink-2); line-height:1.6">
-  <b>Rules:</b> Place exactly one queen in every row, column, and color region, with no two queens touching (not even diagonally). Jump to any board size below:
-</p>
-
-<div class="jump-nav">${jump}</div>
-
-${r.puzzles.map(puzzleSection).join("")}
+<div class="gm-app">
+  ${gameBar({
+    date: r.date,
+    older: nav.older,
+    newer: nav.newer,
+    path: linkedinQueensPath,
+    archive: `${LINKEDIN_QUEENS_HOME}/archive`,
+    tabs: r.puzzles.map((p) => ({ id: `${p.size}x${p.size}`, label: `${p.size}×${p.size}` })),
+  })}
+  ${r.puzzles.map(puzzleSection).join("")}
+</div>
 
 <div class="datenav">
   <span>${
@@ -256,16 +218,16 @@ ${r.puzzles.map(puzzleSection).join("")}
       ? `<a href="${linkedinQueensPath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>`
       : ""
   }</span>
-  <span class="datenav-hint">Tip: Use <b>← / →</b> arrow keys to jump between days</span>
   <span>${
     nav.newer
       ? `<a href="${linkedinQueensPath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>`
       : ""
   }</span>
-</div>`;
+</div>
+${GM_TABS_SCRIPT}${GM_REVEAL_SCRIPT}`;
 
   return layout(
-    `LinkedIn Queens Answers Today (${prettyDate(r.date)}) – Daily Solutions`,
+    `Queens Game Answers Today (${prettyDate(r.date)}) – Daily Solutions`,
     `Step-by-step logic, hints and verified queen coordinates for the ${sizes.join(
       ", "
     )} daily Queens puzzles on ${prettyDate(r.date)}.`,
@@ -290,7 +252,7 @@ export function renderLinkedInQueensArchive(dates: string[]) {
 
   const body = `
 <div class="page-header">
-  <h1>LinkedIn Queens Answers Archive</h1>
+  <h1>Queens Game Answers Archive</h1>
   <p class="sub">${dates.length} days of daily Queens puzzles and solutions</p>
 </div>
 
@@ -317,7 +279,7 @@ ${list}
 </script>`;
 
   return layout(
-    "LinkedIn Queens Answers Archive – Past Daily Solutions",
+    "Queens Game Answers Archive – Past Daily Solutions",
     "Hints and step-by-step solutions for every past daily Queens puzzle.",
     body,
     `${LINKEDIN_QUEENS_HOME}/archive`,

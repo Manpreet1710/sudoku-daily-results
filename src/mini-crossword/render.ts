@@ -1,4 +1,4 @@
-import { esc, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, gameBar, GM_REVEAL_SCRIPT, GM_TABS_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import type { MiniEntry, MiniPuzzle } from "./api.ts";
 import type { MiniResult } from "./store.ts";
 
@@ -50,9 +50,8 @@ const CHROME: Chrome = {
 }
 .cw-clues {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-  gap: 8px 24px;
-  margin-top: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 8px 20px;
 }
 .cw-clues h3 {
   margin: 8px 0 10px;
@@ -124,51 +123,57 @@ const clue = (e: MiniEntry, dir: "A" | "D") =>
     e.hint ? `<p class="hint"><b>Hint:</b> ${esc(e.hint)}</p>` : ""
   }<span class="cw-ans">${esc(e.answer)}</span></details>`;
 
-function puzzleSection(p: MiniPuzzle) {
+function puzzleSection(p: MiniPuzzle, i: number) {
   const words = p.across.length + p.down.length;
   return `
-<h2 id="${p.level}">${p.size}×${p.size} ${LEVELS[p.level]} Mini Crossword</h2>
-<p class="sub" style="font-size:14px; margin-bottom:12px">${p.title ? `<b>${esc(p.title)}</b>` : ""}${p.byline ? ` · edited by ${esc(p.byline)}` : ""} · ${words} clues. Open a clue for its hint, then the answer.</p>
-${boardSvg(p, false)}
-<div class="cw-clues">
-  <div><h3>Across</h3>${p.across.map((e) => clue(e, "A")).join("")}</div>
-  <div><h3>Down</h3>${p.down.map((e) => clue(e, "D")).join("")}</div>
-</div>
-<details>
-  <summary style="color:var(--accent);font-weight:700">✏️ Show the Solved ${LEVELS[p.level]} Grid (Spoiler)</summary>
-  <div style="margin-top:16px">${boardSvg(p, true)}</div>
-</details>`;
+<div class="gm-stage" data-gm-panel="${p.level}" id="${p.level}"${i === 0 ? "" : " hidden"}>
+  <div class="gm-card">
+    <p class="gm-meta"><span>${p.size}×${p.size} ${LEVELS[p.level]}${p.title ? ` · ${esc(p.title)}` : ""}</span><span>${words} clues${p.byline ? ` · ${esc(p.byline)}` : ""}</span></p>
+    <div class="gm-board" data-gm-view="puzzle">${boardSvg(p, false)}</div>
+    <div class="gm-board" data-gm-view="solution" hidden>${boardSvg(p, true)}</div>
+  </div>
+  <div>
+    <p class="gm-help">Open a clue for its <b>hint</b>, then the answer. Or reveal the whole grid.</p>
+    <div class="cw-clues">
+      <div><h3>Across</h3>${p.across.map((e) => clue(e, "A")).join("")}</div>
+      <div><h3>Down</h3>${p.down.map((e) => clue(e, "D")).join("")}</div>
+    </div>
+    <div class="gm-actions">
+      <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
+    </div>
+  </div>
+</div>`;
 }
 
 export function renderMiniResult(r: MiniResult, nav: { newer: string | null; older: string | null }, isHome: boolean) {
-  const jump = r.puzzles.map((p) => `<a href="#${p.level}">${LEVELS[p.level]}</a>`).join(" · ");
   const sizes = [...new Set(r.puzzles.map((p) => `${p.size}×${p.size}`))].join(" / ");
-  const clues = r.puzzles.reduce((n, p) => n + p.across.length + p.down.length, 0);
 
   const body = `
 <div class="page-header">
   <h1>${isHome ? "Today's " : ""}Mini Crossword Answers</h1>
   <div class="sub">
-    <span>📅 ${esc(prettyDate(r.date))}</span>
     <span class="badge">${esc(sizes)} Grid</span>
     <span class="badge good">${r.puzzles.length} Puzzle${r.puzzles.length === 1 ? "" : "s"}</span>
   </div>
 </div>
 
-<div class="stats">
-  <div class="stat"><div class="k">Grid Size</div><div class="v">${esc(sizes)}</div></div>
-  <div class="stat"><div class="k">Difficulties</div><div class="v" style="font-size:20px">${r.puzzles.map((p) => LEVELS[p.level]).join(" + ")}</div></div>
-  <div class="stat"><div class="k">Total Clues</div><div class="v">${clues}</div></div>
-  <div class="stat"><div class="k">Jump To</div><div class="v" style="font-size:18px">${jump}</div></div>
+<div class="gm-app">
+  ${gameBar({
+    date: r.date,
+    older: nav.older,
+    newer: nav.newer,
+    path: miniPath,
+    archive: `${MINI_CROSSWORD_HOME}/archive`,
+    tabs: r.puzzles.length > 1 ? r.puzzles.map((p) => ({ id: p.level, label: LEVELS[p.level] })) : undefined,
+  })}
+  ${r.puzzles.map(puzzleSection).join("")}
 </div>
-
-${r.puzzles.map(puzzleSection).join("")}
 
 <div class="datenav">
   <span>${nav.older ? `<a href="${miniPath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>` : ""}</span>
-  <span class="datenav-hint">Tip: Use <b>← / →</b> arrow keys to jump between days</span>
   <span>${nav.newer ? `<a href="${miniPath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>` : ""}</span>
-</div>`;
+</div>
+${GM_TABS_SCRIPT}${GM_REVEAL_SCRIPT}`;
 
   return layout(
     `Mini Crossword Answers Today (${prettyDate(r.date)}) – Clues & Solutions`,

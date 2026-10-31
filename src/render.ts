@@ -1,3 +1,4 @@
+import { SEO } from "./seo-content.ts";
 import type { DailyResult } from "./store.ts";
 import { cellName } from "./solver.ts";
 
@@ -6,7 +7,8 @@ const SITE_TITLE = process.env.SITE_TITLE || "Daily Puzzle Solvers";
 export const esc = (s: unknown) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-export const RESULT_PREFIX = "/sudoku-daily-result";
+export const RESULT_PREFIX = "/daily-sudoku";
+export const ARCHIVE_PATH = `${RESULT_PREFIX}/archive`;
 export const resultPath = (date: string) => `${RESULT_PREFIX}/${date}`;
 
 export const prettyDate = (iso: string) =>
@@ -314,6 +316,9 @@ a:hover { color: var(--accent-ink); }
   color: var(--muted);
 }
 .games-group-title:first-child { padding-top: 2px; }
+a.games-group-title { display: flex; justify-content: space-between; text-decoration: none; }
+a.games-group-title:hover { color: var(--ink); }
+a.games-group-title span { color: var(--accent); text-transform: none; letter-spacing: 0; font-weight: 700; }
 .game-tab {
   display: flex;
   align-items: center;
@@ -747,6 +752,70 @@ ol.steps li.active .n {
 ol.steps .t { font-weight: 700; color: var(--ink); }
 ol.steps li.active .t { color: #0f172a; }
 
+/* Game page chrome shared by the board games (same look as the Pips solver) */
+.gm-app [hidden] { display: none !important; }
+.gm-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.gm-tabs { display: inline-flex; background: var(--soft); border: 1px solid var(--line); border-radius: var(--radius-pill); padding: 4px; gap: 2px; }
+.gm-tabs button { font: inherit; font-weight: 700; font-size: 15px; color: var(--ink-2); background: none; border: 0; border-radius: var(--radius-pill); padding: 9px 20px; cursor: pointer; transition: background .15s, color .15s; }
+.gm-tabs button[aria-selected="true"] { background: var(--ink); color: var(--surface); }
+.gm-date { display: inline-flex; align-items: center; gap: 10px; background: var(--ink); color: var(--surface); border-radius: var(--radius-pill); padding: 11px 22px; font-weight: 700; font-size: 15px; }
+.gm-date:hover { color: var(--surface); filter: brightness(1.15); }
+.gm-step { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); font-weight: 800; }
+.gm-step:hover { border-color: var(--accent); color: var(--accent); }
+.gm-step[aria-disabled="true"] { opacity: .35; pointer-events: none; }
+.gm-stage { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+.gm-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow); }
+.gm-meta { color: var(--muted); font-size: 14px; font-weight: 600; margin: 0 0 12px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.gm-board { display: flex; justify-content: center; }
+.gm-board svg { display: block; width: min(460px, 100%); height: auto; margin: 0 auto; border-radius: 14px; overflow: hidden; }
+.gm-help { font-style: italic; color: var(--ink-2); font-size: 14px; margin: 0 0 14px; }
+.gm-help b { font-weight: 800; }
+.gm-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 0; }
+.gm-btn { font: inherit; font-weight: 700; font-size: 14px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-pill); padding: 9px 16px; cursor: pointer; }
+.gm-btn:hover { border-color: var(--accent); color: var(--accent); }
+.gm-btn.primary { background: var(--accent-gradient); border-color: transparent; color: #fff; }
+.gm-btn.primary:hover { color: #fff; filter: brightness(1.06); }
+.gm-legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px 18px; font-size: 14px; color: var(--ink-2); margin: 0 0 14px; padding: 0; list-style: none; }
+.gm-legend b { display: inline-block; min-width: 28px; text-align: center; padding: 1px 6px; margin-right: 6px; border-radius: 6px; background: var(--accent); color: #fff; font-size: 12px; }
+.gm-stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.gm-stats span { background: var(--soft); border: 1px solid var(--line); border-radius: var(--radius-pill); padding: 5px 12px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.gm-done { margin: 14px 0 0; padding: 10px 14px; border-radius: var(--radius); background: var(--good-soft); color: var(--good); font-weight: 700; font-size: 14px; }
+.gm-level { margin-top: 28px; }
+.gm-level > h3 { font-size: 18px; margin: 0 0 2px; }
+.gm-note { color: var(--muted); font-size: 14px; margin: 0 0 10px; }
+.gm-steps { margin: 12px 0 0; padding-left: 20px; font-size: 14px; color: var(--ink-2); }
+.gm-steps li { margin-bottom: 4px; }
+.gm-reveal { display: none; }
+.gm-reveal.on { display: block; }
+@media (max-width: 860px) { .gm-stage { grid-template-columns: 1fr; gap: 20px; } .gm-card { padding: 16px; } }
+
+/* Written guide under each game */
+.seo { margin-top: 48px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 8px 28px 24px; box-shadow: var(--shadow-sm); }
+.seo h2 { margin: 24px 0 10px; font-size: 20px; }
+.seo h2::before { content: ""; width: 4px; height: 20px; border-radius: 2px; background: var(--accent-gradient); flex: none; }
+.seo p { line-height: 1.7; }
+.seo ol, .seo ul { margin: 0 0 8px; padding-left: 22px; color: var(--ink-2); line-height: 1.7; }
+.seo li { margin-bottom: 6px; }
+.seo li::marker { color: var(--accent); font-weight: 800; }
+.seo details { background: var(--soft); box-shadow: none; }
+.seo details p { margin-bottom: 0; }
+@media (max-width: 640px) { .seo { padding: 4px 18px 18px; } }
+
+/* Try more games */
+.more-games { margin-top: 48px; }
+.more-games h2 { margin-top: 0; }
+.more-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 16px; }
+.more-card { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 22px 20px 18px; color: var(--ink); box-shadow: var(--shadow-sm); transition: transform .18s, box-shadow .18s, border-color .18s; }
+.more-card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: linear-gradient(90deg, var(--c1), var(--c2)); }
+.more-card::after { content: ""; position: absolute; right: -40px; top: -40px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--c2) 22%, transparent), transparent 70%); pointer-events: none; }
+.more-card:hover { transform: translateY(-4px); box-shadow: 0 18px 36px -12px color-mix(in srgb, var(--c2) 45%, transparent); border-color: color-mix(in srgb, var(--c2) 55%, var(--line)); color: var(--ink); }
+.more-icon { width: 52px; height: 52px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 26px; line-height: 1; margin-bottom: 6px; background: linear-gradient(145deg, var(--c1), var(--c2)); box-shadow: 0 8px 16px -6px color-mix(in srgb, var(--c2) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.45); }
+.more-name { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
+.more-blurb { font-size: 13.5px; line-height: 1.5; color: var(--ink-2); font-weight: 500; flex: 1; }
+.more-cta { margin-top: 8px; font-size: 14px; font-weight: 800; color: var(--c2); display: inline-flex; align-items: center; gap: 6px; }
+.more-cta i { font-style: normal; transition: transform .18s; }
+.more-card:hover .more-cta i { transform: translateX(4px); }
+
 /* Day Navigation */
 .datenav {
   display: flex;
@@ -895,6 +964,67 @@ footer a:hover { color: var(--accent); }
 }
 `;
 
+// Top bar of a game page: optional tabs, then previous day / date pill (links to the archive) / next day
+export function gameBar(o: {
+  date: string;
+  older: string | null;
+  newer: string | null;
+  path: (date: string) => string;
+  archive: string;
+  tabs?: { id: string; label: string }[];
+  tabsId?: string;
+  tabAttr?: string;
+}) {
+  const step = (d: string | null, arrow: string, title: string) =>
+    d ? `<a class="gm-step" href="${o.path(d)}" title="${title}">${arrow}</a>` : `<span class="gm-step" aria-disabled="true">${arrow}</span>`;
+  const attr = o.tabAttr ?? "data-gm-tab";
+  const tabs = o.tabs?.length
+    ? `<div class="gm-tabs" id="${o.tabsId ?? "gmTabs"}" role="tablist">${o.tabs
+        .map((t, i) => `<button type="button" role="tab" ${attr}="${t.id}" aria-selected="${i === 0}">${esc(t.label)}</button>`)
+        .join("")}</div>`
+    : "";
+  return `<div class="gm-bar">${tabs}${step(o.older, "‹", "Previous day")}<a class="gm-date" href="${o.archive}" title="Browse the archive">📅 ${esc(shortDate(o.date))}, ${o.date.slice(0, 4)}</a>${step(o.newer, "›", "Next day")}</div>`;
+}
+
+// Switches [data-gm-panel] blocks from the [data-gm-tab] buttons of #gmTabs (and reflects the choice in the URL hash)
+export const GM_TABS_SCRIPT = `<script>
+(() => {
+  const tabs = document.getElementById("gmTabs");
+  if (!tabs) return;
+  const panels = [...document.querySelectorAll("[data-gm-panel]")];
+  const show = (id) => {
+    panels.forEach((p) => { p.hidden = p.dataset.gmPanel !== id; });
+    tabs.querySelectorAll("[data-gm-tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.gmTab === id)));
+  };
+  tabs.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-gm-tab]");
+    if (!b) return;
+    history.replaceState(null, "", "#" + b.dataset.gmTab);
+    show(b.dataset.gmTab);
+  });
+  const h = location.hash.slice(1);
+  if (panels.some((p) => p.dataset.gmPanel === h)) show(h);
+})();
+</script>`;
+
+// A [data-gm-reveal] button swaps the puzzle board and the solved board inside its .gm-stage
+export const GM_REVEAL_SCRIPT = `<script>
+(() => {
+  document.querySelectorAll("[data-gm-reveal]").forEach((btn) => {
+    const stage = btn.closest(".gm-stage");
+    const puzzle = stage.querySelector('[data-gm-view="puzzle"]');
+    const solved = stage.querySelector('[data-gm-view="solution"]');
+    const extra = stage.querySelectorAll("[data-gm-solution-only]");
+    btn.addEventListener("click", () => {
+      const on = extra.length ? extra[0].hidden : solved.hidden;
+      if (solved) { solved.hidden = !on; puzzle.hidden = on; }
+      extra.forEach((e) => { e.hidden = !on; });
+      btn.textContent = on ? "Hide solution" : btn.dataset.gmReveal;
+    });
+  });
+})();
+</script>`;
+
 export interface Chrome {
   brand: string;
   brandHref: string;
@@ -906,10 +1036,10 @@ export interface Chrome {
 
 const SUDOKU_CHROME: Chrome = {
   brand: SITE_TITLE,
-  brandHref: "/",
+  brandHref: RESULT_PREFIX,
   nav: [
-    ["/", "Today"],
-    ["/archive", "Archive"],
+    [RESULT_PREFIX, "Today"],
+    [ARCHIVE_PATH, "Archive"],
   ],
   footer: "Puzzles from the sudoku.com Daily Challenge. Solutions and step-by-step logic computed independently by our open-source solver.",
   gameIcon: "🔢",
@@ -917,21 +1047,47 @@ const SUDOKU_CHROME: Chrome = {
 
 export type GameGroup = "NYT" | "LinkedIn" | "More puzzles";
 
+// Groups with a landing page; their menu heading links to it
+const GROUP_HUBS: Partial<Record<GameGroup, string>> = { NYT: "/nyt-games-solver", LinkedIn: "/linkedin-games-solver", "More puzzles": "/puzzle-games-solver" };
+
 export const GAMES: { href: string; label: string; icon: string; tag: string; group: GameGroup }[] = [
-  { href: "/wordle", label: "Wordle", icon: "🟩", tag: "NYT", group: "NYT" },
-  { href: "/connections", label: "Connections", icon: "🟨", tag: "NYT", group: "NYT" },
+  { href: "/today-wordle-answer", label: "Wordle", icon: "🟩", tag: "NYT", group: "NYT" },
+  { href: "/connections-hint-today", label: "Connections", icon: "🟨", tag: "NYT", group: "NYT" },
   { href: "/spelling-bee", label: "Spelling Bee", icon: "🐝", tag: "NYT", group: "NYT" },
   { href: "/strands", label: "Strands", icon: "🔤", tag: "NYT", group: "NYT" },
+  { href: "/pips", label: "Pips", icon: "🎲", tag: "NYT", group: "NYT" },
+  { href: "/nyt-sudoku", label: "NYT Sudoku", icon: "🔢", tag: "NYT", group: "NYT" },
   { href: "/linkedin-queens", label: "Queens", icon: "👑", tag: "LinkedIn", group: "LinkedIn" },
   { href: "/linkedin-tango", label: "Tango", icon: "☀️", tag: "LinkedIn", group: "LinkedIn" },
   { href: "/linkedin-zip", label: "Zip", icon: "⚡", tag: "LinkedIn", group: "LinkedIn" },
-  { href: "/mini-sudoku", label: "Mini Sudoku", icon: "🧩", tag: "LinkedIn", group: "LinkedIn" },
-  { href: "/", label: "Sudoku", icon: "🔢", tag: "Daily", group: "More puzzles" },
+  { href: "/linkedin-mini-sudoku", label: "Mini Sudoku", icon: "🧩", tag: "LinkedIn", group: "LinkedIn" },
+  { href: RESULT_PREFIX, label: "Sudoku", icon: "🔢", tag: "Daily", group: "More puzzles" },
   { href: "/mini-crossword", label: "Mini Crossword", icon: "✏️", tag: "Daily", group: "More puzzles" },
-  { href: "/queens", label: "Queens Unlimited", icon: "👑", tag: "Unlimited", group: "More puzzles" },
-  { href: "/tango", label: "Tango Unlimited", icon: "☀️", tag: "Unlimited", group: "More puzzles" },
-  { href: "/zip", label: "Zip Unlimited", icon: "⚡", tag: "Unlimited", group: "More puzzles" },
+  { href: "/queens-unlimited", label: "Queens Unlimited", icon: "👑", tag: "Unlimited", group: "More puzzles" },
+  { href: "/tango-unlimited", label: "Tango Unlimited", icon: "☀️", tag: "Unlimited", group: "More puzzles" },
+  { href: "/zip-unlimited", label: "Zip Unlimited", icon: "⚡", tag: "Unlimited", group: "More puzzles" },
+  { href: "/word-search", label: "Word Search", icon: "🔍", tag: "Unlimited", group: "More puzzles" },
 ];
+
+// Blurb and brand colours used by the "Try more" cards
+const GAME_META: Record<string, { blurb: string; c1: string; c2: string }> = {
+  "/today-wordle-answer": { blurb: "Today's answer, a nudge for each letter, and every past solution.", c1: "#6aaa64", c2: "#3f8a46" },
+  "/connections-hint-today": { blurb: "Category hints that don't spoil the groups, then the full four-way answer.", c1: "#f2c94c", c2: "#b07bd8" },
+  "/spelling-bee": { blurb: "The pangram, every valid word and starter hints for the day's hive.", c1: "#f7da21", c2: "#e89b00" },
+  "/strands": { blurb: "Theme hints, the spangram and where every word sits on the board.", c1: "#4fb8c4", c2: "#2f78b5" },
+  "/pips": { blurb: "An interactive solver: click a domino or a cell and it snaps into place.", c1: "#fb923c", c2: "#ec4899" },
+  "/nyt-sudoku": { blurb: "Easy, medium and hard with a replayable step-by-step logic timeline.", c1: "#60a5fa", c2: "#6366f1" },
+  "/linkedin-queens": { blurb: "Place one queen per row, column and colour region, with every deduction explained.", c1: "#a78bfa", c2: "#6d28d9" },
+  "/linkedin-tango": { blurb: "Sun and moon grids solved by pure logic, with the reasoning behind each move.", c1: "#fbbf24", c2: "#3b82f6" },
+  "/linkedin-zip": { blurb: "The full path through the numbered dots, with hints before the route is revealed.", c1: "#22d3ee", c2: "#2563eb" },
+  "/linkedin-mini-sudoku": { blurb: "The 6×6 puzzle with its region layout and a replayable logical solution.", c1: "#4ade80", c2: "#0d9488" },
+  "/daily-sudoku": { blurb: "The sudoku.com Daily Challenge with a replayable logic timeline and a verified solution.", c1: "#38bdf8", c2: "#2563eb" },
+  "/word-search": { blurb: "Pick fruits, vegetables, computer and more, choose a difficulty and find every hidden word.", c1: "#f472b6", c2: "#e11d48" },
+  "/mini-crossword": { blurb: "Clues, hints and the full grid for the daily mini crossword.", c1: "#fbbf24", c2: "#ea580c" },
+  "/queens-unlimited": { blurb: "Daily Queens boards from the Unlimited series, solved with explained logic.", c1: "#c084fc", c2: "#7c3aed" },
+  "/tango-unlimited": { blurb: "Daily Tango grids from the Unlimited series, with every deduction shown.", c1: "#fcd34d", c2: "#3b82f6" },
+  "/zip-unlimited": { blurb: "Daily Zip puzzles from the Unlimited series, with hints before the full route.", c1: "#22d3ee", c2: "#4f46e5" },
+};
 
 export function layout(
   title: string,
@@ -947,8 +1103,44 @@ export function layout(
     `<span class="tab-icon">${g.icon}</span><span class="tab-name">${esc(g.label)}</span>` +
     `<span class="tag">${g.tag}</span></a>`;
   const games = (["NYT", "LinkedIn", "More puzzles"] as const)
-    .map((group) => `<div class="games-group-title">${group}</div>${GAMES.filter((g) => g.group === group).map(tab).join("")}`)
+    .map((group) => {
+      const hub = GROUP_HUBS[group];
+      const title = hub ? `<a class="games-group-title" href="${hub}">${group} <span>View all →</span></a>` : `<div class="games-group-title">${group}</div>`;
+      return `${title}${GAMES.filter((g) => g.group === group).map(tab).join("")}`;
+    })
     .join("");
+
+  // Written guide (what it is, how to play, tips, FAQ) on result pages; archive and not-found pages skip it
+  const seo = SEO[chrome.brandHref];
+  const guide =
+    seo && !noindex && !canonicalPath.endsWith("/archive")
+      ? `<section class="seo">
+<h2>What is ${esc(seo.name)}?</h2>
+<p>${esc(seo.what)}</p>
+<h2>How to use the ${esc(seo.name)} solver</h2>
+<ol>${seo.how.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>
+<h2>Tips for solving ${esc(seo.name)}</h2>
+<ul>${seo.tips.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+<h2>${esc(seo.name)} FAQ</h2>
+${seo.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}
+</section>
+<script type="application/ld+json">${JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: seo.faq.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+        }).replace(/</g, "\\u003c")}</script>`
+      : "";
+
+  // "Try more" cards for the other games of the current game's group (NYT, LinkedIn, ...)
+  const current = GAMES.find((g) => g.href === chrome.brandHref);
+  const moreGames = current
+    ? `<section class="more-games"><h2>Try more ${current.group === "More puzzles" ? "puzzles" : `${current.group} games`}</h2><div class="more-grid">${GAMES.filter((g) => g.group === current.group && g !== current)
+        .map((g) => {
+          const m = GAME_META[g.href] ?? { blurb: "", c1: "#6366f1", c2: "#4f46e5" };
+          return `<a class="more-card" href="${g.href}" style="--c1:${m.c1};--c2:${m.c2}"><span class="more-icon">${g.icon}</span><span class="more-name">${esc(g.label)}</span><span class="more-blurb">${esc(m.blurb)}</span><span class="more-cta">Play now <i>→</i></span></a>`;
+        })
+        .join("")}</div></section>`
+    : "";
 
   const sub = chrome.nav
     .slice(0, 2)
@@ -1019,12 +1211,14 @@ ${noindex ? '<meta name="robots" content="noindex">' : ""}
 
 <main class="wrap">
 ${body}
+${guide}
+${moreGames}
 </main>
 
 <footer>
   <div class="in">
     <div class="footer-row">
-      <p style="margin:0">${esc(chrome.footer)}</p>
+      ${chrome.footer ? `<p style="margin:0">${esc(chrome.footer)}</p>` : "<span></span>"}
       <a href="#top" style="font-weight:600">Back to top ↑</a>
     </div>
   </div>
@@ -1077,11 +1271,11 @@ ${body}
 </html>`;
 }
 
-function boardCells(puzzle: string, solution: string) {
+function boardCells(puzzle: string, solution: string, puzzleOnly = false) {
   return [...solution]
     .map((d, i) => {
       const given = puzzle[i] !== "0";
-      return `<div class="cell ${given ? "given" : "solved"}" data-i="${i}">${d}</div>`;
+      return `<div class="cell ${given ? "given" : "solved"}" data-i="${i}">${given || !puzzleOnly ? d : ""}</div>`;
     })
     .join("");
 }
@@ -1091,11 +1285,6 @@ export function renderResult(r: DailyResult, nav: { newer: string | null; older:
   const placements = res.steps.filter((s) => s.type === "place").length;
   const title = `Sudoku Daily Challenge ${prettyDate(r.date)} – Step-by-Step Solution`;
   const description = `Interactive step-by-step logic solver and complete solution for sudoku.com Daily Challenge on ${prettyDate(r.date)} (${r.source.difficulty}).`;
-
-  const techChips = Object.entries(res.techniques)
-    .sort((a, b) => b[1]! - a[1]!)
-    .map(([t, n]) => `<span class="chip"><span>${esc(t)}</span> <b>×${n}</b></span>`)
-    .join("");
 
   const steps = res.steps
     .map((s, idx) => {
@@ -1110,64 +1299,58 @@ export function renderResult(r: DailyResult, nav: { newer: string | null; older:
 <div class="page-header">
   <h1>${isHome ? "Today's " : ""}Sudoku Daily Challenge</h1>
   <div class="sub">
-    <span>📅 ${esc(prettyDate(r.date))}</span>
     <span class="badge">${esc(r.source.difficulty)}</span>
     <span class="badge good">✓ Verified Solution</span>
   </div>
 </div>
 
-<div class="layout">
-  <section class="card">
+<div class="gm-app">
+${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: resultPath, archive: ARCHIVE_PATH })}
+<div class="gm-stage">
+  <section class="gm-card">
+    <p class="gm-meta"><span style="text-transform:capitalize">${esc(r.source.difficulty)}</span><span>${res.givens} clues</span><span id="stepCount">0 / ${placements} placed</span></p>
     <div class="board-container">
-      <div class="board" id="board">${boardCells(r.puzzle, res.solution)}</div>
+      <div class="board" id="board">${boardCells(r.puzzle, res.solution, true)}</div>
+    </div>
+    <p class="gm-done" id="doneMsg" hidden>✅ Solved – every cell is in place.</p>
+  </section>
+
+  <section>
+    <p class="gm-help"><b>Place one</b> to reveal the next logical move, <b>play</b> to watch the whole solve, or <b>click any step</b> in the timeline to preview it.</p>
+    <div class="gm-actions" style="margin-top:0">
+      <button class="gm-btn" id="next" type="button">💡 Place one</button>
+      <button class="gm-btn primary" id="last" type="button">Show full solution</button>
+      <button class="gm-btn" id="first" type="button">↺ Reset</button>
     </div>
 
-    <!-- Replay Controls -->
-    <div class="controls" style="margin-top:20px">
-      <button id="first" title="Show original puzzle">⏮ First</button>
+    <div class="controls" style="gap:12px; margin:16px 0 0; justify-content:flex-start">
       <button id="prev" title="Previous step">◀</button>
       <button id="play" class="primary" style="min-width:105px"><span id="playIcon">▶</span> <span id="playLabel">Play</span></button>
-      <button id="next" title="Next step">▶</button>
-      <button id="last" title="Show complete solution">⏭ Last</button>
-    </div>
-
-    <div class="controls" style="gap:14px; margin-top:14px">
-      <input id="slider" type="range" min="0" max="${res.steps.length}" value="${res.steps.length}" aria-label="Solve step slider">
       <div class="speed-picker" title="Playback speed">
         <button type="button" class="speed-btn" data-speed="700">0.5x</button>
         <button type="button" class="speed-btn active" data-speed="350">1x</button>
         <button type="button" class="speed-btn" data-speed="150">2x</button>
       </div>
     </div>
+    <div class="controls" style="margin:12px 0 0">
+      <input id="slider" type="range" min="0" max="${res.steps.length}" value="0" aria-label="Solve step slider">
+    </div>
 
-    <div class="caption" id="caption">
+    <div class="caption" id="caption" style="margin-top:14px">
       <span class="step-tag">Ready</span>
-      <b>Complete solution displayed.</b> Press <b>⏮ First</b> to see given clues, or <b>Play</b> to watch the logic solve step-by-step.
-    </div>
-  </section>
-
-  <section>
-    <div class="stats">
-      <div class="stat"><div class="k">Difficulty</div><div class="v" style="text-transform:capitalize;font-size:20px">${esc(r.source.difficulty)}</div></div>
-      <div class="stat"><div class="k">Rating</div><div class="v" style="font-size:20px">${esc(res.rating)}</div></div>
-      <div class="stat"><div class="k">Given Clues</div><div class="v">${res.givens}</div></div>
-      <div class="stat"><div class="k">Moves</div><div class="v">${placements}</div></div>
-      <div class="stat"><div class="k">Win Rate</div><div class="v">${r.source.winRate}%</div></div>
-      <div class="stat"><div class="k">Solver Time</div><div class="v">${res.timeMs} ms</div></div>
+      <b>Original puzzle.</b> ${res.givens} clues given.
     </div>
 
-    <h2>Techniques Used</h2>
-    <div class="chips">${techChips}</div>
-
-    <h2>Step-by-Step Logic Timeline</h2>
-    <p class="sub" style="font-size:13px; margin-bottom:10px">Click any step to preview the board at that deduction:</p>
-    <ol class="steps" id="steps">${steps}</ol>
+    <details>
+      <summary>Step-by-Step Logic Timeline (${res.steps.length} steps)</summary>
+      <ol class="steps" id="steps">${steps}</ol>
+    </details>
   </section>
+</div>
 </div>
 
 <div class="datenav">
   <span>${nav.older ? `<a href="${resultPath(nav.older)}" class="prev-day" title="Previous day (Left Arrow)">← ${esc(shortDate(nav.older))}</a>` : ""}</span>
-  <span class="datenav-hint">Tip: Use <b>← / →</b> arrow keys to jump between days</span>
   <span>${nav.newer ? `<a href="${resultPath(nav.newer)}" class="next-day" title="Next day (Right Arrow)">${esc(shortDate(nav.newer))} →</a>` : ""}</span>
 </div>
 
@@ -1184,7 +1367,8 @@ export function renderResult(r: DailyResult, nav: { newer: string | null; older:
   const playLabel = document.getElementById("playLabel");
   const speedBtns = [...document.querySelectorAll(".speed-btn")];
 
-  let k = steps.length;
+  const totalPlace = steps.filter((x) => x.type === "place").length;
+  let k = 0;
   let timer = null;
   let delay = 350;
 
@@ -1213,6 +1397,9 @@ export function renderResult(r: DailyResult, nav: { newer: string | null; older:
     });
     items.forEach((li) => li.classList.toggle("active", +li.dataset.k === k));
     slider.value = k;
+    const placed = steps.slice(0, k).filter((x) => x.type === "place").length;
+    document.getElementById("stepCount").textContent = placed + " / " + totalPlace + " placed";
+    document.getElementById("doneMsg").hidden = k < steps.length;
 
     const s = steps[k - 1];
     if (!s) {
@@ -1256,7 +1443,13 @@ export function renderResult(r: DailyResult, nav: { newer: string | null; older:
   document.getElementById("first").onclick = () => { stop(); go(0); };
   document.getElementById("last").onclick = () => { stop(); go(steps.length); };
   document.getElementById("prev").onclick = () => { stop(); go(k - 1); };
-  document.getElementById("next").onclick = () => { stop(); go(k + 1); };
+  // "Place one" jumps to the next step that actually puts a digit on the board
+  document.getElementById("next").onclick = () => {
+    stop();
+    let n = k + 1;
+    while (n < steps.length && steps[n - 1].type !== "place") n++;
+    go(n);
+  };
   slider.oninput = () => { stop(); go(+slider.value); };
   items.forEach((li) => {
     li.onclick = () => { stop(); go(+li.dataset.k); };
@@ -1323,7 +1516,7 @@ ${list}
     `Sudoku Daily Challenge Archive – All Solutions`,
     `Every sudoku.com Daily Challenge solution, solved step by step.`,
     body,
-    "/archive"
+    ARCHIVE_PATH
   );
 }
 
@@ -1338,18 +1531,18 @@ export function renderNotFound(date?: string) {
         date ? `No solution for <b>${esc(date)}</b> has been crawled yet.` : "No results are currently available."
       }</p>
       <div style="margin-top:24px;display:flex;gap:12px;justify-content:center">
-        <a href="/" class="nav-link" style="background:var(--accent);color:#fff;padding:8px 20px">View Today's Puzzle</a>
-        <a href="/archive" class="nav-link" style="background:var(--soft);padding:8px 20px">Browse Archive</a>
+        <a href="${RESULT_PREFIX}" class="nav-link" style="background:var(--accent);color:#fff;padding:8px 20px">View Today's Puzzle</a>
+        <a href="${ARCHIVE_PATH}" class="nav-link" style="background:var(--soft);padding:8px 20px">Browse Archive</a>
       </div>
     </div>`,
-    "/",
+    RESULT_PREFIX,
     true
   );
 }
 
 export function renderSitemap(dates: string[], extraPaths: string[] = []) {
   const base = process.env.URL ?? "";
-  const urls = ["/", "/archive", ...dates.map(resultPath), ...extraPaths];
+  const urls = ["/", RESULT_PREFIX, ARCHIVE_PATH, ...dates.map(resultPath), ...extraPaths];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${esc(base + u)}</loc></url>`).join("\n")}

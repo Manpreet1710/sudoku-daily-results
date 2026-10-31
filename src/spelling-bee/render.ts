@@ -1,4 +1,4 @@
-import { esc, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import { spellingBeeFacts, spellingBeeHints } from "./hints.ts";
 import type { SpellingBeeResult } from "./store.ts";
 
@@ -150,39 +150,33 @@ export function renderSpellingBeeResult(
 <div class="page-header">
   <h1>${isHome ? "Today's " : ""}Spelling Bee Hints &amp; Answers</h1>
   <div class="sub">
-    <span>📅 ${esc(prettyDate(r.date))}</span>
     <span class="badge">NYT Spelling Bee</span>
     <span class="badge good">${facts.count} Words</span>
   </div>
 </div>
 
-<div class="stats">
-  <div class="stat"><div class="k">Total Words</div><div class="v">${facts.count}</div></div>
-  <div class="stat"><div class="k">Pangrams</div><div class="v" style="color:var(--warning)">👑 ${facts.pangrams}</div></div>
-  <div class="stat"><div class="k">Center Letter</div><div class="v" style="color:var(--accent)">${esc(r.center.toUpperCase())}</div></div>
-  <div class="stat"><div class="k">Min Length</div><div class="v">4+ letters</div></div>
+<div class="gm-app">
+  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: spellingBeePath, archive: `${SPELLING_BEE_HOME}/archive` })}
+  <div class="gm-stage">
+    <div class="gm-card">
+      <p class="gm-meta"><span>${facts.count} words · 👑 ${facts.pangrams} pangram${facts.pangrams === 1 ? "" : "s"}</span><span>Center letter ${esc(r.center.toUpperCase())}</span></p>
+      ${honeycomb(r.center, r.outer)}
+    </div>
+    <div>
+      <p class="gm-help">Every word must include the <b>center letter ${esc(r.center.toUpperCase())}</b> and be at least 4 letters long. Open one hint at a time.</p>
+      ${hints}
+      <div class="gm-actions">
+        <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
+      </div>
+      <div data-gm-solution-only hidden style="margin-top:14px">
+        <p style="font-size:14px;margin:0 0 6px"><b>👑 Pangram${r.pangrams.length === 1 ? "" : "s"}</b> (use all 7 letters)</p>
+        <div class="gw">${r.pangrams.map((w) => `<span class="pg">👑 ${esc(w)}</span>`).join("")}</div>
+        <p style="font-size:14px;margin:14px 0 6px"><b>All ${facts.count} words</b></p>
+        <div class="gw">${words}</div>
+      </div>
+    </div>
+  </div>
 </div>
-
-<h2>Today's Honeycomb</h2>
-<p class="sub" style="font-size:14px; margin-bottom:12px">All words must include the glowing center letter <b>${esc(
-    r.center.toUpperCase()
-  )}</b>.</p>
-${honeycomb(r.center, r.outer)}
-
-<h2>Progressive Hints</h2>
-<p class="sub" style="font-size:14px; margin-bottom:12px">Uncover clues one by one without spoiling the answers.</p>
-${hints}
-
-<h2>Answers &amp; Solutions</h2>
-<details>
-  <summary style="color:var(--warning);font-weight:700">👑 Reveal Pangram${r.pangrams.length === 1 ? "" : "s"} (Uses all 7 letters)</summary>
-  <div class="gw">${r.pangrams.map((w) => `<span class="pg">👑 ${esc(w)}</span>`).join("")}</div>
-</details>
-
-<details>
-  <summary>Reveal All ${facts.count} Words (Full Word List)</summary>
-  <div class="gw">${words}</div>
-</details>
 
 <div class="datenav">
   <span>${
@@ -190,13 +184,13 @@ ${hints}
       ? `<a href="${spellingBeePath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>`
       : ""
   }</span>
-  <span class="datenav-hint">Tip: Use <b>← / →</b> arrow keys to jump between days</span>
   <span>${
     nav.newer
       ? `<a href="${spellingBeePath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>`
       : ""
   }</span>
-</div>`;
+</div>
+${GM_REVEAL_SCRIPT}`;
 
   return layout(
     `Spelling Bee Hints & Answers Today (${prettyDate(r.date)}) – NYT Puzzle`,

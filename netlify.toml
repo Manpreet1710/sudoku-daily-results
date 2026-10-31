@@ -4,3 +4,73 @@
 
 [functions]
   node_bundler = "esbuild"
+
+# Old URLs -> the standard /{game}, /{game}/{date}, /{game}/archive structure (permanent)
+[[redirects]]
+  from = "/sudoku-daily-result"
+  to = "/daily-sudoku"
+  status = 301
+[[redirects]]
+  from = "/sudoku-daily-result/*"
+  to = "/daily-sudoku/:splat"
+  status = 301
+[[redirects]]
+  from = "/archive"
+  to = "/daily-sudoku/archive"
+  status = 301
+[[redirects]]
+  from = "/mini-sudoku"
+  to = "/linkedin-mini-sudoku"
+  status = 301
+[[redirects]]
+  from = "/mini-sudoku/*"
+  to = "/linkedin-mini-sudoku/:splat"
+  status = 301
+[[redirects]]
+  from = "/queens"
+  to = "/queens-unlimited"
+  status = 301
+[[redirects]]
+  from = "/queens/*"
+  to = "/queens-unlimited/:splat"
+  status = 301
+[[redirects]]
+  from = "/tango"
+  to = "/tango-unlimited"
+  status = 301
+[[redirects]]
+  from = "/tango/*"
+  to = "/tango-unlimited/:splat"
+  status = 301
+[[redirects]]
+  from = "/zip"
+  to = "/zip-unlimited"
+  status = 301
+[[redirects]]
+  from = "/zip/*"
+  to = "/zip-unlimited/:splat"
+  status = 301
+[[redirects]]
+  from = "/wordle"
+  to = "/today-wordle-answer"
+  status = 301
+[[redirects]]
+  from = "/wordle/*"
+  to = "/today-wordle-answer/:splat"
+  status = 301
+[[redirects]]
+  from = "/connections"
+  to = "/connections-hint-today"
+  status = 301
+[[redirects]]
+  from = "/connections/*"
+  to = "/connections-hint-today/:splat"
+  status = 301
+[[redirects]]
+  from = "/wordle-result-today"
+  to = "/today-wordle-answer"
+  status = 301
+[[redirects]]
+  from = "/wordle-result-today/*"
+  to = "/today-wordle-answer/:splat"
+  status = 301

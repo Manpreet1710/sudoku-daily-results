@@ -1,7 +1,7 @@
-import { esc, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import type { TangoResult } from "./store.ts";
 
-export const TANGO_HOME = "/tango";
+export const TANGO_HOME = "/tango-unlimited";
 export const tangoPath = (date: string) => `${TANGO_HOME}/${date}`;
 export const tangoSitemapPaths = (dates: string[]) => [
   TANGO_HOME,
@@ -20,16 +20,9 @@ const CHROME: Chrome = {
   footer:
     "Hints and step-by-step solutions for daily Tango puzzles on tango-unlimited.com, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn or tango-unlimited.com.",
   css: /* css */ `
-.tboard-wrap {
-  display: flex;
-  justify-content: center;
-  margin: 16px 0 24px;
-}
 .tboard {
   width: min(390px, 100%);
   display: block;
-  border-radius: 14px;
-  overflow: hidden;
   box-shadow: var(--shadow-lg);
 }
 .tboard .sign {
@@ -106,11 +99,11 @@ function boardSvg(board: string, solution?: string) {
         .join(", ")}`
     : "Tango grid with given symbols and constraint signs";
 
-  return `<div class="tboard-wrap"><svg class="tboard" viewBox="-2 -2 ${W + 4} ${W + 4}" role="img" aria-label="${esc(
+  return `<svg class="tboard" viewBox="-2 -2 ${W + 4} ${W + 4}" role="img" aria-label="${esc(
     label
   )}"><rect x="0" y="0" width="${W}" height="${W}" fill="${bg}"/><path d="${lines}" stroke="#cbd5e1" stroke-width="1.5" fill="none"/><rect x="0" y="0" width="${W}" height="${W}" fill="none" stroke="#0f172a" stroke-width="3.5" rx="8"/>${symbols}${signs.join(
     ""
-  )}</svg></div>`;
+  )}</svg>`;
 }
 
 const solutionRows = (solution: string) =>
@@ -144,50 +137,42 @@ export function renderTangoResult(
 <div class="page-header">
   <h1>${isHome ? "Today's " : ""}Tango Answers &amp; Solution</h1>
   <div class="sub">
-    <span>📅 ${esc(prettyDate(r.date))}</span>
     <span class="badge">${LEVELS[r.level]}</span>
-    <span class="badge good">LinkedIn / Tango Daily</span>
+    <span class="badge good">Tango Daily</span>
   </div>
 </div>
 
-<div class="stats">
-  <div class="stat"><div class="k">Difficulty</div><div class="v" style="font-size:20px">${LEVELS[r.level]}</div></div>
-  <div class="stat"><div class="k">Grid Size</div><div class="v">6×6</div></div>
-  <div class="stat"><div class="k">Given Symbols</div><div class="v">${givens}</div></div>
-  <div class="stat"><div class="k">Signs (= and ×)</div><div class="v">${signs}</div></div>
-</div>
-
-<h2>${isHome ? "Today's Puzzle Board" : "The Puzzle Board"}</h2>
-<p class="sub" style="font-size:14px; margin-bottom:12px">
-  Fill every row and column with 3 suns (☀️) and 3 moons (🌙). No more than two of the same symbol can touch horizontally or vertically. <b>=</b> means identical symbols; <b>×</b> means opposite.
-</p>
-${boardSvg(r.board)}
-
-<h2>Progressive Hints</h2>
-<p class="sub" style="font-size:14px; margin-bottom:12px">Early logic deductions to help unblock you without giving away the full answer.</p>
-${hints}
-
-<h2>Verified Solution</h2>
-<details>
-  <summary style="color:var(--accent);font-weight:700">☀️ Reveal Solved Tango Board (Spoiler)</summary>
-  <div style="margin-top:16px">
-    ${boardSvg(r.board, r.solution)}
-    <div style="display:flex;flex-direction:column;gap:4px;margin-top:14px">${solutionRows(r.solution).join("")}</div>
-    ${r.unique ? "" : '<p style="font-size:13px;color:var(--muted);margin-top:10px">Note: This board has multiple valid answers; this is one verified solution.</p>'}
+<div class="gm-app">
+  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: tangoPath, archive: `${TANGO_HOME}/archive` })}
+  <div class="gm-stage">
+    <div class="gm-card">
+      <p class="gm-meta"><span>6×6 · ${givens} given symbols · ${signs} signs</span><span>${LEVELS[r.level]}</span></p>
+      <div class="gm-board" data-gm-view="puzzle">${boardSvg(r.board)}</div>
+      <div class="gm-board" data-gm-view="solution" hidden>${boardSvg(r.board, r.solution)}</div>
+    </div>
+    <div>
+      <p class="gm-help">Fill every row and column with <b>3 suns (☀️)</b> and <b>3 moons (🌙)</b>. No more than two of the same symbol can touch. <b>=</b> means identical symbols; <b>×</b> means opposite.</p>
+      ${hints}
+      <details>
+        <summary>Step-by-Step Logic Timeline (${r.steps.length} steps)</summary>
+        <ol class="steps" style="margin-top:14px">${r.steps
+          .map(
+            (s, i) =>
+              `<li><span class="n">${i + 1}</span><div><span class="t">Step ${i + 1}</span><br><span style="color:var(--ink-2);font-size:14px">${esc(
+                s.text
+              )}</span></div></li>`
+          )
+          .join("")}</ol>
+      </details>
+      <div class="gm-actions">
+        <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
+      </div>
+      <div data-gm-solution-only hidden style="display:flex;flex-direction:column;gap:4px;margin-top:14px">${solutionRows(r.solution).join("")}
+        ${r.unique ? "" : '<p style="font-size:13px;color:var(--muted);margin-top:10px">Note: This board has multiple valid answers; this is one verified solution.</p>'}
+      </div>
+    </div>
   </div>
-</details>
-
-<details>
-  <summary>Step-by-Step Logic Timeline (${r.steps.length} steps)</summary>
-  <ol class="steps" style="margin-top:14px">${r.steps
-    .map(
-      (s, i) =>
-        `<li><span class="n">${i + 1}</span><div><span class="t">Step ${i + 1}</span><br><span style="color:var(--ink-2);font-size:14px">${esc(
-          s.text
-        )}</span></div></li>`
-    )
-    .join("")}</ol>
-</details>
+</div>
 
 <div class="datenav">
   <span>${
@@ -195,13 +180,13 @@ ${hints}
       ? `<a href="${tangoPath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>`
       : ""
   }</span>
-  <span class="datenav-hint">Tip: Use <b>← / →</b> arrow keys to jump between days</span>
   <span>${
     nav.newer
       ? `<a href="${tangoPath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>`
       : ""
   }</span>
-</div>`;
+</div>
+${GM_REVEAL_SCRIPT}`;
 
   return layout(
     `Tango Answers Today (${prettyDate(r.date)}) – Daily Solution & Hints`,

@@ -37,6 +37,6 @@ export default async (req: Request) => {
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with TANGO_HOME)
-  path: ["/tango", "/tango/archive", "/tango/:date"],
+  path: ["/tango-unlimited", "/tango-unlimited/archive", "/tango-unlimited/:date"],
   method: "GET",
 };

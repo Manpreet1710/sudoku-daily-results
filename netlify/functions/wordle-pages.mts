@@ -37,6 +37,6 @@ export default async (req: Request) => {
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with WORDLE_HOME)
-  path: ["/wordle", "/wordle/archive", "/wordle/:date"],
+  path: ["/today-wordle-answer", "/today-wordle-answer/archive", "/today-wordle-answer/:date"],
   method: "GET",
 };

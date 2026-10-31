@@ -37,6 +37,6 @@ export default async (req: Request) => {
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with QUEENS_HOME)
-  path: ["/queens", "/queens/archive", "/queens/:date"],
+  path: ["/queens-unlimited", "/queens-unlimited/archive", "/queens-unlimited/:date"],
   method: "GET",
 };

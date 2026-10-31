@@ -1,4 +1,4 @@
-import { esc, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import { cellCol, cellRow, spansBoard } from "./solver.ts";
 import type { StrandsResult } from "./store.ts";
 
@@ -143,51 +143,41 @@ export function renderStrandsResult(r: StrandsResult, nav: { newer: string | nul
 <div class="page-header">
   <h1>${isHome ? "Today's " : ""}Strands Hints &amp; Answers</h1>
   <div class="sub">
-    <span>📅 ${esc(prettyDate(r.date))}</span>
     <span class="badge">NYT Strands</span>
     <span class="badge good">${words.length + 1} Words</span>
   </div>
 </div>
 
-<div class="stats">
-  <div class="stat"><div class="k">Theme Words</div><div class="v">${words.length}</div></div>
-  <div class="stat"><div class="k">Spangram</div><div class="v" style="color:var(--warning)">${spangram.word.length} letters</div></div>
-  <div class="stat"><div class="k">Board</div><div class="v">6×8</div></div>
-  <div class="stat"><div class="k">Cells Used</div><div class="v">48 / 48</div></div>
-</div>
-
-<h2>${isHome ? "Today's Letter Board" : "The Letter Board"}</h2>
-<p class="sub" style="font-size:14px; margin-bottom:12px">Join touching letters (diagonals count) to spell the theme words. Together with the spangram, they use every letter exactly once.</p>
-${boardSvg(r.board)}
-
-<h2>Progressive Hints</h2>
-<p class="sub" style="font-size:14px; margin-bottom:12px">Uncover clues one by one without spoiling the answers.</p>
-${hintHtml}
-
-<h2>Answers &amp; Solutions</h2>
-<details>
-  <summary style="color:var(--warning);font-weight:700">🧵 Reveal the Spangram</summary>
-  <div class="gw"><span class="pg">${esc(spangram.word)}</span></div>
-</details>
-
-<details>
-  <summary>Reveal the ${words.length} Theme Words</summary>
-  <div class="gw">${wordChips}</div>
-</details>
-
-<details>
-  <summary>Show the Solved Board (Spoiler)</summary>
-  <div style="margin-top:16px">
-    ${boardSvg(r.board, r.placements)}
-    ${r.unique ? "" : '<p class="slayout-note">Several layouts fit these words on this board. The words are the same in all of them; this is one valid way to place them.</p>'}
+<div class="gm-app">
+  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: strandsPath, archive: `${STRANDS_HOME}/archive` })}
+  <div class="gm-stage">
+    <div class="gm-card">
+      <p class="gm-meta"><span>6×8 · ${words.length} theme words + spangram</span><span>Spangram ${spangram.word.length} letters</span></p>
+      <div class="gm-board" data-gm-view="puzzle">${boardSvg(r.board)}</div>
+      <div class="gm-board" data-gm-view="solution" hidden>${boardSvg(r.board, r.placements)}</div>
+    </div>
+    <div>
+      <p class="gm-help">Join <b>touching letters</b> (diagonals count) to spell the theme words. With the spangram, they use every letter exactly once.</p>
+      ${hintHtml}
+      <div class="gm-actions">
+        <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
+      </div>
+      <div data-gm-solution-only hidden style="margin-top:14px">
+        <p style="font-size:14px;margin:0 0 6px"><b>🧵 Spangram</b></p>
+        <div class="gw"><span class="pg">${esc(spangram.word)}</span></div>
+        <p style="font-size:14px;margin:14px 0 6px"><b>${words.length} theme words</b></p>
+        <div class="gw">${wordChips}</div>
+        ${r.unique ? "" : '<p class="slayout-note">Several layouts fit these words on this board. The words are the same in all of them; this is one valid way to place them.</p>'}
+      </div>
+    </div>
   </div>
-</details>
+</div>
 
 <div class="datenav">
   <span>${nav.older ? `<a href="${strandsPath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>` : ""}</span>
-  <span class="datenav-hint">Tip: Use <b>← / →</b> arrow keys to jump between days</span>
   <span>${nav.newer ? `<a href="${strandsPath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>` : ""}</span>
-</div>`;
+</div>
+${GM_REVEAL_SCRIPT}`;
 
   return layout(
     `Strands Hints & Answers Today (${prettyDate(r.date)}) – NYT Puzzle`,
