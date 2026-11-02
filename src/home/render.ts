@@ -3,10 +3,33 @@ import { HUBS, HUB_CSS, type Hub, type HubGame } from "../hub/render.ts";
 
 export const HOME = "/";
 
-const CATEGORIES: { id: "nyt" | "linkedin" | "more"; name: string; hub: Hub }[] = [
-  { id: "nyt", name: "NYT Games", hub: HUBS.nyt },
-  { id: "linkedin", name: "LinkedIn Games", hub: HUBS.linkedin },
-  { id: "more", name: "More Puzzles & Games", hub: HUBS.more },
+const CATEGORIES: { id: "nyt" | "linkedin" | "more"; name: string; intro: string; hub: Hub }[] = [
+  {
+    id: "nyt",
+    name: "NYT Games Hints & Answers",
+    intro: "Daily hints and answers for the New York Times games: Wordle, Connections, Spelling Bee, Strands, Pips and Sudoku. Each page gives a nudge first and the full answer when you want it.",
+    hub: HUBS.nyt,
+  },
+  {
+    id: "linkedin",
+    name: "LinkedIn Games Answers",
+    intro: "Step-by-step solutions for LinkedIn's daily Queens, Tango, Zip and Mini Sudoku, worked out by our own logic solver so you can see why each move is right.",
+    hub: HUBS.linkedin,
+  },
+  {
+    id: "more",
+    name: "More Puzzles & Games",
+    intro: "More daily puzzles: Sudoku, Mini Crossword, Queens, Tango and Zip boards from independent puzzle sites, plus a free Word Search you can play in your browser.",
+    hub: HUBS.more,
+  },
+];
+
+const FAQ: [q: string, a: string][] = [
+  ["Where can I find today's puzzle answers?", "Open the game you are playing from the lists above. Every page shows today's puzzle first, and past days are listed in its history section."],
+  ["Do the hints spoil the answer?", "No. Hints come one at a time and get more specific, so you can stop as soon as you can finish the puzzle yourself. The full solution is behind its own button."],
+  ["Which games do you cover?", "NYT Wordle, Connections, Spelling Bee, Strands, Pips and Sudoku; LinkedIn Queens, Tango, Zip and Mini Sudoku; plus Sudoku, Mini Crossword, Queens, Tango, Zip and Word Search."],
+  ["How often is it updated?", "Every day. New puzzles are added shortly after they are published, and each game page shows the date of its latest puzzle."],
+  ["Are you affiliated with the New York Times or LinkedIn?", "No. This is an independent site. Game names belong to their owners, and our solutions are worked out separately."],
 ];
 
 const CSS = /* css */ `
@@ -49,7 +72,7 @@ const CSS = /* css */ `
 
 .home-group-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 46px 0 16px; }
 .home-group-head h2 { margin: 0; }
-.home-group-head a { font-size: 14px; font-weight: 700; }
+.home-intro { margin: -6px 0 16px; color: var(--ink-2); font-size: 15px; line-height: 1.6; max-width: 70ch; }
 .home-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
 .home-tile {
   position: relative; display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 18px; text-decoration: none; color: var(--ink);
@@ -111,7 +134,7 @@ export function renderHome(latest: Record<string, string | undefined> = {}) {
 <section class="home-hero">
   <span class="hub-eyebrow">Daily puzzle solvers</span>
   <h1>Hints, answers &amp; solvers for every daily puzzle</h1>
-  <p class="lead">Wordle, Connections, Pips, Queens, Sudoku and more. Get a nudge first, then the answer, with step-by-step logic you can replay. Updated every day.</p>
+  <p class="lead">Today's answers for NYT Wordle, Connections, Spelling Bee, Strands and Pips, LinkedIn Queens, Tango and Zip, Sudoku and more. Get a nudge first, then the answer, with step-by-step logic you can replay. Updated every day.</p>
   <div class="home-search">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
     <input id="homeSearch" type="search" placeholder="Search a game: Wordle, Queens, Sudoku…" aria-label="Search games" autocomplete="off">
@@ -131,16 +154,27 @@ export function renderHome(latest: Record<string, string | undefined> = {}) {
 
 ${CATEGORIES.map((c) => `<section data-group id="${c.id}">
   <div class="home-group-head"><h2>${esc(c.name)}</h2></div>
+  <p class="home-intro">${esc(c.intro)}</p>
   <div class="home-tiles">${c.hub.games.map(tile).join("")}</div>
 </section>`).join("\n")}
 <p class="home-empty" id="homeEmpty" hidden>No game matches your search. Try “Wordle”, “Queens” or “Sudoku”.</p>
+
+<section class="home-faq">
+  <div class="hub-section-title"><h2>Questions</h2></div>
+  ${FAQ.map(([q, a]) => `<details><summary>${esc(q)}</summary><p style="margin-top:12px;font-size:15px">${esc(a)}</p></details>`).join("")}
+</section>
+<script type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQ.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+  }).replace(/</g, "\\u003c")}</script>
 
 <p class="home-note">${esc(CHROME.footer)}</p>
 <script>${SEARCH_SCRIPT}</script>`;
 
   return layout(
-    "Daily Puzzle Solvers – Hints, Answers & Step-by-Step Solutions",
-    "Daily hints, answers and step-by-step solvers for NYT Wordle, Connections, Strands, Pips, LinkedIn Queens, Tango, Zip, Sudoku and more. Free, updated every day.",
+    "Daily Puzzle Answers & Hints – Wordle, Connections, Strands, Queens",
+    "Today's hints and answers for NYT Wordle, Connections, Spelling Bee, Strands and Pips, plus LinkedIn Queens, Tango, Zip and Sudoku, with step-by-step solutions. Free, updated every day.",
     body,
     HOME,
     false,
