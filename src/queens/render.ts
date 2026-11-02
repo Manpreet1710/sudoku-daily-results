@@ -2,10 +2,8 @@ import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, GM_TABS_SCRIPT, layout, pretty
 import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { QueensPuzzleResult, QueensResult } from "./store.ts";
 
-export const QUEENS_HOME = "/queens-unlimited";
-export const QUEENS_YESTERDAY = "/queens-unlimited-yesterday";
-export const queensPath = (isHome: boolean) => (isHome ? QUEENS_HOME : QUEENS_YESTERDAY);
-export const queensSitemapPaths = () => [QUEENS_HOME, QUEENS_YESTERDAY];
+export const QUEENS_HOME = "/queens-game-answers";
+export const queensSitemapPaths = () => [QUEENS_HOME];
 
 const CHROME: Chrome = {
   brand: "Queens Game Answers",
@@ -13,7 +11,6 @@ const CHROME: Chrome = {
   gameIcon: "👑",
   nav: [
     [QUEENS_HOME, "Today"],
-    [QUEENS_YESTERDAY, "Yesterday"],
   ],
   footer:
     "Hints and step-by-step solutions for daily Queens puzzles on playqueensgame.com, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn or playqueensgame.com.",
@@ -229,7 +226,7 @@ ${GM_TABS_SCRIPT}${GM_REVEAL_SCRIPT}`;
       ", "
     )} daily Queens puzzles on ${prettyDate(r.date)}.`,
     body,
-    queensPath(isHome),
+    QUEENS_HOME,
     false,
     CHROME
   );

@@ -4,8 +4,8 @@ import { historyBoard, historyBoards, historyDate, renderHistory } from "../hist
 import { NYT_LEVELS, type NytLevel } from "./nyt.ts";
 import type { NytSudokuLevelResult, NytSudokuResult } from "./store.ts";
 
-export const NYT_SUDOKU_HOME = "/nyt-sudoku";
-export const NYT_SUDOKU_YESTERDAY = "/nyt-sudoku-yesterday";
+export const NYT_SUDOKU_HOME = "/nyt-sudoku-todays-hints-answers";
+export const NYT_SUDOKU_YESTERDAY = "/nyt-sudoku-yesterdays-hints-answers";
 export const nytSudokuPath = (isHome: boolean) => (isHome ? NYT_SUDOKU_HOME : NYT_SUDOKU_YESTERDAY);
 export const nytSudokuSitemapPaths = () => [NYT_SUDOKU_HOME, NYT_SUDOKU_YESTERDAY];
 

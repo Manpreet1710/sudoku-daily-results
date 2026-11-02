@@ -2,10 +2,8 @@ import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate,
 import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { TangoResult } from "./store.ts";
 
-export const TANGO_HOME = "/tango-unlimited";
-export const TANGO_YESTERDAY = "/tango-unlimited-yesterday";
-export const tangoPath = (isHome: boolean) => (isHome ? TANGO_HOME : TANGO_YESTERDAY);
-export const tangoSitemapPaths = () => [TANGO_HOME, TANGO_YESTERDAY];
+export const TANGO_HOME = "/tango-game-answers";
+export const tangoSitemapPaths = () => [TANGO_HOME];
 
 const CHROME: Chrome = {
   brand: "Tango Answers",
@@ -13,7 +11,6 @@ const CHROME: Chrome = {
   gameIcon: "☀️",
   nav: [
     [TANGO_HOME, "Today"],
-    [TANGO_YESTERDAY, "Yesterday"],
   ],
   footer:
     "Hints and step-by-step solutions for daily Tango puzzles on tango-unlimited.com, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn or tango-unlimited.com.",
@@ -193,7 +190,7 @@ ${GM_REVEAL_SCRIPT}`;
       r.date
     )}.`,
     body,
-    tangoPath(isHome),
+    TANGO_HOME,
     false,
     CHROME
   );

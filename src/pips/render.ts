@@ -3,8 +3,8 @@ import { historyBoard, historyBoards, historyDate, renderHistory } from "../hist
 import { DIFFICULTIES, type Cell, type PipsDifficulty, type PipsPuzzle } from "./nyt.ts";
 import type { PipsResult } from "./store.ts";
 
-export const PIPS_HOME = "/pips";
-export const PIPS_YESTERDAY = "/pips-yesterday";
+export const PIPS_HOME = "/nyt-pips-todays-hints-answers";
+export const PIPS_YESTERDAY = "/nyt-pips-yesterdays-hints-answers";
 export const pipsPath = (isHome: boolean) => (isHome ? PIPS_HOME : PIPS_YESTERDAY);
 export const pipsSitemapPaths = () => [PIPS_HOME, PIPS_YESTERDAY];
 

@@ -29,9 +29,8 @@ import { listPipsDates } from "../../src/pips/store.ts";
 import { pipsSitemapPaths } from "../../src/pips/render.ts";
 import { listNytSudokuDates } from "../../src/nyt-sudoku/store.ts";
 import { nytSudokuSitemapPaths } from "../../src/nyt-sudoku/render.ts";
-import { hubSitemapPaths } from "../../src/hub/render.ts";
 import { wordSearchSitemapPaths } from "../../src/word-search/render.ts";
-import { RESULT_PREFIX, RESULT_YESTERDAY, renderNotFound, renderResult, renderSitemap } from "../../src/render.ts";
+import { RESULT_PREFIX, renderNotFound, renderResult, renderSitemap } from "../../src/render.ts";
 
 const html = (body: string, tag: string, maxAge: number) =>
   new Response(body, {
@@ -47,7 +46,7 @@ export default async (req: Request) => {
   const path = new URL(req.url).pathname.replace(/\/+$/, "") || "/";
 
   if (path === "/sitemap.xml") {
-    const res = html(renderSitemap([...wordleSitemapPaths(), ...connectionsSitemapPaths(), ...spellingBeeSitemapPaths(), ...queensSitemapPaths(), ...tangoSitemapPaths(), ...strandsSitemapPaths(), ...miniSitemapPaths(), ...miniSudokuSitemapPaths(), ...zipSitemapPaths(), ...linkedinQueensSitemapPaths(), ...linkedinTangoSitemapPaths(), ...linkedinZipSitemapPaths(), ...pipsSitemapPaths(), ...nytSudokuSitemapPaths(), ...wordSearchSitemapPaths(), ...hubSitemapPaths()]), "sudoku-index", 3600);
+    const res = html(renderSitemap([...wordleSitemapPaths(), ...connectionsSitemapPaths(), ...spellingBeeSitemapPaths(), ...queensSitemapPaths(), ...tangoSitemapPaths(), ...strandsSitemapPaths(), ...miniSitemapPaths(), ...miniSudokuSitemapPaths(), ...zipSitemapPaths(), ...linkedinQueensSitemapPaths(), ...linkedinTangoSitemapPaths(), ...linkedinZipSitemapPaths(), ...pipsSitemapPaths(), ...nytSudokuSitemapPaths(), ...wordSearchSitemapPaths()]), "sudoku-index", 3600);
     res.headers.set("Content-Type", "application/xml; charset=utf-8");
     return res;
   }
@@ -55,24 +54,23 @@ export default async (req: Request) => {
   // Old URL scheme, kept so existing links and indexed pages still resolve
   if (/^\/results\/[^/]+$/.test(path)) return Response.redirect(new URL(RESULT_PREFIX, req.url), 301);
 
-  // Only two pages per game (today and yesterday); dated URLs and the old archive redirect to today
-  if (path !== RESULT_PREFIX && path !== RESULT_YESTERDAY) return Response.redirect(new URL(RESULT_PREFIX, req.url), 301);
+  // Only the today page per game; yesterday, dated URLs and the old archive redirect to today
+  if (path !== RESULT_PREFIX) return Response.redirect(new URL(RESULT_PREFIX, req.url), 301);
 
   const dates = await listDates();
-  const isHome = path === RESULT_PREFIX;
-  const date = dates[isHome ? 0 : 1];
+  const date = dates[0];
   // Not-found is served as 200 + noindex: netlify dev treats a function 404 as "unhandled" and falls through
   if (!date) return html(renderNotFound(), "sudoku-index", 60);
 
   const r = await getResult(date);
   if (!r) return html(renderNotFound(date), "sudoku-index", 60);
 
-  const nav = isHome ? { newer: null, older: RESULT_YESTERDAY } : { newer: RESULT_PREFIX, older: null };
-  const past = isHome ? await loadHistory(dates, date, getResult) : [];
-  return html(renderResult(r, nav, isHome, past), "sudoku-index", 3600);
+  const nav = { newer: null, older: null };
+  const past = await loadHistory(dates, date, getResult);
+  return html(renderResult(r, nav, true, past), "sudoku-index", 3600);
 };
 
 export const config: Config = {
-  path: ["/daily-sudoku", "/daily-sudoku-yesterday", "/daily-sudoku/:date", "/results/:date", "/sitemap.xml"],
+  path: ["/sudoku-game-answers", "/sudoku-game-answers/:date", "/results/:date", "/sitemap.xml"],
   method: "GET",
 };

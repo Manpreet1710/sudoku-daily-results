@@ -3,10 +3,8 @@ import { historyBoard, historyBoards, historyDate, historyRow, renderHistory } f
 import type { MiniEntry, MiniPuzzle } from "./api.ts";
 import type { MiniResult } from "./store.ts";
 
-export const MINI_CROSSWORD_HOME = "/mini-crossword";
-export const MINI_CROSSWORD_YESTERDAY = "/mini-crossword-yesterday";
-export const miniPath = (isHome: boolean) => (isHome ? MINI_CROSSWORD_HOME : MINI_CROSSWORD_YESTERDAY);
-export const miniSitemapPaths = () => [MINI_CROSSWORD_HOME, MINI_CROSSWORD_YESTERDAY];
+export const MINI_CROSSWORD_HOME = "/mini-crossword-answers";
+export const miniSitemapPaths = () => [MINI_CROSSWORD_HOME];
 
 const CHROME: Chrome = {
   brand: "Mini Crossword Answers",
@@ -14,7 +12,6 @@ const CHROME: Chrome = {
   gameIcon: "✏️",
   nav: [
     [MINI_CROSSWORD_HOME, "Today"],
-    [MINI_CROSSWORD_YESTERDAY, "Yesterday"],
   ],
   footer:
     "Clues, hints and answers for the daily Mini Crossword on minicrossword.com. Not affiliated with or endorsed by that site.",
@@ -189,7 +186,7 @@ ${GM_TABS_SCRIPT}${GM_REVEAL_SCRIPT}`;
     `Mini Crossword Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Clues & Solutions`,
     `All clues, hints and answers for the daily Mini Crossword on ${prettyDate(r.date)}, with the ${esc(sizes)} solved grid.`,
     body,
-    miniPath(isHome),
+    MINI_CROSSWORD_HOME,
     false,
     CHROME,
   );

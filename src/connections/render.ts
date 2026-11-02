@@ -2,8 +2,8 @@ import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate,
 import { historyDate, historyDot, historyRow, renderHistory } from "../history.ts";
 import type { ConnectionsResult } from "./store.ts";
 
-export const CONNECTIONS_HOME = "/connections-hint-today";
-export const CONNECTIONS_YESTERDAY = "/connections-hint-yesterday";
+export const CONNECTIONS_HOME = "/connections-hints-today";
+export const CONNECTIONS_YESTERDAY = "/connections-hints-yesterday";
 export const connectionsPath = (isHome: boolean) => (isHome ? CONNECTIONS_HOME : CONNECTIONS_YESTERDAY);
 export const connectionsSitemapPaths = () => [CONNECTIONS_HOME, CONNECTIONS_YESTERDAY];
 

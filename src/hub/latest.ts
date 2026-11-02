@@ -18,25 +18,25 @@ import type { HubKind } from "./render.ts";
 // How to list each game's saved days, keyed by the game's href (see the hub game lists)
 const LISTERS: Record<HubKind, Record<string, () => Promise<string[]>>> = {
   nyt: {
-    "/today-wordle-answer": listWordleDates,
-    "/connections-hint-today": listConnectionsDates,
-    "/spelling-bee": listSpellingBeeDates,
-    "/strands": listStrandsDates,
-    "/pips": listPipsDates,
-    "/nyt-sudoku": listNytSudokuDates,
+    "/todays-wordle-answer": listWordleDates,
+    "/connections-hints-today": listConnectionsDates,
+    "/spelling-bee-answers": listSpellingBeeDates,
+    "/todays-nyt-strands-hints-spangram-answers": listStrandsDates,
+    "/nyt-pips-todays-hints-answers": listPipsDates,
+    "/nyt-sudoku-todays-hints-answers": listNytSudokuDates,
   },
   linkedin: {
-    "/linkedin-queens": listLinkedInQueensDates,
-    "/linkedin-tango": listLinkedInTangoDates,
-    "/linkedin-zip": listLinkedInZipDates,
-    "/linkedin-mini-sudoku": listMiniSudokuDates,
+    "/linkedin-queens-answers": listLinkedInQueensDates,
+    "/linkedin-tango-answers": listLinkedInTangoDates,
+    "/linkedin-zip-answers": listLinkedInZipDates,
+    "/linkedin-mini-sudoku-answers": listMiniSudokuDates,
   },
   more: {
-    "/daily-sudoku": listDates,
-    "/mini-crossword": listMiniDates,
-    "/queens-unlimited": listQueensDates,
-    "/tango-unlimited": listTangoDates,
-    "/zip-unlimited": listZipDates,
+    "/sudoku-game-answers": listDates,
+    "/mini-crossword-answers": listMiniDates,
+    "/queens-game-answers": listQueensDates,
+    "/tango-game-answers": listTangoDates,
+    "/zip-game-answers": listZipDates,
   },
 };
 

@@ -2,8 +2,8 @@ import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate,
 import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { LinkedInZipResult } from "./store.ts";
 
-export const LINKEDIN_ZIP_HOME = "/linkedin-zip";
-export const LINKEDIN_ZIP_YESTERDAY = "/linkedin-zip-yesterday";
+export const LINKEDIN_ZIP_HOME = "/linkedin-zip-answers";
+export const LINKEDIN_ZIP_YESTERDAY = "/yesterdays-linkedin-zip-answers";
 export const linkedinZipPath = (isHome: boolean) => (isHome ? LINKEDIN_ZIP_HOME : LINKEDIN_ZIP_YESTERDAY);
 export const linkedinZipSitemapPaths = () => [LINKEDIN_ZIP_HOME, LINKEDIN_ZIP_YESTERDAY];
 

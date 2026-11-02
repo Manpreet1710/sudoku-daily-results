@@ -8,9 +8,7 @@ const SITE_TITLE = process.env.SITE_TITLE || "Daily Puzzle Solvers";
 export const esc = (s: unknown) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-export const RESULT_PREFIX = "/daily-sudoku";
-export const RESULT_YESTERDAY = "/daily-sudoku-yesterday";
-export const resultPath = (isHome: boolean) => (isHome ? RESULT_PREFIX : RESULT_YESTERDAY);
+export const RESULT_PREFIX = "/sudoku-game-answers";
 
 export const prettyDate = (iso: string) =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
@@ -317,9 +315,6 @@ a:hover { color: var(--accent-ink); }
   color: var(--muted);
 }
 .games-group-title:first-child { padding-top: 2px; }
-a.games-group-title { display: flex; justify-content: space-between; text-decoration: none; }
-a.games-group-title:hover { color: var(--ink); }
-a.games-group-title span { color: var(--accent); text-transform: none; letter-spacing: 0; font-weight: 700; }
 .game-tab {
   display: flex;
   align-items: center;
@@ -981,7 +976,6 @@ const SUDOKU_CHROME: Chrome = {
   brandHref: RESULT_PREFIX,
   nav: [
     [RESULT_PREFIX, "Today"],
-    [RESULT_YESTERDAY, "Yesterday"],
   ],
   footer: "Puzzles from the sudoku.com Daily Challenge. Solutions and step-by-step logic computed independently by our open-source solver.",
   gameIcon: "🔢",
@@ -989,46 +983,43 @@ const SUDOKU_CHROME: Chrome = {
 
 export type GameGroup = "NYT" | "LinkedIn" | "More puzzles";
 
-// Groups with a landing page; their menu heading links to it
-const GROUP_HUBS: Partial<Record<GameGroup, string>> = { NYT: "/nyt-games-solver", LinkedIn: "/linkedin-games-solver", "More puzzles": "/puzzle-games-solver" };
-
 export const GAMES: { href: string; label: string; icon: string; tag: string; group: GameGroup }[] = [
-  { href: "/today-wordle-answer", label: "Wordle", icon: "🟩", tag: "NYT", group: "NYT" },
-  { href: "/connections-hint-today", label: "Connections", icon: "🟨", tag: "NYT", group: "NYT" },
-  { href: "/spelling-bee", label: "Spelling Bee", icon: "🐝", tag: "NYT", group: "NYT" },
-  { href: "/strands", label: "Strands", icon: "🔤", tag: "NYT", group: "NYT" },
-  { href: "/pips", label: "Pips", icon: "🎲", tag: "NYT", group: "NYT" },
-  { href: "/nyt-sudoku", label: "NYT Sudoku", icon: "🔢", tag: "NYT", group: "NYT" },
-  { href: "/linkedin-queens", label: "Queens", icon: "👑", tag: "LinkedIn", group: "LinkedIn" },
-  { href: "/linkedin-tango", label: "Tango", icon: "☀️", tag: "LinkedIn", group: "LinkedIn" },
-  { href: "/linkedin-zip", label: "Zip", icon: "⚡", tag: "LinkedIn", group: "LinkedIn" },
-  { href: "/linkedin-mini-sudoku", label: "Mini Sudoku", icon: "🧩", tag: "LinkedIn", group: "LinkedIn" },
-  { href: RESULT_PREFIX, label: "Sudoku", icon: "🔢", tag: "Daily", group: "More puzzles" },
-  { href: "/mini-crossword", label: "Mini Crossword", icon: "✏️", tag: "Daily", group: "More puzzles" },
-  { href: "/queens-unlimited", label: "Queens Unlimited", icon: "👑", tag: "Unlimited", group: "More puzzles" },
-  { href: "/tango-unlimited", label: "Tango Unlimited", icon: "☀️", tag: "Unlimited", group: "More puzzles" },
-  { href: "/zip-unlimited", label: "Zip Unlimited", icon: "⚡", tag: "Unlimited", group: "More puzzles" },
+  { href: "/todays-wordle-answer", label: "Wordle", icon: "🟩", tag: "NYT", group: "NYT" },
+  { href: "/connections-hints-today", label: "Connections", icon: "🟨", tag: "NYT", group: "NYT" },
+  { href: "/spelling-bee-answers", label: "Spelling Bee", icon: "🐝", tag: "NYT", group: "NYT" },
+  { href: "/todays-nyt-strands-hints-spangram-answers", label: "Strands", icon: "🔤", tag: "NYT", group: "NYT" },
+  { href: "/nyt-pips-todays-hints-answers", label: "Pips", icon: "🎲", tag: "NYT", group: "NYT" },
+  { href: "/nyt-sudoku-todays-hints-answers", label: "NYT Sudoku", icon: "🔢", tag: "NYT", group: "NYT" },
+  { href: "/linkedin-queens-answers", label: "Queens", icon: "👑", tag: "LinkedIn", group: "LinkedIn" },
+  { href: "/linkedin-tango-answers", label: "Tango", icon: "☀️", tag: "LinkedIn", group: "LinkedIn" },
+  { href: "/linkedin-zip-answers", label: "Zip", icon: "⚡", tag: "LinkedIn", group: "LinkedIn" },
+  { href: "/linkedin-mini-sudoku-answers", label: "Mini Sudoku", icon: "🧩", tag: "LinkedIn", group: "LinkedIn" },
+  { href: RESULT_PREFIX, label: "Sudoku Game", icon: "🔢", tag: "Daily", group: "More puzzles" },
+  { href: "/mini-crossword-answers", label: "Mini Crossword", icon: "✏️", tag: "Daily", group: "More puzzles" },
+  { href: "/queens-game-answers", label: "Queens Game", icon: "👑", tag: "Daily", group: "More puzzles" },
+  { href: "/tango-game-answers", label: "Tango Game", icon: "☀️", tag: "Daily", group: "More puzzles" },
+  { href: "/zip-game-answers", label: "Zip Game", icon: "⚡", tag: "Daily", group: "More puzzles" },
   { href: "/word-search", label: "Word Search", icon: "🔍", tag: "Unlimited", group: "More puzzles" },
 ];
 
 // Blurb and brand colours used by the "Try more" cards
 const GAME_META: Record<string, { blurb: string; c1: string; c2: string }> = {
-  "/today-wordle-answer": { blurb: "Today's answer, a nudge for each letter, and every past solution.", c1: "#6aaa64", c2: "#3f8a46" },
-  "/connections-hint-today": { blurb: "Category hints that don't spoil the groups, then the full four-way answer.", c1: "#f2c94c", c2: "#b07bd8" },
-  "/spelling-bee": { blurb: "The pangram, every valid word and starter hints for the day's hive.", c1: "#f7da21", c2: "#e89b00" },
-  "/strands": { blurb: "Theme hints, the spangram and where every word sits on the board.", c1: "#4fb8c4", c2: "#2f78b5" },
-  "/pips": { blurb: "An interactive solver: click a domino or a cell and it snaps into place.", c1: "#fb923c", c2: "#ec4899" },
-  "/nyt-sudoku": { blurb: "Easy, medium and hard with a replayable step-by-step logic timeline.", c1: "#60a5fa", c2: "#6366f1" },
-  "/linkedin-queens": { blurb: "Place one queen per row, column and colour region, with every deduction explained.", c1: "#a78bfa", c2: "#6d28d9" },
-  "/linkedin-tango": { blurb: "Sun and moon grids solved by pure logic, with the reasoning behind each move.", c1: "#fbbf24", c2: "#3b82f6" },
-  "/linkedin-zip": { blurb: "The full path through the numbered dots, with hints before the route is revealed.", c1: "#22d3ee", c2: "#2563eb" },
-  "/linkedin-mini-sudoku": { blurb: "The 6×6 puzzle with its region layout and a replayable logical solution.", c1: "#4ade80", c2: "#0d9488" },
-  "/daily-sudoku": { blurb: "The sudoku.com Daily Challenge with a replayable logic timeline and a verified solution.", c1: "#38bdf8", c2: "#2563eb" },
+  "/todays-wordle-answer": { blurb: "Today's answer, a nudge for each letter, and every past solution.", c1: "#6aaa64", c2: "#3f8a46" },
+  "/connections-hints-today": { blurb: "Category hints that don't spoil the groups, then the full four-way answer.", c1: "#f2c94c", c2: "#b07bd8" },
+  "/spelling-bee-answers": { blurb: "The pangram, every valid word and starter hints for the day's hive.", c1: "#f7da21", c2: "#e89b00" },
+  "/todays-nyt-strands-hints-spangram-answers": { blurb: "Theme hints, the spangram and where every word sits on the board.", c1: "#4fb8c4", c2: "#2f78b5" },
+  "/nyt-pips-todays-hints-answers": { blurb: "An interactive solver: click a domino or a cell and it snaps into place.", c1: "#fb923c", c2: "#ec4899" },
+  "/nyt-sudoku-todays-hints-answers": { blurb: "Easy, medium and hard with a replayable step-by-step logic timeline.", c1: "#60a5fa", c2: "#6366f1" },
+  "/linkedin-queens-answers": { blurb: "Place one queen per row, column and colour region, with every deduction explained.", c1: "#a78bfa", c2: "#6d28d9" },
+  "/linkedin-tango-answers": { blurb: "Sun and moon grids solved by pure logic, with the reasoning behind each move.", c1: "#fbbf24", c2: "#3b82f6" },
+  "/linkedin-zip-answers": { blurb: "The full path through the numbered dots, with hints before the route is revealed.", c1: "#22d3ee", c2: "#2563eb" },
+  "/linkedin-mini-sudoku-answers": { blurb: "The 6×6 puzzle with its region layout and a replayable logical solution.", c1: "#4ade80", c2: "#0d9488" },
+  "/sudoku-game-answers": { blurb: "The sudoku.com Daily Challenge with a replayable logic timeline and a verified solution.", c1: "#38bdf8", c2: "#2563eb" },
   "/word-search": { blurb: "Pick fruits, vegetables, computer and more, choose a difficulty and find every hidden word.", c1: "#f472b6", c2: "#e11d48" },
-  "/mini-crossword": { blurb: "Clues, hints and the full grid for the daily mini crossword.", c1: "#fbbf24", c2: "#ea580c" },
-  "/queens-unlimited": { blurb: "Daily Queens boards from the Unlimited series, solved with explained logic.", c1: "#c084fc", c2: "#7c3aed" },
-  "/tango-unlimited": { blurb: "Daily Tango grids from the Unlimited series, with every deduction shown.", c1: "#fcd34d", c2: "#3b82f6" },
-  "/zip-unlimited": { blurb: "Daily Zip puzzles from the Unlimited series, with hints before the full route.", c1: "#22d3ee", c2: "#4f46e5" },
+  "/mini-crossword-answers": { blurb: "Clues, hints and the full grid for the daily mini crossword.", c1: "#fbbf24", c2: "#ea580c" },
+  "/queens-game-answers": { blurb: "Daily Queens boards, solved with explained logic.", c1: "#c084fc", c2: "#7c3aed" },
+  "/tango-game-answers": { blurb: "Daily Tango grids, with every deduction shown.", c1: "#fcd34d", c2: "#3b82f6" },
+  "/zip-game-answers": { blurb: "Daily Zip puzzles, with hints before the full route.", c1: "#22d3ee", c2: "#4f46e5" },
 };
 
 export function layout(
@@ -1045,11 +1036,7 @@ export function layout(
     `<span class="tab-icon">${g.icon}</span><span class="tab-name">${esc(g.label)}</span>` +
     `<span class="tag">${g.tag}</span></a>`;
   const games = (["NYT", "LinkedIn", "More puzzles"] as const)
-    .map((group) => {
-      const hub = GROUP_HUBS[group];
-      const title = hub ? `<a class="games-group-title" href="${hub}">${group} <span>View all →</span></a>` : `<div class="games-group-title">${group}</div>`;
-      return `${title}${GAMES.filter((g) => g.group === group).map(tab).join("")}`;
-    })
+    .map((group) => `<div class="games-group-title">${group}</div>${GAMES.filter((g) => g.group === group).map(tab).join("")}`)
     .join("");
 
   // Written guide (what it is, how to play, tips, FAQ) on result pages; not-found pages skip it
@@ -1421,7 +1408,7 @@ ${isHome ? sudokuHistory(past) : ""}
 })();
 </script>`;
 
-  return layout(title, description, body, resultPath(isHome));
+  return layout(title, description, body, RESULT_PREFIX);
 }
 
 export function renderNotFound(date?: string) {
@@ -1445,7 +1432,7 @@ export function renderNotFound(date?: string) {
 
 export function renderSitemap(extraPaths: string[] = []) {
   const base = process.env.URL ?? "";
-  const urls = ["/", RESULT_PREFIX, RESULT_YESTERDAY, ...extraPaths];
+  const urls = ["/", RESULT_PREFIX, ...extraPaths];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${esc(base + u)}</loc></url>`).join("\n")}

@@ -2,10 +2,8 @@ import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate,
 import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { ZipResult } from "./store.ts";
 
-export const ZIP_HOME = "/zip-unlimited";
-export const ZIP_YESTERDAY = "/zip-unlimited-yesterday";
-export const zipPath = (isHome: boolean) => (isHome ? ZIP_HOME : ZIP_YESTERDAY);
-export const zipSitemapPaths = () => [ZIP_HOME, ZIP_YESTERDAY];
+export const ZIP_HOME = "/zip-game-answers";
+export const zipSitemapPaths = () => [ZIP_HOME];
 
 const CHROME: Chrome = {
   brand: "Zip Answers",
@@ -13,7 +11,6 @@ const CHROME: Chrome = {
   gameIcon: "⚡",
   nav: [
     [ZIP_HOME, "Today"],
-    [ZIP_YESTERDAY, "Yesterday"],
   ],
   footer:
     "Hints and step-by-step route solutions for daily Zip puzzles on zipgameunlimited.com, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn or zipgameunlimited.com.",
@@ -241,7 +238,7 @@ ${GM_REVEAL_SCRIPT}`;
       r.date
     )}.`,
     body,
-    zipPath(isHome),
+    ZIP_HOME,
     false,
     CHROME
   );

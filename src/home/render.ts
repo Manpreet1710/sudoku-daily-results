@@ -73,7 +73,7 @@ const CHROME: Chrome = {
   gameIcon: "🧩",
   nav: [
     [HOME, "Home"],
-    ["/daily-sudoku", "Daily Sudoku"],
+    ["/sudoku-game-answers", "Sudoku Game"],
   ],
   footer: "",
   css: HUB_CSS + CSS,
@@ -121,16 +121,16 @@ export function renderHome(latest: Record<string, string | undefined> = {}) {
 
 <div class="hub-section-title"><h2>Browse by category</h2><span>${total} games</span></div>
 <div class="home-cats">
-  ${CATEGORIES.map((c) => `<a class="home-cat" href="${c.hub.href}" style="--g:${c.hub.grad}">
+  ${CATEGORIES.map((c) => `<a class="home-cat" href="#${c.id}" style="--g:${c.hub.grad}">
     <div class="home-cat-icons">${c.hub.games.slice(0, 5).map((g) => `<span style="--c1:${g.c1};--c2:${g.c2}" aria-hidden="true">${g.icon}</span>`).join("")}</div>
     <h3>${esc(c.name)}</h3>
     <p>${esc(c.hub.games.map((g) => g.name).join(" · "))}</p>
-    <span class="home-cat-go">${c.hub.games.length} games · Explore →</span>
+    <span class="home-cat-go">${c.hub.games.length} games · Browse →</span>
   </a>`).join("")}
 </div>
 
 ${CATEGORIES.map((c) => `<section data-group id="${c.id}">
-  <div class="home-group-head"><h2>${esc(c.name)}</h2><a href="${c.hub.href}">View all →</a></div>
+  <div class="home-group-head"><h2>${esc(c.name)}</h2></div>
   <div class="home-tiles">${c.hub.games.map(tile).join("")}</div>
 </section>`).join("\n")}
 <p class="home-empty" id="homeEmpty" hidden>No game matches your search. Try “Wordle”, “Queens” or “Sudoku”.</p>

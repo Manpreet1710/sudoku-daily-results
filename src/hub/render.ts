@@ -1,10 +1,3 @@
-import { esc, layout, shortDate, type Chrome } from "../render.ts";
-
-export const NYT_HUB = "/nyt-games-solver";
-export const LINKEDIN_HUB = "/linkedin-games-solver";
-export const MORE_HUB = "/puzzle-games-solver";
-export const hubSitemapPaths = () => [NYT_HUB, LINKEDIN_HUB, MORE_HUB];
-
 export interface HubGame {
   href: string;
   name: string;
@@ -18,119 +11,42 @@ export interface HubGame {
 }
 
 export interface Hub {
-  href: string;
-  brand: string;
-  icon: string;
-  eyebrow: string;
-  title: string;
-  lead: string;
   grad: string;
-  facts: string[];
   games: HubGame[];
-  features: [icon: string, title: string, text: string][];
-  faq: [q: string, a: string][];
-  others: { href: string; label: string; text: string }[];
-  disclaimer: string;
 }
 
 export const HUBS: Record<"nyt" | "linkedin" | "more", Hub> = {
   nyt: {
-    href: NYT_HUB,
-    brand: "NYT Games Solver",
-    icon: "🗞️",
-    eyebrow: "The New York Times Games",
-    title: "NYT Games Solver, Hints & Answers",
-    lead: "Stuck on today's puzzle? Get a nudge first, then the answer. Daily hints, full solutions and step-by-step logic for every NYT game we cover, updated as each puzzle goes live.",
     grad: "linear-gradient(135deg, #0f172a 0%, #312e81 55%, #6d28d9 100%)",
-    facts: ["6 games", "Updated daily", "Hints before answers"],
     games: [
-      { href: "/today-wordle-answer", name: "Wordle", icon: "🟩", blurb: "Today's answer, a nudge for each letter, and every past solution.", tags: ["Hints", "Answers", "History"], c1: "#6aaa64", c2: "#3f8a46" },
-      { href: "/connections-hint-today", name: "Connections", icon: "🟨", blurb: "Category hints that don't spoil the groups, then the full four-way answer.", tags: ["Category hints", "Groups"], c1: "#f2c94c", c2: "#b07bd8" },
-      { href: "/spelling-bee", name: "Spelling Bee", icon: "🐝", blurb: "The pangram, every valid word and starter hints for the day's hive.", tags: ["Pangram", "Word list"], c1: "#f7da21", c2: "#e89b00" },
-      { href: "/strands", name: "Strands", icon: "🔤", blurb: "Theme hints, the spangram and where every word sits on the board.", tags: ["Theme", "Spangram"], c1: "#4fb8c4", c2: "#2f78b5" },
-      { href: "/pips", name: "Pips", icon: "🎲", blurb: "An interactive solver: click a domino or a cell and it snaps into place.", tags: ["Interactive", "3 levels"], c1: "#fb923c", c2: "#ec4899" },
-      { href: "/nyt-sudoku", name: "Sudoku", icon: "🔢", blurb: "Easy, medium and hard with a replayable step-by-step logic timeline.", tags: ["Step-by-step", "3 levels"], c1: "#60a5fa", c2: "#6366f1" },
+      { href: "/todays-wordle-answer", name: "Wordle", icon: "🟩", blurb: "Today's answer, a nudge for each letter, and every past solution.", tags: ["Hints", "Answers", "History"], c1: "#6aaa64", c2: "#3f8a46" },
+      { href: "/connections-hints-today", name: "Connections", icon: "🟨", blurb: "Category hints that don't spoil the groups, then the full four-way answer.", tags: ["Category hints", "Groups"], c1: "#f2c94c", c2: "#b07bd8" },
+      { href: "/spelling-bee-answers", name: "Spelling Bee", icon: "🐝", blurb: "The pangram, every valid word and starter hints for the day's hive.", tags: ["Pangram", "Word list"], c1: "#f7da21", c2: "#e89b00" },
+      { href: "/todays-nyt-strands-hints-spangram-answers", name: "Strands", icon: "🔤", blurb: "Theme hints, the spangram and where every word sits on the board.", tags: ["Theme", "Spangram"], c1: "#4fb8c4", c2: "#2f78b5" },
+      { href: "/nyt-pips-todays-hints-answers", name: "Pips", icon: "🎲", blurb: "An interactive solver: click a domino or a cell and it snaps into place.", tags: ["Interactive", "3 levels"], c1: "#fb923c", c2: "#ec4899" },
+      { href: "/nyt-sudoku-todays-hints-answers", name: "Sudoku", icon: "🔢", blurb: "Easy, medium and hard with a replayable step-by-step logic timeline.", tags: ["Step-by-step", "3 levels"], c1: "#60a5fa", c2: "#6366f1" },
     ],
-    features: [
-      ["💡", "Hints first", "Every puzzle starts with gentle hints, so you can get unstuck without seeing the whole answer."],
-      ["✅", "Checked answers", "Where we compute a solution ourselves, it is verified against the official answer before it is published."],
-      ["🗓️", "Answer history", "Missed a day? Every recent puzzle is kept, with the same hints and solutions."],
-    ],
-    faq: [
-      ["How often is this updated?", "Each game's page is refreshed automatically when its new puzzle goes live, and we re-check recent days in case one was missed."],
-      ["Do you show hints before answers?", "Yes. Wherever it makes sense, hints come first and the full answer is behind a tap, so you choose how much to see."],
-      ["Which NYT games are covered?", "Wordle, Connections, Spelling Bee, Strands, Pips and Sudoku. More are added over time."],
-    ],
-    others: [
-      { href: LINKEDIN_HUB, label: "LinkedIn Games Solver", text: "Queens, Tango, Zip and Mini Sudoku with step-by-step logic." },
-      { href: MORE_HUB, label: "More Puzzles & Games", text: "Daily Sudoku, Mini Crossword, Word Search, Queens, Tango and Zip." },
-    ],
-    disclaimer: "Not affiliated with or endorsed by The New York Times. Game names belong to their owners.",
   },
   linkedin: {
-    href: LINKEDIN_HUB,
-    brand: "LinkedIn Games Solver",
-    icon: "🧠",
-    eyebrow: "LinkedIn Puzzle Games",
-    title: "LinkedIn Games Solver, Hints & Answers",
-    lead: "Queens, Tango, Zip and Mini Sudoku, solved by our own logic engine. Follow the reasoning one deduction at a time, or jump straight to the finished board.",
     grad: "linear-gradient(135deg, #0a3d62 0%, #0a66c2 55%, #06b6d4 100%)",
-    facts: ["4 games", "Own logic solver", "Replay every step"],
     games: [
-      { href: "/linkedin-queens", name: "Queens", icon: "👑", blurb: "Place one queen per row, column and colour region, with every deduction explained.", tags: ["Step-by-step", "Daily"], c1: "#a78bfa", c2: "#6d28d9" },
-      { href: "/linkedin-tango", name: "Tango", icon: "☀️", blurb: "Sun and moon grids solved by pure logic, with the reasoning behind each move.", tags: ["Step-by-step", "Daily"], c1: "#fbbf24", c2: "#3b82f6" },
-      { href: "/linkedin-zip", name: "Zip", icon: "⚡", blurb: "The full path through the numbered dots, with hints before the route is revealed.", tags: ["Route", "Daily"], c1: "#22d3ee", c2: "#2563eb" },
-      { href: "/linkedin-mini-sudoku", name: "Mini Sudoku", icon: "🧩", blurb: "The 6×6 puzzle with its region layout and a replayable logical solution.", tags: ["6×6", "Daily"], c1: "#4ade80", c2: "#0d9488" },
+      { href: "/linkedin-queens-answers", name: "Queens", icon: "👑", blurb: "Place one queen per row, column and colour region, with every deduction explained.", tags: ["Step-by-step", "Daily"], c1: "#a78bfa", c2: "#6d28d9" },
+      { href: "/linkedin-tango-answers", name: "Tango", icon: "☀️", blurb: "Sun and moon grids solved by pure logic, with the reasoning behind each move.", tags: ["Step-by-step", "Daily"], c1: "#fbbf24", c2: "#3b82f6" },
+      { href: "/linkedin-zip-answers", name: "Zip", icon: "⚡", blurb: "The full path through the numbered dots, with hints before the route is revealed.", tags: ["Route", "Daily"], c1: "#22d3ee", c2: "#2563eb" },
+      { href: "/linkedin-mini-sudoku-answers", name: "Mini Sudoku", icon: "🧩", blurb: "The 6×6 puzzle with its region layout and a replayable logical solution.", tags: ["6×6", "Daily"], c1: "#4ade80", c2: "#0d9488" },
     ],
-    features: [
-      ["🧠", "Real logic", "No lookup tables: each solution is worked out by our own solver and explained step by step."],
-      ["▶️", "Replay it", "Play the solution back at your own speed, or scrub to any step on the timeline."],
-      ["🗓️", "Answer history", "Every recent day stays available with its own board and hints."],
-    ],
-    faq: [
-      ["How are the solutions produced?", "Our own solver reads the day's puzzle and applies logical techniques in order, recording each deduction so you can follow it."],
-      ["Can I see just a hint?", "Yes. Hints are separate from the solution, so you can take one nudge and keep playing."],
-      ["Which LinkedIn games are covered?", "Queens, Tango, Zip and Mini Sudoku. Each has its own page and answer history."],
-    ],
-    others: [
-      { href: NYT_HUB, label: "NYT Games Solver", text: "Wordle, Connections, Spelling Bee, Strands, Pips and Sudoku." },
-      { href: MORE_HUB, label: "More Puzzles & Games", text: "Daily Sudoku, Mini Crossword, Word Search, Queens, Tango and Zip." },
-    ],
-    disclaimer: "Not affiliated with or endorsed by LinkedIn. Game names belong to their owners.",
   },
 
   more: {
-    href: MORE_HUB,
-    brand: "More Puzzles & Games",
-    icon: "🧩",
-    eyebrow: "More puzzles & games",
-    title: "More Puzzle Games & Solvers",
-    lead: "The rest of our daily puzzles: Sudoku with a replayable solution, Mini Crossword, and the Queens, Tango and Zip Unlimited boards, plus a playable Word Search you can enjoy right in your browser.",
     grad: "linear-gradient(135deg, #064e3b 0%, #0f766e 55%, #d97706 130%)",
-    facts: ["6 puzzles & games", "Daily answers", "Play in your browser"],
     games: [
-      { href: "/daily-sudoku", name: "Daily Sudoku", icon: "🔢", title: "Daily Sudoku Solver", blurb: "The sudoku.com Daily Challenge with a replayable logic timeline and a verified solution.", tags: ["Daily", "Step-by-step"], c1: "#38bdf8", c2: "#2563eb" },
+      { href: "/sudoku-game-answers", name: "Sudoku Game", icon: "🔢", title: "Sudoku Game Solver", blurb: "The sudoku.com Daily Challenge with a replayable logic timeline and a verified solution.", tags: ["Daily", "Step-by-step"], c1: "#38bdf8", c2: "#2563eb" },
       { href: "/word-search", name: "Word Search", icon: "🔍", title: "Word Search Game", note: "Play free", blurb: "Pick fruits, vegetables, computer and more, choose a difficulty and find every hidden word.", tags: ["Play", "3 levels", "6 topics"], c1: "#f472b6", c2: "#e11d48" },
-      { href: "/mini-crossword", name: "Mini Crossword", icon: "✏️", title: "Mini Crossword Answers", blurb: "Clues, hints and the full grid for the daily mini crossword.", tags: ["Clues", "Answers"], c1: "#fbbf24", c2: "#ea580c" },
-      { href: "/queens-unlimited", name: "Queens", icon: "👑", title: "Queens Unlimited Solver", blurb: "Daily Queens boards from the Unlimited series, solved with explained logic.", tags: ["Step-by-step", "Daily"], c1: "#c084fc", c2: "#7c3aed" },
-      { href: "/tango-unlimited", name: "Tango", icon: "☀️", title: "Tango Unlimited Solver", blurb: "Daily Tango grids from the Unlimited series, with every deduction shown.", tags: ["Step-by-step", "Daily"], c1: "#fcd34d", c2: "#3b82f6" },
-      { href: "/zip-unlimited", name: "Zip", icon: "⚡", title: "Zip Unlimited Solver", blurb: "Daily Zip puzzles from the Unlimited series, with hints before the full route.", tags: ["Route", "Daily"], c1: "#22d3ee", c2: "#4f46e5" },
+      { href: "/mini-crossword-answers", name: "Mini Crossword", icon: "✏️", title: "Mini Crossword Answers", blurb: "Clues, hints and the full grid for the daily mini crossword.", tags: ["Clues", "Answers"], c1: "#fbbf24", c2: "#ea580c" },
+      { href: "/queens-game-answers", name: "Queens", icon: "👑", title: "Queens Game Solver", blurb: "Daily Queens boards, solved with explained logic.", tags: ["Step-by-step", "Daily"], c1: "#c084fc", c2: "#7c3aed" },
+      { href: "/tango-game-answers", name: "Tango", icon: "☀️", title: "Tango Game Solver", blurb: "Daily Tango grids, with every deduction shown.", tags: ["Step-by-step", "Daily"], c1: "#fcd34d", c2: "#3b82f6" },
+      { href: "/zip-game-answers", name: "Zip", icon: "⚡", title: "Zip Game Solver", blurb: "Daily Zip puzzles, with hints before the full route.", tags: ["Route", "Daily"], c1: "#22d3ee", c2: "#4f46e5" },
     ],
-    features: [
-      ["🧠", "Logic you can follow", "Our solvers explain the technique behind each move instead of just handing you the grid."],
-      ["🎮", "Play, don't just read", "Word Search runs entirely in your browser, with sound, hints and best times saved on your device."],
-      ["🗓️", "Answer history", "Daily puzzles keep a dated page for every recent day."],
-    ],
-    faq: [
-      ["Where does the daily Sudoku come from?", "From the sudoku.com Daily Challenge. Our own solver works it out step by step and checks the result against the source."],
-      ["How are the solutions produced?", "A logic solver applies human techniques in order and records every deduction, so you can replay the reasoning."],
-      ["What are the Unlimited puzzles?", "Queens, Tango and Zip puzzles published by independent Unlimited-style sites. We solve each day's board and explain the logic."],
-    ],
-    others: [
-      { href: NYT_HUB, label: "NYT Games Solver", text: "Wordle, Connections, Spelling Bee, Strands, Pips and Sudoku." },
-      { href: LINKEDIN_HUB, label: "LinkedIn Games Solver", text: "Queens, Tango, Zip and Mini Sudoku with step-by-step logic." },
-    ],
-    disclaimer: "Independent puzzle solvers. Not affiliated with the publishers of the puzzles we cover. Game names belong to their owners.",
   },
 };
 
@@ -215,81 +131,3 @@ export const HUB_CSS = /* css */ `
 `;
 
 export type HubKind = keyof typeof HUBS;
-
-// `latest` maps a game's href to its most recent saved date (YYYY-MM-DD), when there is one
-export function renderHub(kind: HubKind, latest: Record<string, string | undefined> = {}) {
-  const h = HUBS[kind];
-  const chrome: Chrome = {
-    brand: h.brand,
-    brandHref: h.href,
-    gameIcon: h.icon,
-    nav: [
-      [h.href, "Home"],
-      [h.others[0].href, h.others[0].label.replace(" Solver", "")],
-    ],
-    footer: h.disclaimer,
-    css: HUB_CSS,
-  };
-
-  const first = h.games[0];
-  const card = (g: HubGame, i: number) => {
-    const date = latest[g.href];
-    return `<article class="hub-card" style="--c1:${g.c1};--c2:${g.c2}">
-  <div class="hub-card-top">
-    <span class="hub-icon" aria-hidden="true">${g.icon}</span>
-    <h3><a class="hub-link" href="${g.href}">${esc(g.title ?? `${g.name} Solver`)}</a></h3>
-  </div>
-  <p>${esc(g.blurb)}</p>
-  <div class="hub-tags">${g.tags.map((t) => `<span>${esc(t)}</span>`).join("")}</div>
-  <div class="hub-foot">
-    <span class="hub-latest">${date ? `<i></i>Latest · ${esc(shortDate(date))}` : esc(g.note ?? "Daily puzzle")}</span>
-    <span class="hub-go">Open →</span>
-  </div>
-</article>`;
-  };
-
-  const body = `
-<section class="hub-hero" style="background:${h.grad}">
-  <div>
-    <span class="hub-eyebrow">${esc(h.eyebrow)}</span>
-    <h1>${esc(h.title)}</h1>
-    <p class="lead">${esc(h.lead)}</p>
-    <div class="hub-facts">${h.facts.map((f) => `<span>${esc(f)}</span>`).join("")}</div>
-    <div class="hub-cta">
-      <a class="solid" href="${first.href}">Start with ${esc(first.name)} →</a>
-      <a class="ghost" href="#games">Browse all games</a>
-    </div>
-  </div>
-  <div class="hub-mosaic" aria-hidden="true" style="grid-template-columns:repeat(${Math.min(h.games.length, 6) >= 6 ? 3 : 2},1fr);max-width:${Math.min(h.games.length, 6) >= 6 ? 360 : 250}px;justify-self:center">
-    ${h.games.slice(0, 6).map((g, i) => `<div class="hub-tile" style="--c1:${g.c1};--c2:${g.c2};--d:${(i * 0.7).toFixed(1)}s">${g.icon}</div>`).join("")}
-  </div>
-</section>
-
-<div class="hub-section-title" id="games"><h2>${kind === "more" ? "Pick a puzzle" : "Today's puzzles"}</h2><span>${h.games.length} games, one tap away</span></div>
-<div class="hub-grid" style="--min:${h.games.length === 4 ? 440 : 290}px">${h.games.map(card).join("")}</div>
-
-<div class="hub-section-title"><h2>Why use this</h2></div>
-<div class="hub-features">
-  ${h.features.map(([i, t, p]) => `<div class="hub-feature"><span class="i">${i}</span><b>${esc(t)}</b><p>${esc(p)}</p></div>`).join("")}
-</div>
-
-<div class="hub-other">
-  <div><h3>Looking for something else?</h3><p>${h.others.map((o) => esc(o.label)).join(" · ")}</p></div>
-  <div class="hub-other-links">${h.others.map((o) => `<a href="${o.href}" title="${esc(o.text)}">${esc(o.label)} →</a>`).join("")}</div>
-</div>
-
-<div class="hub-section-title"><h2>Questions</h2></div>
-<div class="hub-faq">
-  ${h.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p style="margin-top:12px;font-size:15px">${esc(a)}</p></details>`).join("")}
-</div>
-<p class="hub-note">${esc(h.disclaimer)}</p>`;
-
-  return layout(
-    `${h.title} – Daily Answers & Step-by-Step Solutions`,
-    h.lead,
-    body,
-    h.href,
-    false,
-    chrome
-  );
-}

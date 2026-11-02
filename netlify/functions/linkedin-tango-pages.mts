@@ -35,6 +35,6 @@ export default async (req: Request) => {
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with LINKEDIN_TANGO_HOME)
-  path: ["/linkedin-tango", "/linkedin-tango-yesterday", "/linkedin-tango/:date"],
+  path: ["/linkedin-tango-answers", "/yesterdays-linkedin-tango-answers", "/linkedin-tango-answers/:date"],
   method: "GET",
 };

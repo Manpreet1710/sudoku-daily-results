@@ -3,8 +3,8 @@ import { historyBoard, historyBoards, historyDate, historyRow, renderHistory } f
 import { spellingBeeFacts, spellingBeeHints } from "./hints.ts";
 import type { SpellingBeeResult } from "./store.ts";
 
-export const SPELLING_BEE_HOME = "/spelling-bee";
-export const SPELLING_BEE_YESTERDAY = "/spelling-bee-yesterday";
+export const SPELLING_BEE_HOME = "/spelling-bee-answers";
+export const SPELLING_BEE_YESTERDAY = "/yesterdays-spelling-bee-answers";
 export const spellingBeePath = (isHome: boolean) => (isHome ? SPELLING_BEE_HOME : SPELLING_BEE_YESTERDAY);
 export const spellingBeeSitemapPaths = () => [SPELLING_BEE_HOME, SPELLING_BEE_YESTERDAY];
 

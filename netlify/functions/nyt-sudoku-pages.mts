@@ -35,6 +35,6 @@ export default async (req: Request) => {
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with NYT_SUDOKU_HOME)
-  path: ["/nyt-sudoku", "/nyt-sudoku-yesterday", "/nyt-sudoku/:date"],
+  path: ["/nyt-sudoku-todays-hints-answers", "/nyt-sudoku-yesterdays-hints-answers", "/nyt-sudoku-todays-hints-answers/:date"],
   method: "GET",
 };
