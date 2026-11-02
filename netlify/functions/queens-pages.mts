@@ -1,7 +1,7 @@
 import type { Config } from "@netlify/functions";
-import { isIsoDate } from "../../src/crawl.ts";
+import { loadHistory } from "../../src/history.ts";
 import { getQueensResult, listQueensDates } from "../../src/queens/store.ts";
-import { QUEENS_HOME, renderQueensArchive, renderQueensNotFound, renderQueensResult } from "../../src/queens/render.ts";
+import { QUEENS_HOME, QUEENS_YESTERDAY, renderQueensNotFound, renderQueensResult } from "../../src/queens/render.ts";
 
 const html = (body: string, tag: string, maxAge: number) =>
   new Response(body, {
@@ -16,27 +16,25 @@ const html = (body: string, tag: string, maxAge: number) =>
 export default async (req: Request) => {
   const path = new URL(req.url).pathname.replace(/\/+$/, "") || "/";
 
-  if (path === `${QUEENS_HOME}/archive`) {
-    return html(renderQueensArchive(await listQueensDates()), "queens-index", 3600);
-  }
+  // Only two pages per game (today and yesterday); dated URLs and the old archive redirect to today
+  if (path !== QUEENS_HOME && path !== QUEENS_YESTERDAY) return Response.redirect(new URL(QUEENS_HOME, req.url), 301);
 
   const dates = await listQueensDates();
-  const requested = path.startsWith(`${QUEENS_HOME}/`) ? path.slice(QUEENS_HOME.length + 1) : undefined;
-  const date = requested ?? dates[0];
-  // Not-found is served as 200 + noindex, same as the other pages (netlify dev falls through on 404)
-  if (!date || !isIsoDate(date)) return html(renderQueensNotFound(), "queens-index", 60);
+  const isHome = path === QUEENS_HOME;
+  const date = dates[isHome ? 0 : 1];
+  // Not-found is served as 200 + noindex: netlify dev treats a function 404 as "unhandled" and falls through
+  if (!date) return html(renderQueensNotFound(), "queens-index", 60);
 
   const r = await getQueensResult(date);
   if (!r) return html(renderQueensNotFound(date), "queens-index", 60);
 
-  const i = dates.indexOf(date);
-  const nav = { newer: i > 0 ? dates[i - 1] : null, older: i >= 0 && i < dates.length - 1 ? dates[i + 1] : null };
-  const isHome = !requested;
-  return html(renderQueensResult(r, nav, isHome), isHome ? "queens-index" : `queens-index,queens-${date}`, isHome ? 3600 : 86400 * 30);
+  const nav = isHome ? { newer: null, older: QUEENS_YESTERDAY } : { newer: QUEENS_HOME, older: null };
+  const past = isHome ? await loadHistory(dates, date, getQueensResult) : [];
+  return html(renderQueensResult(r, nav, isHome, past), "queens-index", 3600);
 };
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with QUEENS_HOME)
-  path: ["/queens-unlimited", "/queens-unlimited/archive", "/queens-unlimited/:date"],
+  path: ["/queens-unlimited", "/queens-unlimited-yesterday", "/queens-unlimited/:date"],
   method: "GET",
 };

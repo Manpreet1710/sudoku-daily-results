@@ -1,13 +1,11 @@
-import { esc, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { LinkedInTangoResult } from "./store.ts";
 
 export const LINKEDIN_TANGO_HOME = "/linkedin-tango";
-export const linkedinTangoPath = (date: string) => `${LINKEDIN_TANGO_HOME}/${date}`;
-export const linkedinTangoSitemapPaths = (dates: string[]) => [
-  LINKEDIN_TANGO_HOME,
-  `${LINKEDIN_TANGO_HOME}/archive`,
-  ...dates.map(linkedinTangoPath),
-];
+export const LINKEDIN_TANGO_YESTERDAY = "/linkedin-tango-yesterday";
+export const linkedinTangoPath = (isHome: boolean) => (isHome ? LINKEDIN_TANGO_HOME : LINKEDIN_TANGO_YESTERDAY);
+export const linkedinTangoSitemapPaths = () => [LINKEDIN_TANGO_HOME, LINKEDIN_TANGO_YESTERDAY];
 
 const CHROME: Chrome = {
   brand: "LinkedIn Tango Answers",
@@ -15,7 +13,7 @@ const CHROME: Chrome = {
   gameIcon: "☀️",
   nav: [
     [LINKEDIN_TANGO_HOME, "Today"],
-    [`${LINKEDIN_TANGO_HOME}/archive`, "Archive"],
+    [LINKEDIN_TANGO_YESTERDAY, "Yesterday"],
   ],
   footer:
     "Hints and step-by-step solutions for the daily LinkedIn Tango puzzle, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn.",
@@ -115,11 +113,22 @@ const solutionRows = (solution: string) =>
         .join(" · ")}</span>`
   );
 
+function linkedInTangoHistory(past: LinkedInTangoResult[]) {
+  return renderHistory({
+    title: "LinkedIn Tango Solutions History",
+    intro: "Every past LinkedIn Tango puzzle, month by month.",
+    entries: past.map((r) => ({
+      date: r.date,
+      heading: `${historyDate(r.date)}`,
+      body: historyBoards([historyBoard(boardSvg(r.board, r.solution), `Tango #${r.puzzleId}`)]),
+    })),
+  });
+}
+
 export function renderLinkedInTangoResult(
   r: LinkedInTangoResult,
   nav: { newer: string | null; older: string | null },
-  isHome: boolean
-) {
+  isHome: boolean, past: LinkedInTangoResult[] = []) {
   const givens = [...r.board.slice(0, 36)].filter((ch) => ch !== ".").length;
   const signs = [...r.board.slice(36)].filter((ch) => ch !== ".").length;
 
@@ -135,7 +144,7 @@ export function renderLinkedInTangoResult(
 
   const body = `
 <div class="page-header">
-  <h1>${isHome ? "Today's " : ""}Tango Answers &amp; Solution</h1>
+  <h1>${isHome ? "Today's " : "Yesterday's "}Tango Answers &amp; Solution</h1>
   <div class="sub">
     <span class="badge">${LEVELS[r.level]}</span>
     <span class="badge good">LinkedIn Tango #${r.puzzleId}</span>
@@ -143,7 +152,7 @@ export function renderLinkedInTangoResult(
 </div>
 
 <div class="gm-app">
-  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: linkedinTangoPath, archive: `${LINKEDIN_TANGO_HOME}/archive` })}
+  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
   <div class="gm-stage">
     <div class="gm-card">
       <p class="gm-meta"><span>6×6 · ${givens} given symbols · ${signs} signs</span><span>${LEVELS[r.level]}</span></p>
@@ -174,77 +183,17 @@ export function renderLinkedInTangoResult(
   </div>
 </div>
 
-<div class="datenav">
-  <span>${
-    nav.older
-      ? `<a href="${linkedinTangoPath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>`
-      : ""
-  }</span>
-  <span>${
-    nav.newer
-      ? `<a href="${linkedinTangoPath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>`
-      : ""
-  }</span>
-</div>
+${dateNav(nav)}
+${isHome ? linkedInTangoHistory(past) : ""}
 ${GM_REVEAL_SCRIPT}`;
 
   return layout(
-    `Tango Answers Today (${prettyDate(r.date)}) – Daily Solution & Hints`,
+    `Tango Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Daily Solution & Hints`,
     `Step-by-step logic, hints and the complete 6x6 solution for the daily Tango puzzle on ${prettyDate(
       r.date
     )}.`,
     body,
-    linkedinTangoPath(r.date),
-    false,
-    CHROME
-  );
-}
-
-export function renderLinkedInTangoArchive(dates: string[]) {
-  const list = dates.length
-    ? `<ul class="archive" id="archiveGrid">${dates
-        .map(
-          (d) =>
-            `<li data-date="${d}"><a href="${linkedinTangoPath(d)}">` +
-            `<b>${esc(prettyDate(d))}</b>` +
-            `<span class="date-tag">📅 ${d}</span></a></li>`
-        )
-        .join("")}</ul>`
-    : `<p class="sub">No Tango puzzles recorded yet.</p>`;
-
-  const body = `
-<div class="page-header">
-  <h1>Tango Answers Archive</h1>
-  <p class="sub">${dates.length} past daily Tango puzzles and solutions</p>
-</div>
-
-<div class="archive-controls">
-  <input type="search" id="archiveSearch" class="search-input" placeholder="Search date (e.g. 2026-10 or Oct)..." aria-label="Search archive">
-</div>
-
-${list}
-
-<script>
-(() => {
-  const search = document.getElementById("archiveSearch");
-  const items = [...document.querySelectorAll("#archiveGrid li")];
-  if (search && items.length) {
-    search.addEventListener("input", (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      items.forEach((li) => {
-        const text = li.textContent.toLowerCase();
-        li.style.display = text.includes(q) ? "" : "none";
-      });
-    });
-  }
-})();
-</script>`;
-
-  return layout(
-    "Tango Answers Archive – Past Daily Solutions",
-    "Hints and step-by-step solutions for every past daily Tango puzzle.",
-    body,
-    `${LINKEDIN_TANGO_HOME}/archive`,
+    linkedinTangoPath(isHome),
     false,
     CHROME
   );
@@ -262,7 +211,6 @@ export function renderLinkedInTangoNotFound(date?: string) {
       }</p>
       <div style="margin-top:24px;display:flex;gap:12px;justify-content:center">
         <a href="${LINKEDIN_TANGO_HOME}" class="nav-link" style="background:var(--accent);color:#fff;padding:8px 20px">View Today's Puzzle</a>
-        <a href="${LINKEDIN_TANGO_HOME}/archive" class="nav-link" style="background:var(--soft);padding:8px 20px">Browse Archive</a>
       </div>
     </div>`,
     LINKEDIN_TANGO_HOME,

@@ -1,13 +1,11 @@
-import { esc, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { LinkedInZipResult } from "./store.ts";
 
 export const LINKEDIN_ZIP_HOME = "/linkedin-zip";
-export const linkedinZipPath = (date: string) => `${LINKEDIN_ZIP_HOME}/${date}`;
-export const linkedinZipSitemapPaths = (dates: string[]) => [
-  LINKEDIN_ZIP_HOME,
-  `${LINKEDIN_ZIP_HOME}/archive`,
-  ...dates.map(linkedinZipPath),
-];
+export const LINKEDIN_ZIP_YESTERDAY = "/linkedin-zip-yesterday";
+export const linkedinZipPath = (isHome: boolean) => (isHome ? LINKEDIN_ZIP_HOME : LINKEDIN_ZIP_YESTERDAY);
+export const linkedinZipSitemapPaths = () => [LINKEDIN_ZIP_HOME, LINKEDIN_ZIP_YESTERDAY];
 
 const CHROME: Chrome = {
   brand: "LinkedIn Zip Answers",
@@ -15,7 +13,7 @@ const CHROME: Chrome = {
   gameIcon: "⚡",
   nav: [
     [LINKEDIN_ZIP_HOME, "Today"],
-    [`${LINKEDIN_ZIP_HOME}/archive`, "Archive"],
+    [LINKEDIN_ZIP_YESTERDAY, "Yesterday"],
   ],
   footer:
     "Hints and step-by-step route solutions for the daily LinkedIn Zip puzzle, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn.",
@@ -143,11 +141,22 @@ function routes(r: LinkedInZipResult) {
   });
 }
 
+function linkedInZipHistory(past: LinkedInZipResult[]) {
+  return renderHistory({
+    title: "LinkedIn Zip Solutions History",
+    intro: "Every past LinkedIn Zip puzzle, month by month.",
+    entries: past.map((r) => ({
+      date: r.date,
+      heading: `${historyDate(r.date)}`,
+      body: historyBoards([historyBoard(boardSvg(r, true), `Zip #${r.puzzleId}`)]),
+    })),
+  });
+}
+
 export function renderLinkedInZipResult(
   r: LinkedInZipResult,
   nav: { newer: string | null; older: string | null },
-  isHome: boolean
-) {
+  isHome: boolean, past: LinkedInZipResult[] = []) {
   const order = [...r.numbers].sort((a, b) => a[2] - b[2]);
   const first = order[0],
     last = order.at(-1)!;
@@ -163,7 +172,7 @@ export function renderLinkedInZipResult(
 
   const body = `
 <div class="page-header">
-  <h1>${isHome ? "Today's " : ""}Zip Answers &amp; Solution</h1>
+  <h1>${isHome ? "Today's " : "Yesterday's "}Zip Answers &amp; Solution</h1>
   <div class="sub">
     <span class="badge">${r.size}×${r.size} Grid</span>
     <span class="badge good">LinkedIn Zip #${r.puzzleId}</span>
@@ -171,7 +180,7 @@ export function renderLinkedInZipResult(
 </div>
 
 <div class="gm-app">
-  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: linkedinZipPath, archive: `${LINKEDIN_ZIP_HOME}/archive` })}
+  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
   <div class="gm-stage">
     <div class="gm-card">
       <p class="gm-meta"><span>${r.size}×${r.size} · ${r.numbers.length} checkpoints · ${r.walls.length} walls</span><span>Puzzle #${r.puzzleId}</span></p>
@@ -220,77 +229,17 @@ export function renderLinkedInZipResult(
   </div>
 </div>
 
-<div class="datenav">
-  <span>${
-    nav.older
-      ? `<a href="${linkedinZipPath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>`
-      : ""
-  }</span>
-  <span>${
-    nav.newer
-      ? `<a href="${linkedinZipPath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>`
-      : ""
-  }</span>
-</div>
+${dateNav(nav)}
+${isHome ? linkedInZipHistory(past) : ""}
 ${GM_REVEAL_SCRIPT}`;
 
   return layout(
-    `Zip Answers Today (${prettyDate(r.date)}) – Daily Solution & Hints`,
+    `Zip Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Daily Solution & Hints`,
     `Step-by-step logic, waypoints and the full solution for the daily ${r.size}×${r.size} Zip puzzle on ${prettyDate(
       r.date
     )}.`,
     body,
-    linkedinZipPath(r.date),
-    false,
-    CHROME
-  );
-}
-
-export function renderLinkedInZipArchive(dates: string[]) {
-  const list = dates.length
-    ? `<ul class="archive" id="archiveGrid">${dates
-        .map(
-          (d) =>
-            `<li data-date="${d}"><a href="${linkedinZipPath(d)}">` +
-            `<b>${esc(prettyDate(d))}</b>` +
-            `<span class="date-tag">📅 ${d}</span></a></li>`
-        )
-        .join("")}</ul>`
-    : `<p class="sub">No Zip puzzles recorded yet.</p>`;
-
-  const body = `
-<div class="page-header">
-  <h1>Zip Answers Archive</h1>
-  <p class="sub">${dates.length} past daily Zip puzzles and solutions</p>
-</div>
-
-<div class="archive-controls">
-  <input type="search" id="archiveSearch" class="search-input" placeholder="Search date (e.g. 2026-10 or Oct)..." aria-label="Search archive">
-</div>
-
-${list}
-
-<script>
-(() => {
-  const search = document.getElementById("archiveSearch");
-  const items = [...document.querySelectorAll("#archiveGrid li")];
-  if (search && items.length) {
-    search.addEventListener("input", (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      items.forEach((li) => {
-        const text = li.textContent.toLowerCase();
-        li.style.display = text.includes(q) ? "" : "none";
-      });
-    });
-  }
-})();
-</script>`;
-
-  return layout(
-    "Zip Answers Archive – Past Daily Solutions",
-    "Hints and route solutions for every past daily Zip puzzle.",
-    body,
-    `${LINKEDIN_ZIP_HOME}/archive`,
+    linkedinZipPath(isHome),
     false,
     CHROME
   );
@@ -308,7 +257,6 @@ export function renderLinkedInZipNotFound(date?: string) {
       }</p>
       <div style="margin-top:24px;display:flex;gap:12px;justify-content:center">
         <a href="${LINKEDIN_ZIP_HOME}" class="nav-link" style="background:var(--accent);color:#fff;padding:8px 20px">View Today's Puzzle</a>
-        <a href="${LINKEDIN_ZIP_HOME}/archive" class="nav-link" style="background:var(--soft);padding:8px 20px">Browse Archive</a>
       </div>
     </div>`,
     LINKEDIN_ZIP_HOME,

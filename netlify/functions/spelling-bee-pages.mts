@@ -1,7 +1,7 @@
 import type { Config } from "@netlify/functions";
-import { isIsoDate } from "../../src/crawl.ts";
+import { loadHistory } from "../../src/history.ts";
 import { getSpellingBeeResult, listSpellingBeeDates } from "../../src/spelling-bee/store.ts";
-import { SPELLING_BEE_HOME, renderSpellingBeeArchive, renderSpellingBeeNotFound, renderSpellingBeeResult } from "../../src/spelling-bee/render.ts";
+import { SPELLING_BEE_HOME, SPELLING_BEE_YESTERDAY, renderSpellingBeeNotFound, renderSpellingBeeResult } from "../../src/spelling-bee/render.ts";
 
 const html = (body: string, tag: string, maxAge: number) =>
   new Response(body, {
@@ -16,27 +16,25 @@ const html = (body: string, tag: string, maxAge: number) =>
 export default async (req: Request) => {
   const path = new URL(req.url).pathname.replace(/\/+$/, "") || "/";
 
-  if (path === `${SPELLING_BEE_HOME}/archive`) {
-    return html(renderSpellingBeeArchive(await listSpellingBeeDates()), "spelling-bee-index", 3600);
-  }
+  // Only two pages per game (today and yesterday); dated URLs and the old archive redirect to today
+  if (path !== SPELLING_BEE_HOME && path !== SPELLING_BEE_YESTERDAY) return Response.redirect(new URL(SPELLING_BEE_HOME, req.url), 301);
 
   const dates = await listSpellingBeeDates();
-  const requested = path.startsWith(`${SPELLING_BEE_HOME}/`) ? path.slice(SPELLING_BEE_HOME.length + 1) : undefined;
-  const date = requested ?? dates[0];
-  // Not-found is served as 200 + noindex, same as the other pages (netlify dev falls through on 404)
-  if (!date || !isIsoDate(date)) return html(renderSpellingBeeNotFound(), "spelling-bee-index", 60);
+  const isHome = path === SPELLING_BEE_HOME;
+  const date = dates[isHome ? 0 : 1];
+  // Not-found is served as 200 + noindex: netlify dev treats a function 404 as "unhandled" and falls through
+  if (!date) return html(renderSpellingBeeNotFound(), "spelling-bee-index", 60);
 
   const r = await getSpellingBeeResult(date);
   if (!r) return html(renderSpellingBeeNotFound(date), "spelling-bee-index", 60);
 
-  const i = dates.indexOf(date);
-  const nav = { newer: i > 0 ? dates[i - 1] : null, older: i >= 0 && i < dates.length - 1 ? dates[i + 1] : null };
-  const isHome = !requested;
-  return html(renderSpellingBeeResult(r, nav, isHome), isHome ? "spelling-bee-index" : `spelling-bee-index,spelling-bee-${date}`, isHome ? 3600 : 86400 * 30);
+  const nav = isHome ? { newer: null, older: SPELLING_BEE_YESTERDAY } : { newer: SPELLING_BEE_HOME, older: null };
+  const past = isHome ? await loadHistory(dates, date, getSpellingBeeResult) : [];
+  return html(renderSpellingBeeResult(r, nav, isHome, past), "spelling-bee-index", 3600);
 };
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with SPELLING_BEE_HOME)
-  path: ["/spelling-bee", "/spelling-bee/archive", "/spelling-bee/:date"],
+  path: ["/spelling-bee", "/spelling-bee-yesterday", "/spelling-bee/:date"],
   method: "GET",
 };

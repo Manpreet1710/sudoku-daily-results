@@ -1,14 +1,12 @@
-import { esc, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { historyBoard, historyBoards, historyDate, historyRow, renderHistory } from "../history.ts";
 import { spellingBeeFacts, spellingBeeHints } from "./hints.ts";
 import type { SpellingBeeResult } from "./store.ts";
 
 export const SPELLING_BEE_HOME = "/spelling-bee";
-export const spellingBeePath = (date: string) => `${SPELLING_BEE_HOME}/${date}`;
-export const spellingBeeSitemapPaths = (dates: string[]) => [
-  SPELLING_BEE_HOME,
-  `${SPELLING_BEE_HOME}/archive`,
-  ...dates.map(spellingBeePath),
-];
+export const SPELLING_BEE_YESTERDAY = "/spelling-bee-yesterday";
+export const spellingBeePath = (isHome: boolean) => (isHome ? SPELLING_BEE_HOME : SPELLING_BEE_YESTERDAY);
+export const spellingBeeSitemapPaths = () => [SPELLING_BEE_HOME, SPELLING_BEE_YESTERDAY];
 
 const CHROME: Chrome = {
   brand: "Spelling Bee Answers",
@@ -16,7 +14,7 @@ const CHROME: Chrome = {
   gameIcon: "🐝",
   nav: [
     [SPELLING_BEE_HOME, "Today"],
-    [`${SPELLING_BEE_HOME}/archive`, "Archive"],
+    [SPELLING_BEE_YESTERDAY, "Yesterday"],
   ],
   footer:
     "Daily hints and solutions for the New York Times Spelling Bee. Not affiliated with or endorsed by The New York Times.",
@@ -126,11 +124,22 @@ function honeycomb(center: string, outer: string[]) {
   )}</svg></div>`;
 }
 
+function spellingBeeHistory(past: SpellingBeeResult[]) {
+  return renderHistory({
+    title: "Spelling Bee Answers History",
+    intro: "Every past Spelling Bee puzzle with its pangrams and word list.",
+    entries: past.map((r) => ({
+      date: r.date,
+      heading: `${historyDate(r.date)}`,
+      body: historyBoards([historyBoard(honeycomb(r.center, r.outer), esc(r.center.toUpperCase()))]) + historyRow("Pangrams", r.pangrams.map((w) => esc(w)).join(", ")) + historyRow(`All ${r.answers.length} words`, r.answers.map((w) => esc(w)).join(", ")),
+    })),
+  });
+}
+
 export function renderSpellingBeeResult(
   r: SpellingBeeResult,
   nav: { newer: string | null; older: string | null },
-  isHome: boolean
-) {
+  isHome: boolean, past: SpellingBeeResult[] = []) {
   const facts = spellingBeeFacts(r.answers, r.pangrams);
   const hints = spellingBeeHints(r.answers, r.pangrams)
     .map(
@@ -148,7 +157,7 @@ export function renderSpellingBeeResult(
 
   const body = `
 <div class="page-header">
-  <h1>${isHome ? "Today's " : ""}Spelling Bee Hints &amp; Answers</h1>
+  <h1>${isHome ? "Today's " : "Yesterday's "}Spelling Bee Hints &amp; Answers</h1>
   <div class="sub">
     <span class="badge">NYT Spelling Bee</span>
     <span class="badge good">${facts.count} Words</span>
@@ -156,7 +165,7 @@ export function renderSpellingBeeResult(
 </div>
 
 <div class="gm-app">
-  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: spellingBeePath, archive: `${SPELLING_BEE_HOME}/archive` })}
+  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
   <div class="gm-stage">
     <div class="gm-card">
       <p class="gm-meta"><span>${facts.count} words · 👑 ${facts.pangrams} pangram${facts.pangrams === 1 ? "" : "s"}</span><span>Center letter ${esc(r.center.toUpperCase())}</span></p>
@@ -178,77 +187,17 @@ export function renderSpellingBeeResult(
   </div>
 </div>
 
-<div class="datenav">
-  <span>${
-    nav.older
-      ? `<a href="${spellingBeePath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>`
-      : ""
-  }</span>
-  <span>${
-    nav.newer
-      ? `<a href="${spellingBeePath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>`
-      : ""
-  }</span>
-</div>
+${dateNav(nav)}
+${isHome ? spellingBeeHistory(past) : ""}
 ${GM_REVEAL_SCRIPT}`;
 
   return layout(
-    `Spelling Bee Hints & Answers Today (${prettyDate(r.date)}) – NYT Puzzle`,
+    `Spelling Bee Hints & Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – NYT Puzzle`,
     `Today's letters honeycomb, hints and all ${facts.count} answers (including pangrams) for NYT Spelling Bee on ${prettyDate(
       r.date
     )}. Progressive hints first, then reveal the full word list.`,
     body,
-    spellingBeePath(r.date),
-    false,
-    CHROME
-  );
-}
-
-export function renderSpellingBeeArchive(dates: string[]) {
-  const list = dates.length
-    ? `<ul class="archive" id="archiveGrid">${dates
-        .map(
-          (d) =>
-            `<li data-date="${d}"><a href="${spellingBeePath(d)}">` +
-            `<b>${esc(prettyDate(d))}</b>` +
-            `<span class="date-tag">📅 ${d}</span></a></li>`
-        )
-        .join("")}</ul>`
-    : `<p class="sub">No Spelling Bee puzzles recorded yet.</p>`;
-
-  const body = `
-<div class="page-header">
-  <h1>Spelling Bee Answers Archive</h1>
-  <p class="sub">${dates.length} past NYT Spelling Bee puzzles and solutions</p>
-</div>
-
-<div class="archive-controls">
-  <input type="search" id="archiveSearch" class="search-input" placeholder="Search date (e.g. 2026-10 or Oct)..." aria-label="Search archive">
-</div>
-
-${list}
-
-<script>
-(() => {
-  const search = document.getElementById("archiveSearch");
-  const items = [...document.querySelectorAll("#archiveGrid li")];
-  if (search && items.length) {
-    search.addEventListener("input", (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      items.forEach((li) => {
-        const text = li.textContent.toLowerCase();
-        li.style.display = text.includes(q) ? "" : "none";
-      });
-    });
-  }
-})();
-</script>`;
-
-  return layout(
-    "Spelling Bee Answers Archive – Past Hints & Solutions",
-    "Hints and answers for every past NYT Spelling Bee puzzle.",
-    body,
-    `${SPELLING_BEE_HOME}/archive`,
+    spellingBeePath(isHome),
     false,
     CHROME
   );
@@ -266,7 +215,6 @@ export function renderSpellingBeeNotFound(date?: string) {
       }</p>
       <div style="margin-top:24px;display:flex;gap:12px;justify-content:center">
         <a href="${SPELLING_BEE_HOME}" class="nav-link" style="background:var(--accent);color:#fff;padding:8px 20px">View Today's Puzzle</a>
-        <a href="${SPELLING_BEE_HOME}/archive" class="nav-link" style="background:var(--soft);padding:8px 20px">Browse Archive</a>
       </div>
     </div>`,
     SPELLING_BEE_HOME,

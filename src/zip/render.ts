@@ -1,13 +1,11 @@
-import { esc, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { ZipResult } from "./store.ts";
 
 export const ZIP_HOME = "/zip-unlimited";
-export const zipPath = (date: string) => `${ZIP_HOME}/${date}`;
-export const zipSitemapPaths = (dates: string[]) => [
-  ZIP_HOME,
-  `${ZIP_HOME}/archive`,
-  ...dates.map(zipPath),
-];
+export const ZIP_YESTERDAY = "/zip-unlimited-yesterday";
+export const zipPath = (isHome: boolean) => (isHome ? ZIP_HOME : ZIP_YESTERDAY);
+export const zipSitemapPaths = () => [ZIP_HOME, ZIP_YESTERDAY];
 
 const CHROME: Chrome = {
   brand: "Zip Answers",
@@ -15,7 +13,7 @@ const CHROME: Chrome = {
   gameIcon: "⚡",
   nav: [
     [ZIP_HOME, "Today"],
-    [`${ZIP_HOME}/archive`, "Archive"],
+    [ZIP_YESTERDAY, "Yesterday"],
   ],
   footer:
     "Hints and step-by-step route solutions for daily Zip puzzles on zipgameunlimited.com, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn or zipgameunlimited.com.",
@@ -145,11 +143,22 @@ function routes(r: ZipResult) {
   });
 }
 
+function zipHistory(past: ZipResult[]) {
+  return renderHistory({
+    title: "Zip Solutions History",
+    intro: "Every past Zip puzzle, month by month.",
+    entries: past.map((r) => ({
+      date: r.date,
+      heading: `${historyDate(r.date)}`,
+      body: historyBoards([historyBoard(boardSvg(r, true), `${r.size}×${r.size} ${r.difficulty}`)]),
+    })),
+  });
+}
+
 export function renderZipResult(
   r: ZipResult,
   nav: { newer: string | null; older: string | null },
-  isHome: boolean
-) {
+  isHome: boolean, past: ZipResult[] = []) {
   const order = [...r.numbers].sort((a, b) => a[2] - b[2]);
   const first = order[0],
     last = order.at(-1)!;
@@ -165,7 +174,7 @@ export function renderZipResult(
 
   const body = `
 <div class="page-header">
-  <h1>${isHome ? "Today's " : ""}Zip Answers &amp; Solution</h1>
+  <h1>${isHome ? "Today's " : "Yesterday's "}Zip Answers &amp; Solution</h1>
   <div class="sub">
     <span class="badge">${LEVELS[r.difficulty] || "Normal"}</span>
     <span class="badge good">Zip Daily</span>
@@ -173,7 +182,7 @@ export function renderZipResult(
 </div>
 
 <div class="gm-app">
-  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: zipPath, archive: `${ZIP_HOME}/archive` })}
+  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
   <div class="gm-stage">
     <div class="gm-card">
       <p class="gm-meta"><span>${r.size}×${r.size} · ${r.numbers.length} checkpoints · ${r.walls.length} walls</span><span>${LEVELS[r.difficulty] || "Normal"}</span></p>
@@ -222,77 +231,17 @@ export function renderZipResult(
   </div>
 </div>
 
-<div class="datenav">
-  <span>${
-    nav.older
-      ? `<a href="${zipPath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>`
-      : ""
-  }</span>
-  <span>${
-    nav.newer
-      ? `<a href="${zipPath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>`
-      : ""
-  }</span>
-</div>
+${dateNav(nav)}
+${isHome ? zipHistory(past) : ""}
 ${GM_REVEAL_SCRIPT}`;
 
   return layout(
-    `Zip Answers Today (${prettyDate(r.date)}) – Daily Solution & Hints`,
+    `Zip Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Daily Solution & Hints`,
     `Step-by-step logic, waypoints and the full solution for the daily ${r.size}×${r.size} Zip puzzle on ${prettyDate(
       r.date
     )}.`,
     body,
-    zipPath(r.date),
-    false,
-    CHROME
-  );
-}
-
-export function renderZipArchive(dates: string[]) {
-  const list = dates.length
-    ? `<ul class="archive" id="archiveGrid">${dates
-        .map(
-          (d) =>
-            `<li data-date="${d}"><a href="${zipPath(d)}">` +
-            `<b>${esc(prettyDate(d))}</b>` +
-            `<span class="date-tag">📅 ${d}</span></a></li>`
-        )
-        .join("")}</ul>`
-    : `<p class="sub">No Zip puzzles recorded yet.</p>`;
-
-  const body = `
-<div class="page-header">
-  <h1>Zip Answers Archive</h1>
-  <p class="sub">${dates.length} past daily Zip puzzles and solutions</p>
-</div>
-
-<div class="archive-controls">
-  <input type="search" id="archiveSearch" class="search-input" placeholder="Search date (e.g. 2026-10 or Oct)..." aria-label="Search archive">
-</div>
-
-${list}
-
-<script>
-(() => {
-  const search = document.getElementById("archiveSearch");
-  const items = [...document.querySelectorAll("#archiveGrid li")];
-  if (search && items.length) {
-    search.addEventListener("input", (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      items.forEach((li) => {
-        const text = li.textContent.toLowerCase();
-        li.style.display = text.includes(q) ? "" : "none";
-      });
-    });
-  }
-})();
-</script>`;
-
-  return layout(
-    "Zip Answers Archive – Past Daily Solutions",
-    "Hints and route solutions for every past daily Zip puzzle.",
-    body,
-    `${ZIP_HOME}/archive`,
+    zipPath(isHome),
     false,
     CHROME
   );
@@ -310,7 +259,6 @@ export function renderZipNotFound(date?: string) {
       }</p>
       <div style="margin-top:24px;display:flex;gap:12px;justify-content:center">
         <a href="${ZIP_HOME}" class="nav-link" style="background:var(--accent);color:#fff;padding:8px 20px">View Today's Puzzle</a>
-        <a href="${ZIP_HOME}/archive" class="nav-link" style="background:var(--soft);padding:8px 20px">Browse Archive</a>
       </div>
     </div>`,
     ZIP_HOME,

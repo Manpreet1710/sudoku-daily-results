@@ -1,7 +1,7 @@
 import type { Config } from "@netlify/functions";
-import { isIsoDate } from "../../src/crawl.ts";
+import { loadHistory } from "../../src/history.ts";
 import { getZipResult, listZipDates } from "../../src/zip/store.ts";
-import { ZIP_HOME, renderZipArchive, renderZipNotFound, renderZipResult } from "../../src/zip/render.ts";
+import { ZIP_HOME, ZIP_YESTERDAY, renderZipNotFound, renderZipResult } from "../../src/zip/render.ts";
 
 const html = (body: string, tag: string, maxAge: number) =>
   new Response(body, {
@@ -16,27 +16,25 @@ const html = (body: string, tag: string, maxAge: number) =>
 export default async (req: Request) => {
   const path = new URL(req.url).pathname.replace(/\/+$/, "") || "/";
 
-  if (path === `${ZIP_HOME}/archive`) {
-    return html(renderZipArchive(await listZipDates()), "zip-index", 3600);
-  }
+  // Only two pages per game (today and yesterday); dated URLs and the old archive redirect to today
+  if (path !== ZIP_HOME && path !== ZIP_YESTERDAY) return Response.redirect(new URL(ZIP_HOME, req.url), 301);
 
   const dates = await listZipDates();
-  const requested = path.startsWith(`${ZIP_HOME}/`) ? path.slice(ZIP_HOME.length + 1) : undefined;
-  const date = requested ?? dates[0];
-  // Not-found is served as 200 + noindex, same as the other pages (netlify dev falls through on 404)
-  if (!date || !isIsoDate(date)) return html(renderZipNotFound(), "zip-index", 60);
+  const isHome = path === ZIP_HOME;
+  const date = dates[isHome ? 0 : 1];
+  // Not-found is served as 200 + noindex: netlify dev treats a function 404 as "unhandled" and falls through
+  if (!date) return html(renderZipNotFound(), "zip-index", 60);
 
   const r = await getZipResult(date);
   if (!r) return html(renderZipNotFound(date), "zip-index", 60);
 
-  const i = dates.indexOf(date);
-  const nav = { newer: i > 0 ? dates[i - 1] : null, older: i >= 0 && i < dates.length - 1 ? dates[i + 1] : null };
-  const isHome = !requested;
-  return html(renderZipResult(r, nav, isHome), isHome ? "zip-index" : `zip-index,zip-${date}`, isHome ? 3600 : 86400 * 30);
+  const nav = isHome ? { newer: null, older: ZIP_YESTERDAY } : { newer: ZIP_HOME, older: null };
+  const past = isHome ? await loadHistory(dates, date, getZipResult) : [];
+  return html(renderZipResult(r, nav, isHome, past), "zip-index", 3600);
 };
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with ZIP_HOME)
-  path: ["/zip-unlimited", "/zip-unlimited/archive", "/zip-unlimited/:date"],
+  path: ["/zip-unlimited", "/zip-unlimited-yesterday", "/zip-unlimited/:date"],
   method: "GET",
 };

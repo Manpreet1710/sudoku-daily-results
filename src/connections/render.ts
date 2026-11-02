@@ -1,13 +1,11 @@
-import { esc, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { historyDate, historyDot, historyRow, renderHistory } from "../history.ts";
 import type { ConnectionsResult } from "./store.ts";
 
 export const CONNECTIONS_HOME = "/connections-hint-today";
-export const connectionsPath = (date: string) => `${CONNECTIONS_HOME}/${date}`;
-export const connectionsSitemapPaths = (dates: string[]) => [
-  CONNECTIONS_HOME,
-  `${CONNECTIONS_HOME}/archive`,
-  ...dates.map(connectionsPath),
-];
+export const CONNECTIONS_YESTERDAY = "/connections-hint-yesterday";
+export const connectionsPath = (isHome: boolean) => (isHome ? CONNECTIONS_HOME : CONNECTIONS_YESTERDAY);
+export const connectionsSitemapPaths = () => [CONNECTIONS_HOME, CONNECTIONS_YESTERDAY];
 
 const CHROME: Chrome = {
   brand: "Connections Answers",
@@ -15,7 +13,7 @@ const CHROME: Chrome = {
   gameIcon: "🟨",
   nav: [
     [CONNECTIONS_HOME, "Today"],
-    [`${CONNECTIONS_HOME}/archive`, "Archive"],
+    [CONNECTIONS_YESTERDAY, "Yesterday"],
   ],
   footer:
     "Daily hints and answers for the New York Times Connections. Not affiliated with or endorsed by The New York Times.",
@@ -114,10 +112,29 @@ const COLORS = [
   { dot: "p-dot", badge: "gw-p", name: "Purple", level: "Tricky / Wordplay" },
 ];
 
+// NYT numbers Connections from 1 on 2023-06-12
+const connectionsNumber = (date: string) => Math.round((Date.parse(date) - Date.parse("2023-06-12")) / 86_400_000) + 1;
+const DOT_COLORS = ["#f6dc6b", "#a0c35a", "#b0c4ef", "#ba81c5"];
+
+function connectionsHistory(past: ConnectionsResult[]) {
+  return renderHistory({
+    title: "Connections Answers History",
+    intro: "Every past NYT Connections puzzle with its four groups. Open a month to see the answers.",
+    entries: past.map((r) => ({
+      date: r.date,
+      heading: `${historyDate(r.date)} #${connectionsNumber(r.date)}`,
+      body: r.groups
+        .map((g, i) => historyRow(esc(g.title), g.words.map((w) => esc(w)).join(", "), historyDot(DOT_COLORS[i])))
+        .join(""),
+    })),
+  });
+}
+
 export function renderConnectionsResult(
   r: ConnectionsResult,
   nav: { newer: string | null; older: string | null },
-  isHome: boolean
+  isHome: boolean,
+  past: ConnectionsResult[] = []
 ) {
   const words = r.start
     .map((w) => `<div class="word-card">${esc(w)}</div>`)
@@ -156,7 +173,7 @@ export function renderConnectionsResult(
 
   const body = `
 <div class="page-header">
-  <h1>${isHome ? "Today's " : ""}Connections Hints &amp; Answers</h1>
+  <h1>${isHome ? "Today's " : "Yesterday's "}Connections Hints &amp; Answers</h1>
   <div class="sub">
     <span class="badge">NYT Connections</span>
     <span class="badge good">4 Categories</span>
@@ -164,7 +181,7 @@ export function renderConnectionsResult(
 </div>
 
 <div class="gm-app">
-  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: connectionsPath, archive: `${CONNECTIONS_HOME}/archive` })}
+  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
   <div class="gm-stage">
     <div class="gm-card">
       <p class="gm-meta"><span>16 words · 4 groups</span><span>Starting layout</span></p>
@@ -182,77 +199,17 @@ export function renderConnectionsResult(
   </div>
 </div>
 
-<div class="datenav">
-  <span>${
-    nav.older
-      ? `<a href="${connectionsPath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>`
-      : ""
-  }</span>
-  <span>${
-    nav.newer
-      ? `<a href="${connectionsPath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>`
-      : ""
-  }</span>
-</div>
+${dateNav(nav)}
+${isHome ? connectionsHistory(past) : ""}
 ${GM_REVEAL_SCRIPT}`;
 
   return layout(
-    `Connections Hints & Answers Today (${prettyDate(r.date)}) – NYT Daily Puzzle`,
+    `Connections Hints & Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – NYT Daily Puzzle`,
     `Today's 16 words, category hints and the complete 4-group answers for NYT Connections on ${prettyDate(
       r.date
     )}. Progressive hints first, then reveal the full answers.`,
     body,
-    connectionsPath(r.date),
-    false,
-    CHROME
-  );
-}
-
-export function renderConnectionsArchive(dates: string[]) {
-  const list = dates.length
-    ? `<ul class="archive" id="archiveGrid">${dates
-        .map(
-          (d) =>
-            `<li data-date="${d}"><a href="${connectionsPath(d)}">` +
-            `<b>${esc(prettyDate(d))}</b>` +
-            `<span class="date-tag">📅 ${d}</span></a></li>`
-        )
-        .join("")}</ul>`
-    : `<p class="sub">No Connections puzzles recorded yet.</p>`;
-
-  const body = `
-<div class="page-header">
-  <h1>Connections Answers Archive</h1>
-  <p class="sub">${dates.length} past NYT Connections puzzles and hints</p>
-</div>
-
-<div class="archive-controls">
-  <input type="search" id="archiveSearch" class="search-input" placeholder="Search date (e.g. 2026-10 or Oct)..." aria-label="Search archive">
-</div>
-
-${list}
-
-<script>
-(() => {
-  const search = document.getElementById("archiveSearch");
-  const items = [...document.querySelectorAll("#archiveGrid li")];
-  if (search && items.length) {
-    search.addEventListener("input", (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      items.forEach((li) => {
-        const text = li.textContent.toLowerCase();
-        li.style.display = text.includes(q) ? "" : "none";
-      });
-    });
-  }
-})();
-</script>`;
-
-  return layout(
-    "Connections Answers Archive – Past Hints & Solutions",
-    "Hints and solutions for every past NYT Connections puzzle.",
-    body,
-    `${CONNECTIONS_HOME}/archive`,
+    connectionsPath(isHome),
     false,
     CHROME
   );
@@ -270,7 +227,6 @@ export function renderConnectionsNotFound(date?: string) {
       }</p>
       <div style="margin-top:24px;display:flex;gap:12px;justify-content:center">
         <a href="${CONNECTIONS_HOME}" class="nav-link" style="background:var(--accent);color:#fff;padding:8px 20px">View Today's Puzzle</a>
-        <a href="${CONNECTIONS_HOME}/archive" class="nav-link" style="background:var(--soft);padding:8px 20px">Browse Archive</a>
       </div>
     </div>`,
     CONNECTIONS_HOME,

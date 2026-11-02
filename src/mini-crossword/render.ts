@@ -1,10 +1,12 @@
-import { esc, gameBar, GM_REVEAL_SCRIPT, GM_TABS_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, GM_TABS_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { historyBoard, historyBoards, historyDate, historyRow, renderHistory } from "../history.ts";
 import type { MiniEntry, MiniPuzzle } from "./api.ts";
 import type { MiniResult } from "./store.ts";
 
 export const MINI_CROSSWORD_HOME = "/mini-crossword";
-export const miniPath = (date: string) => `${MINI_CROSSWORD_HOME}/${date}`;
-export const miniSitemapPaths = (dates: string[]) => [MINI_CROSSWORD_HOME, `${MINI_CROSSWORD_HOME}/archive`, ...dates.map(miniPath)];
+export const MINI_CROSSWORD_YESTERDAY = "/mini-crossword-yesterday";
+export const miniPath = (isHome: boolean) => (isHome ? MINI_CROSSWORD_HOME : MINI_CROSSWORD_YESTERDAY);
+export const miniSitemapPaths = () => [MINI_CROSSWORD_HOME, MINI_CROSSWORD_YESTERDAY];
 
 const CHROME: Chrome = {
   brand: "Mini Crossword Answers",
@@ -12,7 +14,7 @@ const CHROME: Chrome = {
   gameIcon: "✏️",
   nav: [
     [MINI_CROSSWORD_HOME, "Today"],
-    [`${MINI_CROSSWORD_HOME}/archive`, "Archive"],
+    [MINI_CROSSWORD_YESTERDAY, "Yesterday"],
   ],
   footer:
     "Clues, hints and answers for the daily Mini Crossword on minicrossword.com. Not affiliated with or endorsed by that site.",
@@ -145,12 +147,24 @@ function puzzleSection(p: MiniPuzzle, i: number) {
 </div>`;
 }
 
-export function renderMiniResult(r: MiniResult, nav: { newer: string | null; older: string | null }, isHome: boolean) {
+function miniHistory(past: MiniResult[]) {
+  return renderHistory({
+    title: "Mini Crossword Answers History",
+    intro: "Every past NYT Mini Crossword, month by month.",
+    entries: past.map((r) => ({
+      date: r.date,
+      heading: `${historyDate(r.date)}`,
+      body: historyBoards(r.puzzles.map((p) => historyBoard(boardSvg(p, true), esc(p.level)))),
+    })),
+  });
+}
+
+export function renderMiniResult(r: MiniResult, nav: { newer: string | null; older: string | null }, isHome: boolean, past: MiniResult[] = []) {
   const sizes = [...new Set(r.puzzles.map((p) => `${p.size}×${p.size}`))].join(" / ");
 
   const body = `
 <div class="page-header">
-  <h1>${isHome ? "Today's " : ""}Mini Crossword Answers</h1>
+  <h1>${isHome ? "Today's " : "Yesterday's "}Mini Crossword Answers</h1>
   <div class="sub">
     <span class="badge">${esc(sizes)} Grid</span>
     <span class="badge good">${r.puzzles.length} Puzzle${r.puzzles.length === 1 ? "" : "s"}</span>
@@ -162,64 +176,23 @@ export function renderMiniResult(r: MiniResult, nav: { newer: string | null; old
     date: r.date,
     older: nav.older,
     newer: nav.newer,
-    path: miniPath,
-    archive: `${MINI_CROSSWORD_HOME}/archive`,
     tabs: r.puzzles.length > 1 ? r.puzzles.map((p) => ({ id: p.level, label: LEVELS[p.level] })) : undefined,
   })}
   ${r.puzzles.map(puzzleSection).join("")}
 </div>
 
-<div class="datenav">
-  <span>${nav.older ? `<a href="${miniPath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>` : ""}</span>
-  <span>${nav.newer ? `<a href="${miniPath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>` : ""}</span>
-</div>
+${dateNav(nav)}
+${isHome ? miniHistory(past) : ""}
 ${GM_TABS_SCRIPT}${GM_REVEAL_SCRIPT}`;
 
   return layout(
-    `Mini Crossword Answers Today (${prettyDate(r.date)}) – Clues & Solutions`,
+    `Mini Crossword Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Clues & Solutions`,
     `All clues, hints and answers for the daily Mini Crossword on ${prettyDate(r.date)}, with the ${esc(sizes)} solved grid.`,
     body,
-    miniPath(r.date),
+    miniPath(isHome),
     false,
     CHROME,
   );
-}
-
-export function renderMiniArchive(dates: string[]) {
-  const list = dates.length
-    ? `<ul class="archive" id="archiveGrid">${dates
-        .map((d) => `<li data-date="${d}"><a href="${miniPath(d)}"><b>${esc(prettyDate(d))}</b><span class="date-tag">📅 ${d}</span></a></li>`)
-        .join("")}</ul>`
-    : `<p class="sub">No Mini Crossword puzzles recorded yet.</p>`;
-
-  const body = `
-<div class="page-header">
-  <h1>Mini Crossword Answers Archive</h1>
-  <p class="sub">${dates.length} past daily Mini Crosswords with clues and answers</p>
-</div>
-
-<div class="archive-controls">
-  <input type="search" id="archiveSearch" class="search-input" placeholder="Search date (e.g. 2026-10 or Oct)..." aria-label="Search archive">
-</div>
-
-${list}
-
-<script>
-(() => {
-  const search = document.getElementById("archiveSearch");
-  const items = [...document.querySelectorAll("#archiveGrid li")];
-  if (search && items.length) {
-    search.addEventListener("input", (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      items.forEach((li) => {
-        li.style.display = li.textContent.toLowerCase().includes(q) ? "" : "none";
-      });
-    });
-  }
-})();
-</script>`;
-
-  return layout("Mini Crossword Answers Archive – Past Clues & Solutions", "Clues and answers for every past daily Mini Crossword.", body, `${MINI_CROSSWORD_HOME}/archive`, false, CHROME);
 }
 
 export function renderMiniNotFound(date?: string) {
@@ -234,7 +207,6 @@ export function renderMiniNotFound(date?: string) {
       }</p>
       <div style="margin-top:24px;display:flex;gap:12px;justify-content:center">
         <a href="${MINI_CROSSWORD_HOME}" class="nav-link" style="background:var(--accent);color:#fff;padding:8px 20px">View Today's Puzzle</a>
-        <a href="${MINI_CROSSWORD_HOME}/archive" class="nav-link" style="background:var(--soft);padding:8px 20px">Browse Archive</a>
       </div>
     </div>`,
     MINI_CROSSWORD_HOME,

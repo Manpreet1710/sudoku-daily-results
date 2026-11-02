@@ -1,10 +1,12 @@
-import { esc, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import { BOX_REGIONS, cellName } from "./solver.ts";
 import type { MiniSudokuResult } from "./store.ts";
 
 export const MINI_SUDOKU_HOME = "/linkedin-mini-sudoku";
-export const miniSudokuPath = (date: string) => `${MINI_SUDOKU_HOME}/${date}`;
-export const miniSudokuSitemapPaths = (dates: string[]) => [MINI_SUDOKU_HOME, `${MINI_SUDOKU_HOME}/archive`, ...dates.map(miniSudokuPath)];
+export const MINI_SUDOKU_YESTERDAY = "/linkedin-mini-sudoku-yesterday";
+export const miniSudokuPath = (isHome: boolean) => (isHome ? MINI_SUDOKU_HOME : MINI_SUDOKU_YESTERDAY);
+export const miniSudokuSitemapPaths = () => [MINI_SUDOKU_HOME, MINI_SUDOKU_YESTERDAY];
 
 const CHROME: Chrome = {
   brand: "Mini Sudoku Answers",
@@ -12,7 +14,7 @@ const CHROME: Chrome = {
   gameIcon: "🧩",
   nav: [
     [MINI_SUDOKU_HOME, "Today"],
-    [`${MINI_SUDOKU_HOME}/archive`, "Archive"],
+    [MINI_SUDOKU_YESTERDAY, "Yesterday"],
   ],
   footer:
     "Hints and step-by-step solutions for the daily LinkedIn Mini Sudoku, computed by our own logic solver. Not affiliated with or endorsed by LinkedIn.",
@@ -72,7 +74,19 @@ function boardSvg(puzzle: string, regions: number[], solution?: string) {
 
 const level = (r: MiniSudokuResult) => (!r.logical ? "Hard" : r.steps.some((s) => s.tech === "Naked Pair" || s.tech === "Pointing") ? "Medium" : "Easy");
 
-export function renderMiniSudokuResult(r: MiniSudokuResult, nav: { newer: string | null; older: string | null }, isHome: boolean) {
+function miniSudokuHistory(past: MiniSudokuResult[]) {
+  return renderHistory({
+    title: "Mini Sudoku Solutions History",
+    intro: "Every past LinkedIn Mini Sudoku, month by month.",
+    entries: past.map((r) => ({
+      date: r.date,
+      heading: `${historyDate(r.date)}`,
+      body: historyBoards([historyBoard(boardSvg(r.puzzle, r.regions ?? BOX_REGIONS, r.solution), esc(r.name ?? "Mini Sudoku"))]),
+    })),
+  });
+}
+
+export function renderMiniSudokuResult(r: MiniSudokuResult, nav: { newer: string | null; older: string | null }, isHome: boolean, past: MiniSudokuResult[] = []) {
   const givens = [...r.puzzle].filter((d) => d !== "0").length;
   const moves = r.steps.filter((s) => s.cell !== undefined).length;
   const lv = level(r);
@@ -88,7 +102,7 @@ export function renderMiniSudokuResult(r: MiniSudokuResult, nav: { newer: string
 
   const body = `
 <div class="page-header">
-  <h1>${isHome ? "Today's " : ""}LinkedIn Mini Sudoku Answers</h1>
+  <h1>${isHome ? "Today's " : "Yesterday's "}LinkedIn Mini Sudoku Answers</h1>
   <div class="sub">
     <span class="badge">${lv}</span>
     <span class="badge good">LinkedIn Mini Sudoku</span>
@@ -96,7 +110,7 @@ export function renderMiniSudokuResult(r: MiniSudokuResult, nav: { newer: string
 </div>
 
 <div class="gm-app">
-  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: miniSudokuPath, archive: `${MINI_SUDOKU_HOME}/archive` })}
+  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
   <div class="gm-stage">
     <div class="gm-card">
       <p class="gm-meta"><span>${r.puzzleId ? `Puzzle #${r.puzzleId}` : "6×6"}${r.name ? ` · ${esc(r.name)}` : ""} · ${givens} given digits · ${moves} moves</span><span>${lv}</span></p>
@@ -120,57 +134,18 @@ export function renderMiniSudokuResult(r: MiniSudokuResult, nav: { newer: string
   </div>
 </div>
 
-<div class="datenav">
-  <span>${nav.older ? `<a href="${miniSudokuPath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>` : ""}</span>
-  <span>${nav.newer ? `<a href="${miniSudokuPath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>` : ""}</span>
-</div>
+${dateNav(nav)}
+${isHome ? miniSudokuHistory(past) : ""}
 ${GM_REVEAL_SCRIPT}`;
 
   return layout(
-    `LinkedIn Mini Sudoku Answers Today (${prettyDate(r.date)}) – Solution & Hints`,
+    `LinkedIn Mini Sudoku Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Solution & Hints`,
     `Hints, step-by-step logic and the full solution for the LinkedIn Mini Sudoku on ${prettyDate(r.date)}.`,
     body,
-    miniSudokuPath(r.date),
+    miniSudokuPath(isHome),
     false,
     CHROME,
   );
-}
-
-export function renderMiniSudokuArchive(dates: string[]) {
-  const list = dates.length
-    ? `<ul class="archive" id="archiveGrid">${dates
-        .map((d) => `<li data-date="${d}"><a href="${miniSudokuPath(d)}"><b>${esc(prettyDate(d))}</b><span class="date-tag">📅 ${d}</span></a></li>`)
-        .join("")}</ul>`
-    : `<p class="sub">No Mini Sudoku puzzles recorded yet.</p>`;
-
-  const body = `
-<div class="page-header">
-  <h1>Mini Sudoku Answers Archive</h1>
-  <p class="sub">${dates.length} past LinkedIn Mini Sudoku puzzles and solutions</p>
-</div>
-
-<div class="archive-controls">
-  <input type="search" id="archiveSearch" class="search-input" placeholder="Search date (e.g. 2026-10 or Oct)..." aria-label="Search archive">
-</div>
-
-${list}
-
-<script>
-(() => {
-  const search = document.getElementById("archiveSearch");
-  const items = [...document.querySelectorAll("#archiveGrid li")];
-  if (search && items.length) {
-    search.addEventListener("input", (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      items.forEach((li) => {
-        li.style.display = li.textContent.toLowerCase().includes(q) ? "" : "none";
-      });
-    });
-  }
-})();
-</script>`;
-
-  return layout("Mini Sudoku Answers Archive – Past Solutions", "Hints and step-by-step solutions for every past LinkedIn Mini Sudoku.", body, `${MINI_SUDOKU_HOME}/archive`, false, CHROME);
 }
 
 export function renderMiniSudokuNotFound(date?: string) {
@@ -185,7 +160,6 @@ export function renderMiniSudokuNotFound(date?: string) {
       }</p>
       <div style="margin-top:24px;display:flex;gap:12px;justify-content:center">
         <a href="${MINI_SUDOKU_HOME}" class="nav-link" style="background:var(--accent);color:#fff;padding:8px 20px">View Today's Puzzle</a>
-        <a href="${MINI_SUDOKU_HOME}/archive" class="nav-link" style="background:var(--soft);padding:8px 20px">Browse Archive</a>
       </div>
     </div>`,
     MINI_SUDOKU_HOME,

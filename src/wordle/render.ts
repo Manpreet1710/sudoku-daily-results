@@ -1,14 +1,12 @@
-import { esc, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { historyDate, historyRow, renderHistory } from "../history.ts";
 import { wordleFacts, wordleHints } from "./hints.ts";
 import type { WordleResult } from "./store.ts";
 
 export const WORDLE_HOME = "/today-wordle-answer";
-export const wordlePath = (date: string) => `${WORDLE_HOME}/${date}`;
-export const wordleSitemapPaths = (dates: string[]) => [
-  WORDLE_HOME,
-  `${WORDLE_HOME}/archive`,
-  ...dates.map(wordlePath),
-];
+export const WORDLE_YESTERDAY = "/yesterday-wordle-answer";
+export const wordlePath = (isHome: boolean) => (isHome ? WORDLE_HOME : WORDLE_YESTERDAY);
+export const wordleSitemapPaths = () => [WORDLE_HOME, WORDLE_YESTERDAY];
 
 const CHROME: Chrome = {
   brand: "Wordle Answers",
@@ -16,7 +14,7 @@ const CHROME: Chrome = {
   gameIcon: "🟩",
   nav: [
     [WORDLE_HOME, "Today"],
-    [`${WORDLE_HOME}/archive`, "Archive"],
+    [WORDLE_YESTERDAY, "Yesterday"],
   ],
   footer:
     "Daily hints and answers for the New York Times Wordle. Not affiliated with or endorsed by The New York Times.",
@@ -105,11 +103,22 @@ const CHROME: Chrome = {
 `,
 };
 
+function wordleHistory(past: WordleResult[]) {
+  return renderHistory({
+    title: "Wordle Answers History",
+    intro: "Every past Wordle answer, month by month.",
+    entries: past.map((r) => ({
+      date: r.date,
+      heading: `${historyDate(r.date)} #${r.number}`,
+      body: historyRow("Answer", esc(r.solution)),
+    })),
+  });
+}
+
 export function renderWordleResult(
   r: WordleResult,
   nav: { newer: string | null; older: string | null },
-  isHome: boolean
-) {
+  isHome: boolean, past: WordleResult[] = []) {
   const facts = wordleFacts(r.solution);
   const hintLabels = [
     "Vowels & Pattern",
@@ -134,7 +143,7 @@ export function renderWordleResult(
 
   const body = `
 <div class="page-header">
-  <h1>${isHome ? "Today's " : ""}Wordle Hints &amp; Answer</h1>
+  <h1>${isHome ? "Today's " : "Yesterday's "}Wordle Hints &amp; Answer</h1>
   <div class="sub">
     <span class="badge">Wordle #${r.number}</span>
     <span class="badge good">NYT Daily</span>
@@ -142,7 +151,7 @@ export function renderWordleResult(
 </div>
 
 <div class="gm-app">
-  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: wordlePath, archive: `${WORDLE_HOME}/archive` })}
+  ${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
   <div class="gm-stage">
     <div class="gm-card">
       <p class="gm-meta"><span>Wordle #${r.number}</span><span>${facts.vowels} vowel${facts.vowels === 1 ? "" : "s"} · ${facts.unique} unique letters · ${facts.repeated ? "repeated letter" : "no repeats"}</span></p>
@@ -160,77 +169,17 @@ export function renderWordleResult(
   </div>
 </div>
 
-<div class="datenav">
-  <span>${
-    nav.older
-      ? `<a href="${wordlePath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>`
-      : ""
-  }</span>
-  <span>${
-    nav.newer
-      ? `<a href="${wordlePath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>`
-      : ""
-  }</span>
-</div>
+${dateNav(nav)}
+${isHome ? wordleHistory(past) : ""}
 ${GM_REVEAL_SCRIPT}`;
 
   return layout(
-    `Wordle #${r.number} Answer Today (${prettyDate(r.date)}) – Hints & Solution`,
+    `Wordle #${r.number} Answer ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Hints & Solution`,
     `Step-by-step hints and the verified 5-letter solution for Wordle #${r.number} on ${prettyDate(
       r.date
     )}. Progressive clues first, then reveal the answer.`,
     body,
-    wordlePath(r.date),
-    false,
-    CHROME
-  );
-}
-
-export function renderWordleArchive(dates: string[]) {
-  const list = dates.length
-    ? `<ul class="archive" id="archiveGrid">${dates
-        .map(
-          (d) =>
-            `<li data-date="${d}"><a href="${wordlePath(d)}">` +
-            `<b>${esc(prettyDate(d))}</b>` +
-            `<span class="date-tag">📅 ${d}</span></a></li>`
-        )
-        .join("")}</ul>`
-    : `<p class="sub">No Wordle answers recorded yet.</p>`;
-
-  const body = `
-<div class="page-header">
-  <h1>Wordle Answers Archive</h1>
-  <p class="sub">${dates.length} past Wordle daily puzzles and solutions</p>
-</div>
-
-<div class="archive-controls">
-  <input type="search" id="archiveSearch" class="search-input" placeholder="Search date (e.g. 2026-10 or Oct)..." aria-label="Search archive">
-</div>
-
-${list}
-
-<script>
-(() => {
-  const search = document.getElementById("archiveSearch");
-  const items = [...document.querySelectorAll("#archiveGrid li")];
-  if (search && items.length) {
-    search.addEventListener("input", (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      items.forEach((li) => {
-        const text = li.textContent.toLowerCase();
-        li.style.display = text.includes(q) ? "" : "none";
-      });
-    });
-  }
-})();
-</script>`;
-
-  return layout(
-    "Wordle Answers Archive – Past Hints & Solutions",
-    "Hints and solutions for every past New York Times Wordle.",
-    body,
-    `${WORDLE_HOME}/archive`,
+    wordlePath(isHome),
     false,
     CHROME
   );
@@ -248,7 +197,6 @@ export function renderWordleNotFound(date?: string) {
       }</p>
       <div style="margin-top:24px;display:flex;gap:12px;justify-content:center">
         <a href="${WORDLE_HOME}" class="nav-link" style="background:var(--accent);color:#fff;padding:8px 20px">View Today's Wordle</a>
-        <a href="${WORDLE_HOME}/archive" class="nav-link" style="background:var(--soft);padding:8px 20px">Browse Archive</a>
       </div>
     </div>`,
     WORDLE_HOME,

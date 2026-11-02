@@ -9,7 +9,6 @@ export interface HubGame {
   href: string;
   name: string;
   title?: string; // card heading; defaults to "<name> Solver"
-  archive?: string | null; // defaults to "<href>/archive"; null for pages with no archive
   note?: string; // footer text when there is no "latest" date
   icon: string;
   blurb: string;
@@ -45,7 +44,7 @@ export const HUBS: Record<"nyt" | "linkedin" | "more", Hub> = {
     grad: "linear-gradient(135deg, #0f172a 0%, #312e81 55%, #6d28d9 100%)",
     facts: ["6 games", "Updated daily", "Hints before answers"],
     games: [
-      { href: "/today-wordle-answer", name: "Wordle", icon: "🟩", blurb: "Today's answer, a nudge for each letter, and every past solution.", tags: ["Hints", "Answers", "Archive"], c1: "#6aaa64", c2: "#3f8a46" },
+      { href: "/today-wordle-answer", name: "Wordle", icon: "🟩", blurb: "Today's answer, a nudge for each letter, and every past solution.", tags: ["Hints", "Answers", "History"], c1: "#6aaa64", c2: "#3f8a46" },
       { href: "/connections-hint-today", name: "Connections", icon: "🟨", blurb: "Category hints that don't spoil the groups, then the full four-way answer.", tags: ["Category hints", "Groups"], c1: "#f2c94c", c2: "#b07bd8" },
       { href: "/spelling-bee", name: "Spelling Bee", icon: "🐝", blurb: "The pangram, every valid word and starter hints for the day's hive.", tags: ["Pangram", "Word list"], c1: "#f7da21", c2: "#e89b00" },
       { href: "/strands", name: "Strands", icon: "🔤", blurb: "Theme hints, the spangram and where every word sits on the board.", tags: ["Theme", "Spangram"], c1: "#4fb8c4", c2: "#2f78b5" },
@@ -55,7 +54,7 @@ export const HUBS: Record<"nyt" | "linkedin" | "more", Hub> = {
     features: [
       ["💡", "Hints first", "Every puzzle starts with gentle hints, so you can get unstuck without seeing the whole answer."],
       ["✅", "Checked answers", "Where we compute a solution ourselves, it is verified against the official answer before it is published."],
-      ["🗓️", "Daily archive", "Missed a day? Every recent puzzle is kept, with the same hints and solutions."],
+      ["🗓️", "Answer history", "Missed a day? Every recent puzzle is kept, with the same hints and solutions."],
     ],
     faq: [
       ["How often is this updated?", "Each game's page is refreshed automatically when its new puzzle goes live, and we re-check recent days in case one was missed."],
@@ -86,12 +85,12 @@ export const HUBS: Record<"nyt" | "linkedin" | "more", Hub> = {
     features: [
       ["🧠", "Real logic", "No lookup tables: each solution is worked out by our own solver and explained step by step."],
       ["▶️", "Replay it", "Play the solution back at your own speed, or scrub to any step on the timeline."],
-      ["🗓️", "Daily archive", "Every recent day stays available with its own board and hints."],
+      ["🗓️", "Answer history", "Every recent day stays available with its own board and hints."],
     ],
     faq: [
       ["How are the solutions produced?", "Our own solver reads the day's puzzle and applies logical techniques in order, recording each deduction so you can follow it."],
       ["Can I see just a hint?", "Yes. Hints are separate from the solution, so you can take one nudge and keep playing."],
-      ["Which LinkedIn games are covered?", "Queens, Tango, Zip and Mini Sudoku. Each has its own page and archive."],
+      ["Which LinkedIn games are covered?", "Queens, Tango, Zip and Mini Sudoku. Each has its own page and answer history."],
     ],
     others: [
       { href: NYT_HUB, label: "NYT Games Solver", text: "Wordle, Connections, Spelling Bee, Strands, Pips and Sudoku." },
@@ -111,7 +110,7 @@ export const HUBS: Record<"nyt" | "linkedin" | "more", Hub> = {
     facts: ["6 puzzles & games", "Daily answers", "Play in your browser"],
     games: [
       { href: "/daily-sudoku", name: "Daily Sudoku", icon: "🔢", title: "Daily Sudoku Solver", blurb: "The sudoku.com Daily Challenge with a replayable logic timeline and a verified solution.", tags: ["Daily", "Step-by-step"], c1: "#38bdf8", c2: "#2563eb" },
-      { href: "/word-search", name: "Word Search", icon: "🔍", title: "Word Search Game", archive: null, note: "Play free", blurb: "Pick fruits, vegetables, computer and more, choose a difficulty and find every hidden word.", tags: ["Play", "3 levels", "6 topics"], c1: "#f472b6", c2: "#e11d48" },
+      { href: "/word-search", name: "Word Search", icon: "🔍", title: "Word Search Game", note: "Play free", blurb: "Pick fruits, vegetables, computer and more, choose a difficulty and find every hidden word.", tags: ["Play", "3 levels", "6 topics"], c1: "#f472b6", c2: "#e11d48" },
       { href: "/mini-crossword", name: "Mini Crossword", icon: "✏️", title: "Mini Crossword Answers", blurb: "Clues, hints and the full grid for the daily mini crossword.", tags: ["Clues", "Answers"], c1: "#fbbf24", c2: "#ea580c" },
       { href: "/queens-unlimited", name: "Queens", icon: "👑", title: "Queens Unlimited Solver", blurb: "Daily Queens boards from the Unlimited series, solved with explained logic.", tags: ["Step-by-step", "Daily"], c1: "#c084fc", c2: "#7c3aed" },
       { href: "/tango-unlimited", name: "Tango", icon: "☀️", title: "Tango Unlimited Solver", blurb: "Daily Tango grids from the Unlimited series, with every deduction shown.", tags: ["Step-by-step", "Daily"], c1: "#fcd34d", c2: "#3b82f6" },
@@ -120,7 +119,7 @@ export const HUBS: Record<"nyt" | "linkedin" | "more", Hub> = {
     features: [
       ["🧠", "Logic you can follow", "Our solvers explain the technique behind each move instead of just handing you the grid."],
       ["🎮", "Play, don't just read", "Word Search runs entirely in your browser, with sound, hints and best times saved on your device."],
-      ["🗓️", "Daily archive", "Daily puzzles keep a dated page for every recent day."],
+      ["🗓️", "Answer history", "Daily puzzles keep a dated page for every recent day."],
     ],
     faq: [
       ["Where does the daily Sudoku come from?", "From the sudoku.com Daily Challenge. Our own solver works it out step by step and checks the result against the source."],
@@ -193,8 +192,6 @@ export const HUB_CSS = /* css */ `
 .hub-latest { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); }
 .hub-latest i { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
 .hub-go { color: var(--accent); }
-.hub-arch { position: relative; z-index: 2; color: var(--muted); font-weight: 700; text-decoration: none; }
-.hub-arch:hover { color: var(--accent); }
 
 .hub-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
 .hub-feature { padding: 22px; border-radius: 20px; background: var(--soft); border: 1px solid var(--line); }
@@ -246,7 +243,6 @@ export function renderHub(kind: HubKind, latest: Record<string, string | undefin
   <div class="hub-tags">${g.tags.map((t) => `<span>${esc(t)}</span>`).join("")}</div>
   <div class="hub-foot">
     <span class="hub-latest">${date ? `<i></i>Latest · ${esc(shortDate(date))}` : esc(g.note ?? "Daily puzzle")}</span>
-    ${g.archive === null ? "" : `<a class="hub-arch" href="${g.archive ?? `${g.href}/archive`}">Archive</a>`}
     <span class="hub-go">Open →</span>
   </div>
 </article>`;

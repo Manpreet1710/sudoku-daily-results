@@ -1,10 +1,12 @@
-import { esc, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import { DIFFICULTIES, type Cell, type PipsDifficulty, type PipsPuzzle } from "./nyt.ts";
 import type { PipsResult } from "./store.ts";
 
 export const PIPS_HOME = "/pips";
-export const pipsPath = (date: string) => `${PIPS_HOME}/${date}`;
-export const pipsSitemapPaths = (dates: string[]) => [PIPS_HOME, `${PIPS_HOME}/archive`, ...dates.map(pipsPath)];
+export const PIPS_YESTERDAY = "/pips-yesterday";
+export const pipsPath = (isHome: boolean) => (isHome ? PIPS_HOME : PIPS_YESTERDAY);
+export const pipsSitemapPaths = () => [PIPS_HOME, PIPS_YESTERDAY];
 
 const CHROME: Chrome = {
   brand: "Pips Answers",
@@ -12,7 +14,7 @@ const CHROME: Chrome = {
   gameIcon: "🎲",
   nav: [
     [PIPS_HOME, "Today"],
-    [`${PIPS_HOME}/archive`, "Archive"],
+    [PIPS_YESTERDAY, "Yesterday"],
   ],
   footer: "Daily hints and answers for the New York Times Pips. Not affiliated with or endorsed by The New York Times.",
   css: /* css */ `
@@ -61,14 +63,83 @@ const CHROME: Chrome = {
 // JSON for the inline <script>: "<" is escaped so the data can never close the tag
 const jsonForScript = (v: unknown) => JSON.stringify(v).replace(/</g, "\\u003c");
 
-export function renderPipsResult(r: PipsResult, nav: { newer: string | null; older: string | null }, isHome: boolean) {
+// The solved board as static SVG: same drawing as public/assets/pips.js with every domino placed
+const REGION_COLORS = ["#8b5cf6", "#ec4899", "#f43f5e", "#14b8a6", "#0ea5e9", "#f97316", "#84cc16", "#6366f1", "#d97706", "#22c55e", "#06b6d4", "#e11d48"];
+const PIP_DOTS = [[], [4], [0, 8], [0, 4, 8], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]];
+const regionLabel = (r: PipsPuzzle["regions"][number]) =>
+  r.type === "sum" ? String(r.target) : r.type === "greater" ? `>${r.target}` : r.type === "less" ? `<${r.target}` : r.type === "equals" ? "=" : r.type === "unequal" ? "≠" : "";
+
+function pipsBoardSvg(p: PipsPuzzle) {
+  const S = 64, PAD = 18;
+  const key = (c: Cell) => `${c[0]},${c[1]}`;
+  const regionOf = new Map<string, number>();
+  let ci = 0;
+  const colors = p.regions.map((r, i) => {
+    r.indices.forEach((c) => regionOf.set(key(c), i));
+    return r.type === "empty" ? "#94a3b8" : REGION_COLORS[ci++ % REGION_COLORS.length];
+  });
+  const all = p.regions.flatMap((r) => r.indices);
+  const rows = Math.max(...all.map((c) => c[0])) + 1;
+  const cols = Math.max(...all.map((c) => c[1])) + 1;
+  const W = cols * S + PAD * 2, H = rows * S + PAD * 2;
+  const at = (c: Cell) => ({ x: PAD + c[1] * S, y: PAD + c[0] * S });
+  const dots = (value: number, x: number, y: number) =>
+    PIP_DOTS[value].map((i) => `<circle class="pp-dot" cx="${(x + S * (0.27 + 0.23 * (i % 3))).toFixed(1)}" cy="${(y + S * (0.27 + 0.23 * Math.floor(i / 3))).toFixed(1)}" r="${(S * 0.08).toFixed(1)}"/>`).join("");
+  let cells = "", edges = "", tiles = "", marks = "";
+
+  p.regions.forEach((r, i) => {
+    r.indices.forEach((c) => {
+      const { x, y } = at(c);
+      cells += `<rect x="${x + 1}" y="${y + 1}" width="${S - 2}" height="${S - 2}" rx="7" style="fill:${colors[i]};fill-opacity:.34"/>`;
+      const same = (dr: number, dc: number) => regionOf.get(key([c[0] + dr, c[1] + dc])) === i;
+      const line = (x1: number, y1: number, x2: number, y2: number) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:${colors[i]}"/>`;
+      if (!same(-1, 0)) edges += line(x + 4, y + 4, x + S - 4, y + 4);
+      if (!same(1, 0)) edges += line(x + 4, y + S - 4, x + S - 4, y + S - 4);
+      if (!same(0, -1)) edges += line(x + 4, y + 4, x + 4, y + S - 4);
+      if (!same(0, 1)) edges += line(x + S - 4, y + 4, x + S - 4, y + S - 4);
+    });
+    const text = regionLabel(r);
+    if (text) {
+      const last = [...r.indices].sort((a, b) => a[0] - b[0] || a[1] - b[1]).pop()!;
+      const cx = at(last).x + S - 4, cy = at(last).y + S - 4;
+      marks += `<g class="pp-mark"><rect x="${cx - 13}" y="${cy - 13}" width="26" height="26" rx="5" transform="rotate(45 ${cx} ${cy})" style="fill:${colors[i]}"/><text x="${cx}" y="${cy + 0.5}">${esc(text)}</text></g>`;
+    }
+  });
+
+  p.solution.forEach(([a, b], i) => {
+    const A = at(a), B = at(b);
+    const x = Math.min(A.x, B.x) + 2, y = Math.min(A.y, B.y) + 2;
+    const horizontal = a[0] === b[0];
+    const w = (horizontal ? 2 * S : S) - 4, h = (horizontal ? S : 2 * S) - 4;
+    const split = horizontal
+      ? `<line class="pp-split" x1="${x + w / 2}" y1="${y + 6}" x2="${x + w / 2}" y2="${y + h - 6}"/>`
+      : `<line class="pp-split" x1="${x + 6}" y1="${y + h / 2}" x2="${x + w - 6}" y2="${y + h / 2}"/>`;
+    tiles += `<g><rect class="pp-tile" x="${x}" y="${y}" width="${w}" height="${h}" rx="9"/>${split}${dots(p.dominoes[i][0], A.x, A.y)}${dots(p.dominoes[i][1], B.x, B.y)}</g>`;
+  });
+
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Solved Pips board">${cells}<g class="pp-edges">${edges}</g>${tiles}${marks}</svg>`;
+}
+
+function pipsHistory(past: PipsResult[]) {
+  return renderHistory({
+    title: "Pips Answers History",
+    intro: "Every past NYT Pips puzzle, month by month.",
+    entries: past.map((r) => ({
+      date: r.date,
+      heading: `${historyDate(r.date)}`,
+      body: historyBoards(DIFFICULTIES.map((d) => historyBoard(pipsBoardSvg(r.puzzles[d]), d[0].toUpperCase() + d.slice(1)))),
+    })),
+  });
+}
+
+export function renderPipsResult(r: PipsResult, nav: { newer: string | null; older: string | null }, isHome: boolean, past: PipsResult[] = []) {
   const data = Object.fromEntries(DIFFICULTIES.map((d) => [d, { ...r.puzzles[d] }]));
   const step = (href: string | null, arrow: string, title: string) =>
     href ? `<a class="pips-step" href="${href}" title="${title}">${arrow}</a>` : `<span class="pips-step" aria-disabled="true">${arrow}</span>`;
 
   const body = `
 <div class="page-header">
-  <h1>${isHome ? "Today's " : ""}Pips Solver – Hints &amp; Answers</h1>
+  <h1>${isHome ? "Today's " : "Yesterday's "}Pips Solver – Hints &amp; Answers</h1>
   <div class="sub">
     <span class="badge">NYT Pips</span>
     <span class="badge good">Easy · Medium · Hard</span>
@@ -82,9 +153,9 @@ export function renderPipsResult(r: PipsResult, nav: { newer: string | null; old
       <button type="button" role="tab" data-level="medium" aria-selected="false">Medium</button>
       <button type="button" role="tab" data-level="easy" aria-selected="true">Easy</button>
     </div>
-    ${step(nav.older ? pipsPath(nav.older) : null, "‹", "Previous day")}
-    <a class="pips-date" href="${PIPS_HOME}/archive" title="Browse the archive">📅 ${esc(shortDate(r.date))}, ${r.date.slice(0, 4)}</a>
-    ${step(nav.newer ? pipsPath(nav.newer) : null, "›", "Next day")}
+    ${step(nav.older, "‹", "Previous day")}
+    <span class="pips-date">${esc(shortDate(r.date))}, ${r.date.slice(0, 4)}</span>
+    ${step(nav.newer, "›", "Next day")}
   </div>
 
   <div class="pips-stage">
@@ -106,57 +177,18 @@ export function renderPipsResult(r: PipsResult, nav: { newer: string | null; old
 </div>
 <script type="application/json" id="pipsData">${jsonForScript(data)}</script>
 
-<div class="datenav">
-  <span>${nav.older ? `<a href="${pipsPath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>` : ""}</span>
-  <span>${nav.newer ? `<a href="${pipsPath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>` : ""}</span>
-</div>
+${dateNav(nav)}
+${isHome ? pipsHistory(past) : ""}
 <script src="/assets/pips.js" defer></script>`;
 
   return layout(
-    `Pips Hints & Answers Today (${prettyDate(r.date)}) – NYT Daily Puzzle`,
+    `Pips Hints & Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – NYT Daily Puzzle`,
     `Interactive solver, hints and complete solutions for the easy, medium and hard NYT Pips puzzles on ${prettyDate(r.date)}. Click a domino or a cell to place the correct piece.`,
     body,
-    pipsPath(r.date),
+    pipsPath(isHome),
     false,
     CHROME
   );
-}
-
-export function renderPipsArchive(dates: string[]) {
-  const list = dates.length
-    ? `<ul class="archive" id="archiveGrid">${dates
-        .map((d) => `<li data-date="${d}"><a href="${pipsPath(d)}"><b>${esc(prettyDate(d))}</b><span class="date-tag">📅 ${d}</span></a></li>`)
-        .join("")}</ul>`
-    : `<p class="sub">No Pips puzzles recorded yet.</p>`;
-
-  const body = `
-<div class="page-header">
-  <h1>Pips Answers Archive</h1>
-  <p class="sub">${dates.length} past NYT Pips puzzles and hints</p>
-</div>
-
-<div class="archive-controls">
-  <input type="search" id="archiveSearch" class="search-input" placeholder="Search date (e.g. 2026-10 or Oct)..." aria-label="Search archive">
-</div>
-
-${list}
-
-<script>
-(() => {
-  const search = document.getElementById("archiveSearch");
-  const items = [...document.querySelectorAll("#archiveGrid li")];
-  if (search && items.length) {
-    search.addEventListener("input", (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      items.forEach((li) => {
-        li.style.display = li.textContent.toLowerCase().includes(q) ? "" : "none";
-      });
-    });
-  }
-})();
-</script>`;
-
-  return layout("Pips Answers Archive – Past Hints & Solutions", "Hints and solutions for every past NYT Pips puzzle.", body, `${PIPS_HOME}/archive`, false, CHROME);
 }
 
 export function renderPipsNotFound(date?: string) {
@@ -169,7 +201,6 @@ export function renderPipsNotFound(date?: string) {
       <p class="sub" style="justify-content:center">${date ? `No puzzle for <b>${esc(date)}</b> has been published yet.` : "No Pips puzzles are available."}</p>
       <div style="margin-top:24px;display:flex;gap:12px;justify-content:center">
         <a href="${PIPS_HOME}" class="nav-link" style="background:var(--accent);color:#fff;padding:8px 20px">View Today's Puzzle</a>
-        <a href="${PIPS_HOME}/archive" class="nav-link" style="background:var(--soft);padding:8px 20px">Browse Archive</a>
       </div>
     </div>`,
     PIPS_HOME,

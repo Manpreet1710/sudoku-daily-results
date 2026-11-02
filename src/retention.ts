@@ -2,7 +2,8 @@ import { getStore } from "@netlify/blobs";
 import { purgeCache } from "@netlify/functions";
 import { shiftDate } from "./crawl.ts";
 
-export const RETENTION_DAYS = Number(process.env.RETENTION_DAYS) || 30;
+// 0 (the default) keeps every day forever: the history sections on the today pages need the full archive.
+export const RETENTION_DAYS = Number(process.env.RETENTION_DAYS) || 0;
 
 // Every game's blob store and the key prefix its dates live under (see each src/<game>/store.ts).
 const STORES: { game: string; prefix: string }[] = [
@@ -28,6 +29,7 @@ export type RetentionReport = { game: string; kept: number; deleted: string[] };
 // Deletes every saved day older than `days` days (the last `days` days, today included, are kept).
 // `today` is the UTC date; a day of slack either way is irrelevant for a 30-day window.
 export async function deleteOldResults({ days = RETENTION_DAYS, dryRun = false } = {}): Promise<RetentionReport[]> {
+  if (days <= 0) return [];
   const cutoff = shiftDate(new Date().toISOString().slice(0, 10), -(days - 1));
   const reports: RetentionReport[] = [];
 

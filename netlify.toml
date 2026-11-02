@@ -5,7 +5,7 @@
 [functions]
   node_bundler = "esbuild"
 
-# Old URLs -> the standard /{game}, /{game}/{date}, /{game}/archive structure (permanent)
+# Old URLs -> the standard /{game}, /{game} and /{game}/{date} structure (permanent)
 [[redirects]]
   from = "/sudoku-daily-result"
   to = "/daily-sudoku"
@@ -16,7 +16,7 @@
   status = 301
 [[redirects]]
   from = "/archive"
-  to = "/daily-sudoku/archive"
+  to = "/daily-sudoku"
   status = 301
 [[redirects]]
   from = "/mini-sudoku"

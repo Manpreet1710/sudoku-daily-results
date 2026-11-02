@@ -1,5 +1,5 @@
 import type { Config } from "@netlify/functions";
-import { isIsoDate } from "../../src/crawl.ts";
+import { loadHistory } from "../../src/history.ts";
 import { getResult, listDates } from "../../src/store.ts";
 import { listWordleDates } from "../../src/wordle/store.ts";
 import { wordleSitemapPaths } from "../../src/wordle/render.ts";
@@ -31,7 +31,7 @@ import { listNytSudokuDates } from "../../src/nyt-sudoku/store.ts";
 import { nytSudokuSitemapPaths } from "../../src/nyt-sudoku/render.ts";
 import { hubSitemapPaths } from "../../src/hub/render.ts";
 import { wordSearchSitemapPaths } from "../../src/word-search/render.ts";
-import { ARCHIVE_PATH, RESULT_PREFIX, renderArchive, renderNotFound, renderResult, renderSitemap, resultPath } from "../../src/render.ts";
+import { RESULT_PREFIX, RESULT_YESTERDAY, renderNotFound, renderResult, renderSitemap } from "../../src/render.ts";
 
 const html = (body: string, tag: string, maxAge: number) =>
   new Response(body, {
@@ -47,37 +47,32 @@ export default async (req: Request) => {
   const path = new URL(req.url).pathname.replace(/\/+$/, "") || "/";
 
   if (path === "/sitemap.xml") {
-    const res = html(renderSitemap(await listDates(), [...wordleSitemapPaths(await listWordleDates()), ...connectionsSitemapPaths(await listConnectionsDates()), ...spellingBeeSitemapPaths(await listSpellingBeeDates()), ...queensSitemapPaths(await listQueensDates()), ...tangoSitemapPaths(await listTangoDates()), ...strandsSitemapPaths(await listStrandsDates()), ...miniSitemapPaths(await listMiniDates()), ...miniSudokuSitemapPaths(await listMiniSudokuDates()), ...zipSitemapPaths(await listZipDates()), ...linkedinQueensSitemapPaths(await listLinkedInQueensDates()), ...linkedinTangoSitemapPaths(await listLinkedInTangoDates()), ...linkedinZipSitemapPaths(await listLinkedInZipDates()), ...pipsSitemapPaths(await listPipsDates()), ...nytSudokuSitemapPaths(await listNytSudokuDates()), ...wordSearchSitemapPaths(), ...hubSitemapPaths()]), "sudoku-index", 3600);
+    const res = html(renderSitemap([...wordleSitemapPaths(), ...connectionsSitemapPaths(), ...spellingBeeSitemapPaths(), ...queensSitemapPaths(), ...tangoSitemapPaths(), ...strandsSitemapPaths(), ...miniSitemapPaths(), ...miniSudokuSitemapPaths(), ...zipSitemapPaths(), ...linkedinQueensSitemapPaths(), ...linkedinTangoSitemapPaths(), ...linkedinZipSitemapPaths(), ...pipsSitemapPaths(), ...nytSudokuSitemapPaths(), ...wordSearchSitemapPaths(), ...hubSitemapPaths()]), "sudoku-index", 3600);
     res.headers.set("Content-Type", "application/xml; charset=utf-8");
     return res;
   }
 
-  if (path === ARCHIVE_PATH) {
-    return html(renderArchive(await listDates()), "sudoku-index", 3600);
-  }
-
   // Old URL scheme, kept so existing links and indexed pages still resolve
-  const legacy = path.match(/^\/results\/([^/]+?)$/)?.[1];
-  if (legacy) return Response.redirect(new URL(resultPath(legacy), req.url), 301);
+  if (/^\/results\/[^/]+$/.test(path)) return Response.redirect(new URL(RESULT_PREFIX, req.url), 301);
+
+  // Only two pages per game (today and yesterday); dated URLs and the old archive redirect to today
+  if (path !== RESULT_PREFIX && path !== RESULT_YESTERDAY) return Response.redirect(new URL(RESULT_PREFIX, req.url), 301);
 
   const dates = await listDates();
-  const requested = path.startsWith(`${RESULT_PREFIX}/`) ? path.slice(RESULT_PREFIX.length + 1) : undefined;
-  const date = requested ?? dates[0];
-  // Not-found is served as 200 + noindex: netlify dev treats a function 404 as
-  // "unhandled" and falls through to other routes.
-  if (!date || !isIsoDate(date)) return html(renderNotFound(), "sudoku-index", 60);
+  const isHome = path === RESULT_PREFIX;
+  const date = dates[isHome ? 0 : 1];
+  // Not-found is served as 200 + noindex: netlify dev treats a function 404 as "unhandled" and falls through
+  if (!date) return html(renderNotFound(), "sudoku-index", 60);
 
   const r = await getResult(date);
   if (!r) return html(renderNotFound(date), "sudoku-index", 60);
 
-  const i = dates.indexOf(date);
-  const nav = { newer: i > 0 ? dates[i - 1] : null, older: i >= 0 && i < dates.length - 1 ? dates[i + 1] : null };
-  const isHome = !requested;
-  // Home & latest page change when a new day is crawled; older pages are effectively immutable
-  return html(renderResult(r, nav, isHome), isHome ? "sudoku-index" : `sudoku-index,sudoku-${date}`, isHome ? 3600 : 86400 * 30);
+  const nav = isHome ? { newer: null, older: RESULT_YESTERDAY } : { newer: RESULT_PREFIX, older: null };
+  const past = isHome ? await loadHistory(dates, date, getResult) : [];
+  return html(renderResult(r, nav, isHome, past), "sudoku-index", 3600);
 };
 
 export const config: Config = {
-  path: ["/daily-sudoku", "/daily-sudoku/archive", "/daily-sudoku/:date", "/results/:date", "/sitemap.xml"],
+  path: ["/daily-sudoku", "/daily-sudoku-yesterday", "/daily-sudoku/:date", "/results/:date", "/sitemap.xml"],
   method: "GET",
 };

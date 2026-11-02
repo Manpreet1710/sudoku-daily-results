@@ -1,7 +1,7 @@
 import type { Config } from "@netlify/functions";
-import { isIsoDate } from "../../src/crawl.ts";
+import { loadHistory } from "../../src/history.ts";
 import { getWordleResult, listWordleDates } from "../../src/wordle/store.ts";
-import { WORDLE_HOME, renderWordleArchive, renderWordleNotFound, renderWordleResult } from "../../src/wordle/render.ts";
+import { WORDLE_HOME, WORDLE_YESTERDAY, renderWordleNotFound, renderWordleResult } from "../../src/wordle/render.ts";
 
 const html = (body: string, tag: string, maxAge: number) =>
   new Response(body, {
@@ -16,27 +16,25 @@ const html = (body: string, tag: string, maxAge: number) =>
 export default async (req: Request) => {
   const path = new URL(req.url).pathname.replace(/\/+$/, "") || "/";
 
-  if (path === `${WORDLE_HOME}/archive`) {
-    return html(renderWordleArchive(await listWordleDates()), "wordle-index", 3600);
-  }
+  // Only two pages per game (today and yesterday); dated URLs and the old archive redirect to today
+  if (path !== WORDLE_HOME && path !== WORDLE_YESTERDAY) return Response.redirect(new URL(WORDLE_HOME, req.url), 301);
 
   const dates = await listWordleDates();
-  const requested = path.startsWith(`${WORDLE_HOME}/`) ? path.slice(WORDLE_HOME.length + 1) : undefined;
-  const date = requested ?? dates[0];
-  // Not-found is served as 200 + noindex, same as the sudoku pages (netlify dev falls through on 404)
-  if (!date || !isIsoDate(date)) return html(renderWordleNotFound(), "wordle-index", 60);
+  const isHome = path === WORDLE_HOME;
+  const date = dates[isHome ? 0 : 1];
+  // Not-found is served as 200 + noindex: netlify dev treats a function 404 as "unhandled" and falls through
+  if (!date) return html(renderWordleNotFound(), "wordle-index", 60);
 
   const r = await getWordleResult(date);
   if (!r) return html(renderWordleNotFound(date), "wordle-index", 60);
 
-  const i = dates.indexOf(date);
-  const nav = { newer: i > 0 ? dates[i - 1] : null, older: i >= 0 && i < dates.length - 1 ? dates[i + 1] : null };
-  const isHome = !requested;
-  return html(renderWordleResult(r, nav, isHome), isHome ? "wordle-index" : `wordle-index,wordle-${date}`, isHome ? 3600 : 86400 * 30);
+  const nav = isHome ? { newer: null, older: WORDLE_YESTERDAY } : { newer: WORDLE_HOME, older: null };
+  const past = isHome ? await loadHistory(dates, date, getWordleResult) : [];
+  return html(renderWordleResult(r, nav, isHome, past), "wordle-index", 3600);
 };
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with WORDLE_HOME)
-  path: ["/today-wordle-answer", "/today-wordle-answer/archive", "/today-wordle-answer/:date"],
+  path: ["/today-wordle-answer", "/yesterday-wordle-answer", "/today-wordle-answer/:date"],
   method: "GET",
 };

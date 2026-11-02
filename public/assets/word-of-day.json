@@ -1,0 +1,242 @@
+[
+ {
+  "word": "serendipity",
+  "pos": "noun",
+  "meaning": "Finding something good by pure chance.",
+  "example": "We met by serendipity at a tiny bookshop."
+ },
+ {
+  "word": "petrichor",
+  "pos": "noun",
+  "meaning": "The pleasant smell of rain on dry earth.",
+  "example": "The petrichor after the storm made everyone step outside."
+ },
+ {
+  "word": "ephemeral",
+  "pos": "adjective",
+  "meaning": "Lasting for a very short time.",
+  "example": "The rainbow was beautiful but ephemeral."
+ },
+ {
+  "word": "mellifluous",
+  "pos": "adjective",
+  "meaning": "Sweet and smooth to hear.",
+  "example": "She read the poem in a mellifluous voice."
+ },
+ {
+  "word": "quixotic",
+  "pos": "adjective",
+  "meaning": "Idealistic in a hopeful but unrealistic way.",
+  "example": "His quixotic plan was to plant a forest in the desert."
+ },
+ {
+  "word": "ethereal",
+  "pos": "adjective",
+  "meaning": "Light and delicate, almost not of this world.",
+  "example": "The mist gave the lake an ethereal glow."
+ },
+ {
+  "word": "luminous",
+  "pos": "adjective",
+  "meaning": "Giving off a soft, bright light.",
+  "example": "The luminous moon lit the whole street."
+ },
+ {
+  "word": "labyrinth",
+  "pos": "noun",
+  "meaning": "A maze of paths that is easy to get lost in.",
+  "example": "We wandered through the labyrinth of old streets."
+ },
+ {
+  "word": "nostalgia",
+  "pos": "noun",
+  "meaning": "A warm, wistful longing for the past.",
+  "example": "The old song filled him with nostalgia."
+ },
+ {
+  "word": "cacophony",
+  "pos": "noun",
+  "meaning": "A harsh mix of loud sounds.",
+  "example": "A cacophony of horns filled the market."
+ },
+ {
+  "word": "euphoria",
+  "pos": "noun",
+  "meaning": "A feeling of intense happiness.",
+  "example": "The team celebrated in pure euphoria."
+ },
+ {
+  "word": "resilience",
+  "pos": "noun",
+  "meaning": "The ability to bounce back after hard times.",
+  "example": "Her resilience got her through the toughest year."
+ },
+ {
+  "word": "wanderlust",
+  "pos": "noun",
+  "meaning": "A strong desire to travel and explore.",
+  "example": "Wanderlust pulled him toward every new map."
+ },
+ {
+  "word": "halcyon",
+  "pos": "adjective",
+  "meaning": "Calm, peaceful and happy, like a golden past.",
+  "example": "They remembered the halcyon days of summer."
+ },
+ {
+  "word": "effervescent",
+  "pos": "adjective",
+  "meaning": "Bubbly, lively and full of energy.",
+  "example": "Her effervescent laugh lit up the room."
+ },
+ {
+  "word": "ineffable",
+  "pos": "adjective",
+  "meaning": "Too great to be put into words.",
+  "example": "The view from the peak was of ineffable beauty."
+ },
+ {
+  "word": "sagacious",
+  "pos": "adjective",
+  "meaning": "Wise and sharp in judgment.",
+  "example": "The sagacious owl is a symbol of wisdom."
+ },
+ {
+  "word": "ubiquitous",
+  "pos": "adjective",
+  "meaning": "Seeming to be everywhere at once.",
+  "example": "Smartphones have become ubiquitous."
+ },
+ {
+  "word": "zenith",
+  "pos": "noun",
+  "meaning": "The highest point; the peak.",
+  "example": "The sun reached its zenith at noon."
+ },
+ {
+  "word": "panacea",
+  "pos": "noun",
+  "meaning": "A cure for every problem.",
+  "example": "No single app is a panacea for productivity."
+ },
+ {
+  "word": "bucolic",
+  "pos": "adjective",
+  "meaning": "Peaceful and typical of the countryside.",
+  "example": "They lived a bucolic life among green hills."
+ },
+ {
+  "word": "ebullient",
+  "pos": "adjective",
+  "meaning": "Cheerful and full of excitement.",
+  "example": "The ebullient crowd cheered all night."
+ },
+ {
+  "word": "lucid",
+  "pos": "adjective",
+  "meaning": "Clear and easy to understand.",
+  "example": "Her lucid explanation made it simple."
+ },
+ {
+  "word": "nebulous",
+  "pos": "adjective",
+  "meaning": "Vague and unclear in shape or idea.",
+  "example": "He only had a nebulous plan for the trip."
+ },
+ {
+  "word": "pristine",
+  "pos": "adjective",
+  "meaning": "Perfectly clean and untouched.",
+  "example": "The snow lay pristine across the field."
+ },
+ {
+  "word": "quintessence",
+  "pos": "noun",
+  "meaning": "The purest and most perfect example of something.",
+  "example": "This café is the quintessence of cosy."
+ },
+ {
+  "word": "reverie",
+  "pos": "noun",
+  "meaning": "A pleasant daydream.",
+  "example": "She sat by the window lost in reverie."
+ },
+ {
+  "word": "serene",
+  "pos": "adjective",
+  "meaning": "Calm, peaceful and untroubled.",
+  "example": "The lake was serene at dawn."
+ },
+ {
+  "word": "tenacious",
+  "pos": "adjective",
+  "meaning": "Holding firmly to a goal; never giving up.",
+  "example": "A tenacious climber, she tried again and again."
+ },
+ {
+  "word": "whimsical",
+  "pos": "adjective",
+  "meaning": "Playful and fanciful in a charming way.",
+  "example": "The garden had whimsical little statues."
+ },
+ {
+  "word": "mirth",
+  "pos": "noun",
+  "meaning": "Joyful laughter and fun.",
+  "example": "The room rang with mirth."
+ },
+ {
+  "word": "solace",
+  "pos": "noun",
+  "meaning": "Comfort in a time of sadness.",
+  "example": "Music was her solace after a long day."
+ },
+ {
+  "word": "vivid",
+  "pos": "adjective",
+  "meaning": "Bright, clear and full of life.",
+  "example": "He had a vivid dream about flying."
+ },
+ {
+  "word": "sonder",
+  "pos": "noun",
+  "meaning": "Realising that every passer-by has a life as rich as your own.",
+  "example": "A moment of sonder hit her in the crowded station."
+ },
+ {
+  "word": "aurora",
+  "pos": "noun",
+  "meaning": "Colourful lights that dance in the polar sky.",
+  "example": "We waited all night to see the aurora."
+ },
+ {
+  "word": "elixir",
+  "pos": "noun",
+  "meaning": "A magical liquid said to cure or give long life.",
+  "example": "The old tale spoke of an elixir of youth."
+ },
+ {
+  "word": "kaleidoscope",
+  "pos": "noun",
+  "meaning": "A constantly changing pattern of colours.",
+  "example": "The market was a kaleidoscope of spices."
+ },
+ {
+  "word": "mirage",
+  "pos": "noun",
+  "meaning": "An illusion, like water seen in the desert.",
+  "example": "The oasis turned out to be a mirage."
+ },
+ {
+  "word": "cascade",
+  "pos": "noun",
+  "meaning": "A small waterfall, or something that flows down in stages.",
+  "example": "A cascade of curls fell over her shoulders."
+ },
+ {
+  "word": "enigma",
+  "pos": "noun",
+  "meaning": "A person or thing that is mysterious.",
+  "example": "The ancient code remains an enigma."
+ }
+]

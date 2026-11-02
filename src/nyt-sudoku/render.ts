@@ -1,11 +1,13 @@
 import { cellName } from "../solver.ts";
-import { esc, gameBar, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import { NYT_LEVELS, type NytLevel } from "./nyt.ts";
 import type { NytSudokuLevelResult, NytSudokuResult } from "./store.ts";
 
 export const NYT_SUDOKU_HOME = "/nyt-sudoku";
-export const nytSudokuPath = (date: string) => `${NYT_SUDOKU_HOME}/${date}`;
-export const nytSudokuSitemapPaths = (dates: string[]) => [NYT_SUDOKU_HOME, `${NYT_SUDOKU_HOME}/archive`, ...dates.map(nytSudokuPath)];
+export const NYT_SUDOKU_YESTERDAY = "/nyt-sudoku-yesterday";
+export const nytSudokuPath = (isHome: boolean) => (isHome ? NYT_SUDOKU_HOME : NYT_SUDOKU_YESTERDAY);
+export const nytSudokuSitemapPaths = () => [NYT_SUDOKU_HOME, NYT_SUDOKU_YESTERDAY];
 
 const CHROME: Chrome = {
   brand: "NYT Sudoku Answers",
@@ -13,7 +15,7 @@ const CHROME: Chrome = {
   gameIcon: "🔢",
   nav: [
     [NYT_SUDOKU_HOME, "Today"],
-    [`${NYT_SUDOKU_HOME}/archive`, "Archive"],
+    [NYT_SUDOKU_YESTERDAY, "Yesterday"],
   ],
   footer: "Step-by-step solutions for the daily New York Times Sudoku, computed independently by our open-source solver and checked against the NYT's own answer. Not affiliated with or endorsed by The New York Times.",
   css: /* css */ `
@@ -24,9 +26,10 @@ const CHROME: Chrome = {
 const LABEL: Record<NytLevel, string> = { easy: "Easy", medium: "Medium", hard: "Hard" };
 const LEVEL_NAME = (l: NytLevel) => LABEL[l];
 
-function boardCells(puzzle: string, solution: string) {
+// Solved cells stay blank unless `reveal` (the page fills them in from JS when the solution is shown)
+function boardCells(puzzle: string, solution: string, reveal = false) {
   return [...solution]
-    .map((d, i) => `<div class="cell ${puzzle[i] !== "0" ? "given" : "solved"}" data-i="${i}">${puzzle[i] !== "0" ? d : ""}</div>`)
+    .map((d, i) => `<div class="cell ${puzzle[i] !== "0" ? "given" : "solved"}" data-i="${i}">${puzzle[i] !== "0" || reveal ? d : ""}</div>`)
     .join("");
 }
 
@@ -88,12 +91,24 @@ function levelSection(l: NytLevel, p: NytSudokuLevelResult, visible: boolean): s
 // JSON for the inline <script>: "<" is escaped so the data can never close the tag
 const jsonForScript = (v: unknown) => JSON.stringify(v).replace(/</g, "\\u003c");
 
-export function renderNytSudokuResult(r: NytSudokuResult, nav: { newer: string | null; older: string | null }, isHome: boolean) {
+function nytSudokuHistory(past: NytSudokuResult[]) {
+  return renderHistory({
+    title: "NYT Sudoku Solutions History",
+    intro: "Every past NYT Sudoku, month by month.",
+    entries: past.map((r) => ({
+      date: r.date,
+      heading: `${historyDate(r.date)}`,
+      body: historyBoards(NYT_LEVELS.map((l) => historyBoard(`<div class="board-container"><div class="board">${boardCells(r.levels[l].puzzle, r.levels[l].result.solution, true)}</div></div>`, LEVEL_NAME(l)))),
+    })),
+  });
+}
+
+export function renderNytSudokuResult(r: NytSudokuResult, nav: { newer: string | null; older: string | null }, isHome: boolean, past: NytSudokuResult[] = []) {
   const data = Object.fromEntries(NYT_LEVELS.map((l) => [l, { puzzle: r.levels[l].puzzle, steps: r.levels[l].result.steps }]));
 
   const body = `
 <div class="page-header">
-  <h1>${isHome ? "Today's " : ""}NYT Sudoku Solver – Easy, Medium &amp; Hard</h1>
+  <h1>${isHome ? "Today's " : "Yesterday's "}NYT Sudoku Solver – Easy, Medium &amp; Hard</h1>
   <div class="sub">
     <span class="badge">NYT Sudoku</span>
     <span class="badge good">✓ Matches the NYT's answer</span>
@@ -105,8 +120,6 @@ ${gameBar({
   date: r.date,
   older: nav.older,
   newer: nav.newer,
-  path: nytSudokuPath,
-  archive: `${NYT_SUDOKU_HOME}/archive`,
   tabs: NYT_LEVELS.map((l) => ({ id: l, label: LEVEL_NAME(l) })),
   tabsId: "nsTabs",
   tabAttr: "data-level",
@@ -115,59 +128,20 @@ ${gameBar({
 ${NYT_LEVELS.map((l) => levelSection(l, r.levels[l], l === "easy")).join("")}
 </div>
 
-<div class="datenav">
-  <span>${nav.older ? `<a href="${nytSudokuPath(nav.older)}" class="prev-day" title="Previous day (Left Arrow)">← ${esc(shortDate(nav.older))}</a>` : ""}</span>
-  <span>${nav.newer ? `<a href="${nytSudokuPath(nav.newer)}" class="next-day" title="Next day (Right Arrow)">${esc(shortDate(nav.newer))} →</a>` : ""}</span>
-</div>
+${dateNav(nav)}
+${isHome ? nytSudokuHistory(past) : ""}
 
 <script type="application/json" id="nsData">${jsonForScript(data)}</script>
 <script src="/assets/nyt-sudoku.js" defer></script>`;
 
   return layout(
-    `NYT Sudoku Answers Today (${prettyDate(r.date)}) – Easy, Medium & Hard Solutions`,
+    `NYT Sudoku Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Easy, Medium & Hard Solutions`,
     `Step-by-step logic and the complete solution for the NYT Sudoku easy, medium and hard puzzles on ${prettyDate(r.date)}, checked against the NYT's own answers.`,
     body,
-    nytSudokuPath(r.date),
+    nytSudokuPath(isHome),
     false,
     CHROME
   );
-}
-
-export function renderNytSudokuArchive(dates: string[]) {
-  const list = dates.length
-    ? `<ul class="archive" id="archiveGrid">${dates
-        .map((d) => `<li data-date="${d}"><a href="${nytSudokuPath(d)}"><b>${esc(prettyDate(d))}</b><span class="date-tag">📅 ${d}</span></a></li>`)
-        .join("")}</ul>`
-    : `<p class="sub">No NYT Sudoku puzzles recorded yet.</p>`;
-
-  const body = `
-<div class="page-header">
-  <h1>NYT Sudoku Answers Archive</h1>
-  <p class="sub">${dates.length} past NYT Sudoku days with step-by-step solutions</p>
-</div>
-
-<div class="archive-controls">
-  <input type="search" id="archiveSearch" class="search-input" placeholder="Search date (e.g. 2026-10 or Oct)..." aria-label="Search archive">
-</div>
-
-${list}
-
-<script>
-(() => {
-  const search = document.getElementById("archiveSearch");
-  const items = [...document.querySelectorAll("#archiveGrid li")];
-  if (search && items.length) {
-    search.addEventListener("input", (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      items.forEach((li) => {
-        li.style.display = li.textContent.toLowerCase().includes(q) ? "" : "none";
-      });
-    });
-  }
-})();
-</script>`;
-
-  return layout("NYT Sudoku Answers Archive – Past Solutions", "Step-by-step solutions for every past NYT Sudoku puzzle.", body, `${NYT_SUDOKU_HOME}/archive`, false, CHROME);
 }
 
 export function renderNytSudokuNotFound(date?: string) {
@@ -180,7 +154,6 @@ export function renderNytSudokuNotFound(date?: string) {
       <p class="sub" style="justify-content:center">${date ? `No puzzle for <b>${esc(date)}</b> has been recorded.` : "No NYT Sudoku puzzles are available."}</p>
       <div style="margin-top:24px;display:flex;gap:12px;justify-content:center">
         <a href="${NYT_SUDOKU_HOME}" class="nav-link" style="background:var(--accent);color:#fff;padding:8px 20px">View Today's Puzzle</a>
-        <a href="${NYT_SUDOKU_HOME}/archive" class="nav-link" style="background:var(--soft);padding:8px 20px">Browse Archive</a>
       </div>
     </div>`,
     NYT_SUDOKU_HOME,

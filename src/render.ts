@@ -1,4 +1,5 @@
 import { SEO } from "./seo-content.ts";
+import { HISTORY_CSS, historyBoard, historyBoards, historyDate, renderHistory } from "./history.ts";
 import type { DailyResult } from "./store.ts";
 import { cellName } from "./solver.ts";
 
@@ -8,8 +9,8 @@ export const esc = (s: unknown) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 export const RESULT_PREFIX = "/daily-sudoku";
-export const ARCHIVE_PATH = `${RESULT_PREFIX}/archive`;
-export const resultPath = (date: string) => `${RESULT_PREFIX}/${date}`;
+export const RESULT_YESTERDAY = "/daily-sudoku-yesterday";
+export const resultPath = (isHome: boolean) => (isHome ? RESULT_PREFIX : RESULT_YESTERDAY);
 
 export const prettyDate = (iso: string) =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
@@ -856,70 +857,6 @@ ol.steps li.active .t { color: #0f172a; }
   .datenav a { justify-content: center; }
 }
 
-/* Archive Grid */
-.archive-controls {
-  margin-bottom: 24px;
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.search-input {
-  flex: 1;
-  min-width: 240px;
-  padding: 10px 16px;
-  border-radius: var(--radius);
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--ink);
-  font-family: inherit;
-  font-size: 14px;
-  box-shadow: var(--shadow-sm);
-  transition: border-color 0.2s ease;
-}
-.search-input:focus {
-  border-color: var(--accent);
-  outline: none;
-}
-
-.archive {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 14px;
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
-.archive a {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface);
-  text-decoration: none;
-  color: var(--ink);
-  box-shadow: var(--shadow-sm);
-  min-height: 90px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.archive a:hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
-}
-.archive a b {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--ink);
-}
-.archive a .date-tag {
-  font-size: 13px;
-  color: var(--muted);
-  font-family: var(--font-mono);
-  margin-top: 6px;
-}
-
 /* Footer */
 footer {
   border-top: 1px solid var(--line);
@@ -962,28 +899,33 @@ footer a:hover { color: var(--accent); }
   .games-menu { position: static; }
   .games-panel { left: 16px; right: 16px; width: auto; top: 68px; position: fixed; grid-template-columns: 1fr; max-height: calc(100vh - 88px); overflow-y: auto; }
 }
+${HISTORY_CSS}
 `;
 
-// Top bar of a game page: optional tabs, then previous day / date pill (links to the archive) / next day
+// Yesterday / Today links under a game page; nav holds hrefs
+export const dateNav = (nav: { newer: string | null; older: string | null }) => `<div class="datenav">
+  <span>${nav.older ? `<a href="${nav.older}" class="prev-day" title="Previous day (Left Arrow)">← Yesterday</a>` : ""}</span>
+  <span>${nav.newer ? `<a href="${nav.newer}" class="next-day" title="Next day (Right Arrow)">Today →</a>` : ""}</span>
+</div>`;
+
+// Top bar of a game page: optional tabs, then previous day / date pill / next day
 export function gameBar(o: {
   date: string;
-  older: string | null;
+  older: string | null; // href of the previous page, if any
   newer: string | null;
-  path: (date: string) => string;
-  archive: string;
   tabs?: { id: string; label: string }[];
   tabsId?: string;
   tabAttr?: string;
 }) {
-  const step = (d: string | null, arrow: string, title: string) =>
-    d ? `<a class="gm-step" href="${o.path(d)}" title="${title}">${arrow}</a>` : `<span class="gm-step" aria-disabled="true">${arrow}</span>`;
+  const step = (href: string | null, arrow: string, title: string) =>
+    href ? `<a class="gm-step" href="${href}" title="${title}">${arrow}</a>` : `<span class="gm-step" aria-disabled="true">${arrow}</span>`;
   const attr = o.tabAttr ?? "data-gm-tab";
   const tabs = o.tabs?.length
     ? `<div class="gm-tabs" id="${o.tabsId ?? "gmTabs"}" role="tablist">${o.tabs
         .map((t, i) => `<button type="button" role="tab" ${attr}="${t.id}" aria-selected="${i === 0}">${esc(t.label)}</button>`)
         .join("")}</div>`
     : "";
-  return `<div class="gm-bar">${tabs}${step(o.older, "‹", "Previous day")}<a class="gm-date" href="${o.archive}" title="Browse the archive">📅 ${esc(shortDate(o.date))}, ${o.date.slice(0, 4)}</a>${step(o.newer, "›", "Next day")}</div>`;
+  return `<div class="gm-bar">${tabs}${step(o.older, "‹", "Previous day")}<span class="gm-date">${esc(shortDate(o.date))}, ${o.date.slice(0, 4)}</span>${step(o.newer, "›", "Next day")}</div>`;
 }
 
 // Switches [data-gm-panel] blocks from the [data-gm-tab] buttons of #gmTabs (and reflects the choice in the URL hash)
@@ -1039,7 +981,7 @@ const SUDOKU_CHROME: Chrome = {
   brandHref: RESULT_PREFIX,
   nav: [
     [RESULT_PREFIX, "Today"],
-    [ARCHIVE_PATH, "Archive"],
+    [RESULT_YESTERDAY, "Yesterday"],
   ],
   footer: "Puzzles from the sudoku.com Daily Challenge. Solutions and step-by-step logic computed independently by our open-source solver.",
   gameIcon: "🔢",
@@ -1110,10 +1052,10 @@ export function layout(
     })
     .join("");
 
-  // Written guide (what it is, how to play, tips, FAQ) on result pages; archive and not-found pages skip it
+  // Written guide (what it is, how to play, tips, FAQ) on result pages; not-found pages skip it
   const seo = SEO[chrome.brandHref];
   const guide =
-    seo && !noindex && !canonicalPath.endsWith("/archive")
+    seo && !noindex
       ? `<section class="seo">
 <h2>What is ${esc(seo.name)}?</h2>
 <p>${esc(seo.what)}</p>
@@ -1186,7 +1128,7 @@ ${noindex ? '<meta name="robots" content="noindex">' : ""}
 <header class="site">
   <div class="bar-wrap">
     <div class="bar">
-      <a class="brand" href="${chrome.brandHref}">
+      <a class="brand" href="/">
         <span class="brand-icon">${chrome.gameIcon ?? "🧩"}</span>
         <div class="brand-meta">
           <span class="brand-name">${esc(chrome.brand)}</span>
@@ -1267,6 +1209,7 @@ ${moreGames}
   });
 })();
 </script>
+<script src="/assets/word-popup.js" defer></script>
 </body>
 </html>`;
 }
@@ -1280,10 +1223,22 @@ function boardCells(puzzle: string, solution: string, puzzleOnly = false) {
     .join("");
 }
 
-export function renderResult(r: DailyResult, nav: { newer: string | null; older: string | null }, isHome: boolean) {
+function sudokuHistory(past: DailyResult[]) {
+  return renderHistory({
+    title: "Daily Sudoku Solutions History",
+    intro: "Every past sudoku.com Daily Challenge with its solution, month by month.",
+    entries: past.map((r) => ({
+      date: r.date,
+      heading: historyDate(r.date),
+      body: historyBoards([historyBoard(`<div class="board-container"><div class="board">${boardCells(r.puzzle, r.result.solution)}</div></div>`, esc(r.source.difficulty))]),
+    })),
+  });
+}
+
+export function renderResult(r: DailyResult, nav: { newer: string | null; older: string | null }, isHome: boolean, past: DailyResult[] = []) {
   const { result: res } = r;
   const placements = res.steps.filter((s) => s.type === "place").length;
-  const title = `Sudoku Daily Challenge ${prettyDate(r.date)} – Step-by-Step Solution`;
+  const title = `Sudoku Daily Challenge ${isHome ? "Today" : "Yesterday"} ${prettyDate(r.date)} – Step-by-Step Solution`;
   const description = `Interactive step-by-step logic solver and complete solution for sudoku.com Daily Challenge on ${prettyDate(r.date)} (${r.source.difficulty}).`;
 
   const steps = res.steps
@@ -1297,7 +1252,7 @@ export function renderResult(r: DailyResult, nav: { newer: string | null; older:
 
   const body = `
 <div class="page-header">
-  <h1>${isHome ? "Today's " : ""}Sudoku Daily Challenge</h1>
+  <h1>${isHome ? "Today's " : "Yesterday's "}Sudoku Daily Challenge</h1>
   <div class="sub">
     <span class="badge">${esc(r.source.difficulty)}</span>
     <span class="badge good">✓ Verified Solution</span>
@@ -1305,7 +1260,7 @@ export function renderResult(r: DailyResult, nav: { newer: string | null; older:
 </div>
 
 <div class="gm-app">
-${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: resultPath, archive: ARCHIVE_PATH })}
+${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
 <div class="gm-stage">
   <section class="gm-card">
     <p class="gm-meta"><span style="text-transform:capitalize">${esc(r.source.difficulty)}</span><span>${res.givens} clues</span><span id="stepCount">0 / ${placements} placed</span></p>
@@ -1349,10 +1304,8 @@ ${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: resultPath, 
 </div>
 </div>
 
-<div class="datenav">
-  <span>${nav.older ? `<a href="${resultPath(nav.older)}" class="prev-day" title="Previous day (Left Arrow)">← ${esc(shortDate(nav.older))}</a>` : ""}</span>
-  <span>${nav.newer ? `<a href="${resultPath(nav.newer)}" class="next-day" title="Next day (Right Arrow)">${esc(shortDate(nav.newer))} →</a>` : ""}</span>
-</div>
+${dateNav(nav)}
+${isHome ? sudokuHistory(past) : ""}
 
 <script type="application/json" id="data">${data}</script>
 <script>
@@ -1468,56 +1421,7 @@ ${gameBar({ date: r.date, older: nav.older, newer: nav.newer, path: resultPath, 
 })();
 </script>`;
 
-  return layout(title, description, body, resultPath(r.date));
-}
-
-export function renderArchive(dates: string[]) {
-  const list = dates.length
-    ? `<ul class="archive" id="archiveGrid">${dates
-        .map(
-          (d) =>
-            `<li data-date="${d}"><a href="${resultPath(d)}">` +
-            `<b>${esc(prettyDate(d))}</b>` +
-            `<span class="date-tag">📅 ${d}</span></a></li>`
-        )
-        .join("")}</ul>`
-    : `<p class="sub">No puzzle results yet. Check back soon!</p>`;
-
-  const body = `
-<div class="page-header">
-  <h1>Sudoku Solutions Archive</h1>
-  <p class="sub">${dates.length} daily challenge puzzles solved step-by-step</p>
-</div>
-
-<div class="archive-controls">
-  <input type="search" id="archiveSearch" class="search-input" placeholder="Search by date (e.g. 2026-10 or Oct)..." aria-label="Search archive">
-</div>
-
-${list}
-
-<script>
-(() => {
-  const search = document.getElementById("archiveSearch");
-  const items = [...document.querySelectorAll("#archiveGrid li")];
-  if (search && items.length) {
-    search.addEventListener("input", (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      items.forEach((li) => {
-        const text = li.textContent.toLowerCase();
-        li.style.display = text.includes(q) ? "" : "none";
-      });
-    });
-  }
-})();
-</script>
-`;
-
-  return layout(
-    `Sudoku Daily Challenge Archive – All Solutions`,
-    `Every sudoku.com Daily Challenge solution, solved step by step.`,
-    body,
-    ARCHIVE_PATH
-  );
+  return layout(title, description, body, resultPath(isHome));
 }
 
 export function renderNotFound(date?: string) {
@@ -1532,7 +1436,6 @@ export function renderNotFound(date?: string) {
       }</p>
       <div style="margin-top:24px;display:flex;gap:12px;justify-content:center">
         <a href="${RESULT_PREFIX}" class="nav-link" style="background:var(--accent);color:#fff;padding:8px 20px">View Today's Puzzle</a>
-        <a href="${ARCHIVE_PATH}" class="nav-link" style="background:var(--soft);padding:8px 20px">Browse Archive</a>
       </div>
     </div>`,
     RESULT_PREFIX,
@@ -1540,9 +1443,9 @@ export function renderNotFound(date?: string) {
   );
 }
 
-export function renderSitemap(dates: string[], extraPaths: string[] = []) {
+export function renderSitemap(extraPaths: string[] = []) {
   const base = process.env.URL ?? "";
-  const urls = ["/", RESULT_PREFIX, ARCHIVE_PATH, ...dates.map(resultPath), ...extraPaths];
+  const urls = ["/", RESULT_PREFIX, RESULT_YESTERDAY, ...extraPaths];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${esc(base + u)}</loc></url>`).join("\n")}

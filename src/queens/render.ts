@@ -1,13 +1,11 @@
-import { esc, gameBar, GM_REVEAL_SCRIPT, GM_TABS_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, GM_TABS_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { QueensPuzzleResult, QueensResult } from "./store.ts";
 
 export const QUEENS_HOME = "/queens-unlimited";
-export const queensPath = (date: string) => `${QUEENS_HOME}/${date}`;
-export const queensSitemapPaths = (dates: string[]) => [
-  QUEENS_HOME,
-  `${QUEENS_HOME}/archive`,
-  ...dates.map(queensPath),
-];
+export const QUEENS_YESTERDAY = "/queens-unlimited-yesterday";
+export const queensPath = (isHome: boolean) => (isHome ? QUEENS_HOME : QUEENS_YESTERDAY);
+export const queensSitemapPaths = () => [QUEENS_HOME, QUEENS_YESTERDAY];
 
 const CHROME: Chrome = {
   brand: "Queens Game Answers",
@@ -15,7 +13,7 @@ const CHROME: Chrome = {
   gameIcon: "👑",
   nav: [
     [QUEENS_HOME, "Today"],
-    [`${QUEENS_HOME}/archive`, "Archive"],
+    [QUEENS_YESTERDAY, "Yesterday"],
   ],
   footer:
     "Hints and step-by-step solutions for daily Queens puzzles on playqueensgame.com, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn or playqueensgame.com.",
@@ -184,16 +182,27 @@ function puzzleSection(p: QueensPuzzleResult, i: number) {
 </div>`;
 }
 
+function queensHistory(past: QueensResult[]) {
+  return renderHistory({
+    title: "Queens Solutions History",
+    intro: "Every past Queens puzzle, month by month.",
+    entries: past.map((r) => ({
+      date: r.date,
+      heading: `${historyDate(r.date)}`,
+      body: historyBoards(r.puzzles.map((p) => historyBoard(boardSvg(p, true), `${p.size}×${p.size}`))),
+    })),
+  });
+}
+
 export function renderQueensResult(
   r: QueensResult,
   nav: { newer: string | null; older: string | null },
-  isHome: boolean
-) {
+  isHome: boolean, past: QueensResult[] = []) {
   const sizes = r.puzzles.map((p) => `${p.size}×${p.size}`);
 
   const body = `
 <div class="page-header">
-  <h1>${isHome ? "Today's " : ""}Queens Game Answers &amp; Solutions</h1>
+  <h1>${isHome ? "Today's " : "Yesterday's "}Queens Game Answers &amp; Solutions</h1>
   <div class="sub">
     <span class="badge">Queens Daily</span>
     <span class="badge good">${r.puzzles.length} Puzzle Sizes</span>
@@ -205,84 +214,22 @@ export function renderQueensResult(
     date: r.date,
     older: nav.older,
     newer: nav.newer,
-    path: queensPath,
-    archive: `${QUEENS_HOME}/archive`,
     tabs: r.puzzles.map((p) => ({ id: `${p.size}x${p.size}`, label: `${p.size}×${p.size}` })),
   })}
   ${r.puzzles.map(puzzleSection).join("")}
 </div>
 
-<div class="datenav">
-  <span>${
-    nav.older
-      ? `<a href="${queensPath(nav.older)}" class="prev-day">← ${esc(shortDate(nav.older))}</a>`
-      : ""
-  }</span>
-  <span>${
-    nav.newer
-      ? `<a href="${queensPath(nav.newer)}" class="next-day">${esc(shortDate(nav.newer))} →</a>`
-      : ""
-  }</span>
-</div>
+${dateNav(nav)}
+${isHome ? queensHistory(past) : ""}
 ${GM_TABS_SCRIPT}${GM_REVEAL_SCRIPT}`;
 
   return layout(
-    `Queens Game Answers Today (${prettyDate(r.date)}) – Daily Solutions`,
+    `Queens Game Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Daily Solutions`,
     `Step-by-step logic, hints and verified queen coordinates for the ${sizes.join(
       ", "
     )} daily Queens puzzles on ${prettyDate(r.date)}.`,
     body,
-    queensPath(r.date),
-    false,
-    CHROME
-  );
-}
-
-export function renderQueensArchive(dates: string[]) {
-  const list = dates.length
-    ? `<ul class="archive" id="archiveGrid">${dates
-        .map(
-          (d) =>
-            `<li data-date="${d}"><a href="${queensPath(d)}">` +
-            `<b>${esc(prettyDate(d))}</b>` +
-            `<span class="date-tag">📅 ${d}</span></a></li>`
-        )
-        .join("")}</ul>`
-    : `<p class="sub">No Queens puzzles recorded yet.</p>`;
-
-  const body = `
-<div class="page-header">
-  <h1>Queens Game Answers Archive</h1>
-  <p class="sub">${dates.length} days of daily Queens puzzles and solutions</p>
-</div>
-
-<div class="archive-controls">
-  <input type="search" id="archiveSearch" class="search-input" placeholder="Search date (e.g. 2026-10 or Oct)..." aria-label="Search archive">
-</div>
-
-${list}
-
-<script>
-(() => {
-  const search = document.getElementById("archiveSearch");
-  const items = [...document.querySelectorAll("#archiveGrid li")];
-  if (search && items.length) {
-    search.addEventListener("input", (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      items.forEach((li) => {
-        const text = li.textContent.toLowerCase();
-        li.style.display = text.includes(q) ? "" : "none";
-      });
-    });
-  }
-})();
-</script>`;
-
-  return layout(
-    "Queens Game Answers Archive – Past Daily Solutions",
-    "Hints and step-by-step solutions for every past daily Queens puzzle.",
-    body,
-    `${QUEENS_HOME}/archive`,
+    queensPath(isHome),
     false,
     CHROME
   );
@@ -300,7 +247,6 @@ export function renderQueensNotFound(date?: string) {
       }</p>
       <div style="margin-top:24px;display:flex;gap:12px;justify-content:center">
         <a href="${QUEENS_HOME}" class="nav-link" style="background:var(--accent);color:#fff;padding:8px 20px">View Today's Puzzle</a>
-        <a href="${QUEENS_HOME}/archive" class="nav-link" style="background:var(--soft);padding:8px 20px">Browse Archive</a>
       </div>
     </div>`,
     QUEENS_HOME,

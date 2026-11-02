@@ -1,7 +1,7 @@
 import type { Config } from "@netlify/functions";
-import { isIsoDate } from "../../src/crawl.ts";
+import { loadHistory } from "../../src/history.ts";
 import { getLinkedInQueensResult, listLinkedInQueensDates } from "../../src/linkedin-queens/store.ts";
-import { LINKEDIN_QUEENS_HOME, renderLinkedInQueensArchive, renderLinkedInQueensNotFound, renderLinkedInQueensResult } from "../../src/linkedin-queens/render.ts";
+import { LINKEDIN_QUEENS_HOME, LINKEDIN_QUEENS_YESTERDAY, renderLinkedInQueensNotFound, renderLinkedInQueensResult } from "../../src/linkedin-queens/render.ts";
 
 const html = (body: string, tag: string, maxAge: number) =>
   new Response(body, {
@@ -16,27 +16,25 @@ const html = (body: string, tag: string, maxAge: number) =>
 export default async (req: Request) => {
   const path = new URL(req.url).pathname.replace(/\/+$/, "") || "/";
 
-  if (path === `${LINKEDIN_QUEENS_HOME}/archive`) {
-    return html(renderLinkedInQueensArchive(await listLinkedInQueensDates()), "linkedin-queens-index", 3600);
-  }
+  // Only two pages per game (today and yesterday); dated URLs and the old archive redirect to today
+  if (path !== LINKEDIN_QUEENS_HOME && path !== LINKEDIN_QUEENS_YESTERDAY) return Response.redirect(new URL(LINKEDIN_QUEENS_HOME, req.url), 301);
 
   const dates = await listLinkedInQueensDates();
-  const requested = path.startsWith(`${LINKEDIN_QUEENS_HOME}/`) ? path.slice(LINKEDIN_QUEENS_HOME.length + 1) : undefined;
-  const date = requested ?? dates[0];
-  // Not-found is served as 200 + noindex, same as the other pages (netlify dev falls through on 404)
-  if (!date || !isIsoDate(date)) return html(renderLinkedInQueensNotFound(), "linkedin-queens-index", 60);
+  const isHome = path === LINKEDIN_QUEENS_HOME;
+  const date = dates[isHome ? 0 : 1];
+  // Not-found is served as 200 + noindex: netlify dev treats a function 404 as "unhandled" and falls through
+  if (!date) return html(renderLinkedInQueensNotFound(), "linkedin-queens-index", 60);
 
   const r = await getLinkedInQueensResult(date);
   if (!r) return html(renderLinkedInQueensNotFound(date), "linkedin-queens-index", 60);
 
-  const i = dates.indexOf(date);
-  const nav = { newer: i > 0 ? dates[i - 1] : null, older: i >= 0 && i < dates.length - 1 ? dates[i + 1] : null };
-  const isHome = !requested;
-  return html(renderLinkedInQueensResult(r, nav, isHome), isHome ? "linkedin-queens-index" : `linkedin-queens-index,linkedin-queens-${date}`, isHome ? 3600 : 86400 * 30);
+  const nav = isHome ? { newer: null, older: LINKEDIN_QUEENS_YESTERDAY } : { newer: LINKEDIN_QUEENS_HOME, older: null };
+  const past = isHome ? await loadHistory(dates, date, getLinkedInQueensResult) : [];
+  return html(renderLinkedInQueensResult(r, nav, isHome, past), "linkedin-queens-index", 3600);
 };
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with LINKEDIN_QUEENS_HOME)
-  path: ["/linkedin-queens", "/linkedin-queens/archive", "/linkedin-queens/:date"],
+  path: ["/linkedin-queens", "/linkedin-queens-yesterday", "/linkedin-queens/:date"],
   method: "GET",
 };
