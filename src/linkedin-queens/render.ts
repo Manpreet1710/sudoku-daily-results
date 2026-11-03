@@ -2,7 +2,7 @@ import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, GM_TABS_SCRIPT, layout, pretty
 import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { QueensPuzzleResult, LinkedInQueensResult } from "./store.ts";
 
-export const LINKEDIN_QUEENS_HOME = "/linkedin-queens-answers";
+export const LINKEDIN_QUEENS_HOME = "/linkedin-queens-answer-today";
 export const LINKEDIN_QUEENS_YESTERDAY = "/yesterdays-linkedin-queens-answers";
 export const linkedinQueensPath = (isHome: boolean) => (isHome ? LINKEDIN_QUEENS_HOME : LINKEDIN_QUEENS_YESTERDAY);
 export const linkedinQueensSitemapPaths = () => [LINKEDIN_QUEENS_HOME, LINKEDIN_QUEENS_YESTERDAY];

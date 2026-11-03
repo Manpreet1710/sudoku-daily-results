@@ -34,6 +34,6 @@ export default async (req: Request) => {
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with TANGO_HOME)
-  path: ["/tango-game-answers", "/tango-game-answers/:date"],
+  path: ["/tango-game-answer-today", "/tango-game-answer-today/:date"],
   method: "GET",
 };

@@ -2,7 +2,7 @@ import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, GM_TABS_SCRIPT, layout, pretty
 import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { QueensPuzzleResult, QueensResult } from "./store.ts";
 
-export const QUEENS_HOME = "/queens-game-answers";
+export const QUEENS_HOME = "/queens-game-answer-today";
 export const queensSitemapPaths = () => [QUEENS_HOME];
 
 const CHROME: Chrome = {

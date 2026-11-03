@@ -3,7 +3,7 @@ import { historyBoard, historyBoards, historyDate, renderHistory } from "../hist
 import { DIFFICULTIES, type Cell, type PipsDifficulty, type PipsPuzzle } from "./nyt.ts";
 import type { PipsResult } from "./store.ts";
 
-export const PIPS_HOME = "/nyt-pips-todays-hints-answers";
+export const PIPS_HOME = "/nyt-pips-hints-answers-today";
 export const PIPS_YESTERDAY = "/nyt-pips-yesterdays-hints-answers";
 export const pipsPath = (isHome: boolean) => (isHome ? PIPS_HOME : PIPS_YESTERDAY);
 export const pipsSitemapPaths = () => [PIPS_HOME, PIPS_YESTERDAY];
@@ -63,7 +63,7 @@ const CHROME: Chrome = {
 // JSON for the inline <script>: "<" is escaped so the data can never close the tag
 const jsonForScript = (v: unknown) => JSON.stringify(v).replace(/</g, "\\u003c");
 
-// The solved board as static SVG: same drawing as public/assets/pips.js with every domino placed
+// The solved board as static SVG: same drawing as public/puzzle-assets/pips.js with every domino placed
 const REGION_COLORS = ["#8b5cf6", "#ec4899", "#f43f5e", "#14b8a6", "#0ea5e9", "#f97316", "#84cc16", "#6366f1", "#d97706", "#22c55e", "#06b6d4", "#e11d48"];
 const PIP_DOTS = [[], [4], [0, 8], [0, 4, 8], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]];
 const regionLabel = (r: PipsPuzzle["regions"][number]) =>
@@ -179,7 +179,7 @@ export function renderPipsResult(r: PipsResult, nav: { newer: string | null; old
 
 ${dateNav(nav)}
 ${isHome ? pipsHistory(past) : ""}
-<script src="/assets/pips.js" defer></script>`;
+<script src="/puzzle-assets/pips.js" defer></script>`;
 
   return layout(
     `Pips Hints & Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – NYT Daily Puzzle`,

@@ -8,71 +8,71 @@
 # Old URLs -> the standard /{game}, /{game} and /{game}/{date} structure (permanent)
 [[redirects]]
   from = "/sudoku-daily-result"
-  to = "/sudoku-game-answers"
+  to = "/sudoku-answer-today"
   status = 301
 [[redirects]]
   from = "/sudoku-daily-result/*"
-  to = "/sudoku-game-answers/:splat"
+  to = "/sudoku-answer-today/:splat"
   status = 301
 [[redirects]]
   from = "/archive"
-  to = "/sudoku-game-answers"
+  to = "/sudoku-answer-today"
   status = 301
 [[redirects]]
   from = "/mini-sudoku"
-  to = "/linkedin-mini-sudoku-answers"
+  to = "/linkedin-mini-sudoku-answer-today"
   status = 301
 [[redirects]]
   from = "/mini-sudoku/*"
-  to = "/linkedin-mini-sudoku-answers/:splat"
+  to = "/linkedin-mini-sudoku-answer-today/:splat"
   status = 301
 [[redirects]]
   from = "/queens"
-  to = "/queens-game-answers"
+  to = "/queens-game-answer-today"
   status = 301
 [[redirects]]
   from = "/queens/*"
-  to = "/queens-game-answers/:splat"
+  to = "/queens-game-answer-today/:splat"
   status = 301
 [[redirects]]
   from = "/tango"
-  to = "/tango-game-answers"
+  to = "/tango-game-answer-today"
   status = 301
 [[redirects]]
   from = "/tango/*"
-  to = "/tango-game-answers/:splat"
+  to = "/tango-game-answer-today/:splat"
   status = 301
 [[redirects]]
   from = "/zip"
-  to = "/zip-game-answers"
+  to = "/zip-game-answer-today"
   status = 301
 [[redirects]]
   from = "/zip/*"
-  to = "/zip-game-answers/:splat"
+  to = "/zip-game-answer-today/:splat"
   status = 301
 [[redirects]]
   from = "/wordle"
-  to = "/todays-wordle-answer"
+  to = "/nyt-wordle-answer-today"
   status = 301
 [[redirects]]
   from = "/wordle/*"
-  to = "/todays-wordle-answer/:splat"
+  to = "/nyt-wordle-answer-today/:splat"
   status = 301
 [[redirects]]
   from = "/connections"
-  to = "/connections-hints-today"
+  to = "/nyt-connections-hints-answers-today"
   status = 301
 [[redirects]]
   from = "/connections/*"
-  to = "/connections-hints-today/:splat"
+  to = "/nyt-connections-hints-answers-today/:splat"
   status = 301
 [[redirects]]
   from = "/connections-hint-today"
-  to = "/connections-hints-today"
+  to = "/nyt-connections-hints-answers-today"
   status = 301
 [[redirects]]
   from = "/connections-hint-today/*"
-  to = "/connections-hints-today/:splat"
+  to = "/nyt-connections-hints-answers-today/:splat"
   status = 301
 [[redirects]]
   from = "/connections-hint-yesterday"
@@ -80,11 +80,11 @@
   status = 301
 [[redirects]]
   from = "/today-wordle-answer"
-  to = "/todays-wordle-answer"
+  to = "/nyt-wordle-answer-today"
   status = 301
 [[redirects]]
   from = "/today-wordle-answer/*"
-  to = "/todays-wordle-answer/:splat"
+  to = "/nyt-wordle-answer-today/:splat"
   status = 301
 [[redirects]]
   from = "/yesterday-wordle-answer"
@@ -92,11 +92,11 @@
   status = 301
 [[redirects]]
   from = "/spelling-bee"
-  to = "/spelling-bee-answers"
+  to = "/nyt-spelling-bee-answers-today"
   status = 301
 [[redirects]]
   from = "/spelling-bee/*"
-  to = "/spelling-bee-answers/:splat"
+  to = "/nyt-spelling-bee-answers-today/:splat"
   status = 301
 [[redirects]]
   from = "/spelling-bee-yesterday"
@@ -104,11 +104,11 @@
   status = 301
 [[redirects]]
   from = "/strands"
-  to = "/todays-nyt-strands-hints-spangram-answers"
+  to = "/nyt-strands-hints-spangram-answers-today"
   status = 301
 [[redirects]]
   from = "/strands/*"
-  to = "/todays-nyt-strands-hints-spangram-answers/:splat"
+  to = "/nyt-strands-hints-spangram-answers-today/:splat"
   status = 301
 [[redirects]]
   from = "/strands-yesterday"
@@ -116,11 +116,11 @@
   status = 301
 [[redirects]]
   from = "/pips"
-  to = "/nyt-pips-todays-hints-answers"
+  to = "/nyt-pips-hints-answers-today"
   status = 301
 [[redirects]]
   from = "/pips/*"
-  to = "/nyt-pips-todays-hints-answers/:splat"
+  to = "/nyt-pips-hints-answers-today/:splat"
   status = 301
 [[redirects]]
   from = "/pips-yesterday"
@@ -128,11 +128,11 @@
   status = 301
 [[redirects]]
   from = "/nyt-sudoku"
-  to = "/nyt-sudoku-todays-hints-answers"
+  to = "/nyt-sudoku-hints-answers-today"
   status = 301
 [[redirects]]
   from = "/nyt-sudoku/*"
-  to = "/nyt-sudoku-todays-hints-answers/:splat"
+  to = "/nyt-sudoku-hints-answers-today/:splat"
   status = 301
 [[redirects]]
   from = "/nyt-sudoku-yesterday"
@@ -140,11 +140,11 @@
   status = 301
 [[redirects]]
   from = "/linkedin-queens"
-  to = "/linkedin-queens-answers"
+  to = "/linkedin-queens-answer-today"
   status = 301
 [[redirects]]
   from = "/linkedin-queens/*"
-  to = "/linkedin-queens-answers/:splat"
+  to = "/linkedin-queens-answer-today/:splat"
   status = 301
 [[redirects]]
   from = "/linkedin-queens-yesterday"
@@ -152,11 +152,11 @@
   status = 301
 [[redirects]]
   from = "/linkedin-tango"
-  to = "/linkedin-tango-answers"
+  to = "/linkedin-tango-answer-today"
   status = 301
 [[redirects]]
   from = "/linkedin-tango/*"
-  to = "/linkedin-tango-answers/:splat"
+  to = "/linkedin-tango-answer-today/:splat"
   status = 301
 [[redirects]]
   from = "/linkedin-tango-yesterday"
@@ -164,11 +164,11 @@
   status = 301
 [[redirects]]
   from = "/linkedin-zip"
-  to = "/linkedin-zip-answers"
+  to = "/linkedin-zip-answer-today"
   status = 301
 [[redirects]]
   from = "/linkedin-zip/*"
-  to = "/linkedin-zip-answers/:splat"
+  to = "/linkedin-zip-answer-today/:splat"
   status = 301
 [[redirects]]
   from = "/linkedin-zip-yesterday"
@@ -176,11 +176,11 @@
   status = 301
 [[redirects]]
   from = "/linkedin-mini-sudoku"
-  to = "/linkedin-mini-sudoku-answers"
+  to = "/linkedin-mini-sudoku-answer-today"
   status = 301
 [[redirects]]
   from = "/linkedin-mini-sudoku/*"
-  to = "/linkedin-mini-sudoku-answers/:splat"
+  to = "/linkedin-mini-sudoku-answer-today/:splat"
   status = 301
 [[redirects]]
   from = "/linkedin-mini-sudoku-yesterday"
@@ -188,63 +188,63 @@
   status = 301
 [[redirects]]
   from = "/daily-sudoku-yesterday"
-  to = "/sudoku-game-answers"
+  to = "/sudoku-answer-today"
   status = 301
 [[redirects]]
   from = "/mini-crossword-yesterday"
-  to = "/mini-crossword-answers"
+  to = "/mini-crossword-answers-today"
   status = 301
 [[redirects]]
   from = "/queens-unlimited-yesterday"
-  to = "/queens-game-answers"
+  to = "/queens-game-answer-today"
   status = 301
 [[redirects]]
   from = "/tango-unlimited-yesterday"
-  to = "/tango-game-answers"
+  to = "/tango-game-answer-today"
   status = 301
 [[redirects]]
   from = "/zip-unlimited-yesterday"
-  to = "/zip-game-answers"
+  to = "/zip-game-answer-today"
   status = 301
 [[redirects]]
   from = "/queens-unlimited"
-  to = "/queens-game-answers"
+  to = "/queens-game-answer-today"
   status = 301
 [[redirects]]
   from = "/queens-unlimited/*"
-  to = "/queens-game-answers/:splat"
+  to = "/queens-game-answer-today/:splat"
   status = 301
 [[redirects]]
   from = "/tango-unlimited"
-  to = "/tango-game-answers"
+  to = "/tango-game-answer-today"
   status = 301
 [[redirects]]
   from = "/tango-unlimited/*"
-  to = "/tango-game-answers/:splat"
+  to = "/tango-game-answer-today/:splat"
   status = 301
 [[redirects]]
   from = "/zip-unlimited"
-  to = "/zip-game-answers"
+  to = "/zip-game-answer-today"
   status = 301
 [[redirects]]
   from = "/zip-unlimited/*"
-  to = "/zip-game-answers/:splat"
+  to = "/zip-game-answer-today/:splat"
   status = 301
 [[redirects]]
   from = "/daily-sudoku"
-  to = "/sudoku-game-answers"
+  to = "/sudoku-answer-today"
   status = 301
 [[redirects]]
   from = "/daily-sudoku/*"
-  to = "/sudoku-game-answers/:splat"
+  to = "/sudoku-answer-today/:splat"
   status = 301
 [[redirects]]
   from = "/mini-crossword"
-  to = "/mini-crossword-answers"
+  to = "/mini-crossword-answers-today"
   status = 301
 [[redirects]]
   from = "/mini-crossword/*"
-  to = "/mini-crossword-answers/:splat"
+  to = "/mini-crossword-answers-today/:splat"
   status = 301
 [[redirects]]
   from = "/nyt-games-solver"
@@ -259,10 +259,148 @@
   to = "/"
   status = 301
 [[redirects]]
+  from = "/sitemap.xml"
+  to = "/sitemap-games.xml"
+  status = 301
+[[redirects]]
+  from = "/assets/*"
+  to = "/puzzle-assets/:splat"
+  status = 301
+[[redirects]]
   from = "/wordle-result-today"
-  to = "/todays-wordle-answer"
+  to = "/nyt-wordle-answer-today"
   status = 301
 [[redirects]]
   from = "/wordle-result-today/*"
-  to = "/todays-wordle-answer/:splat"
+  to = "/nyt-wordle-answer-today/:splat"
+  status = 301
+
+# Final slugs (Nov 2026): previous slugs -> new slugs (permanent)
+[[redirects]]
+  from = "/todays-wordle-answer"
+  to = "/nyt-wordle-answer-today"
+  status = 301
+[[redirects]]
+  from = "/todays-wordle-answer/*"
+  to = "/nyt-wordle-answer-today"
+  status = 301
+[[redirects]]
+  from = "/connections-hints-today"
+  to = "/nyt-connections-hints-answers-today"
+  status = 301
+[[redirects]]
+  from = "/connections-hints-today/*"
+  to = "/nyt-connections-hints-answers-today"
+  status = 301
+[[redirects]]
+  from = "/spelling-bee-answers"
+  to = "/nyt-spelling-bee-answers-today"
+  status = 301
+[[redirects]]
+  from = "/spelling-bee-answers/*"
+  to = "/nyt-spelling-bee-answers-today"
+  status = 301
+[[redirects]]
+  from = "/todays-nyt-strands-hints-spangram-answers"
+  to = "/nyt-strands-hints-spangram-answers-today"
+  status = 301
+[[redirects]]
+  from = "/todays-nyt-strands-hints-spangram-answers/*"
+  to = "/nyt-strands-hints-spangram-answers-today"
+  status = 301
+[[redirects]]
+  from = "/nyt-pips-todays-hints-answers"
+  to = "/nyt-pips-hints-answers-today"
+  status = 301
+[[redirects]]
+  from = "/nyt-pips-todays-hints-answers/*"
+  to = "/nyt-pips-hints-answers-today"
+  status = 301
+[[redirects]]
+  from = "/nyt-sudoku-todays-hints-answers"
+  to = "/nyt-sudoku-hints-answers-today"
+  status = 301
+[[redirects]]
+  from = "/nyt-sudoku-todays-hints-answers/*"
+  to = "/nyt-sudoku-hints-answers-today"
+  status = 301
+[[redirects]]
+  from = "/linkedin-queens-answers"
+  to = "/linkedin-queens-answer-today"
+  status = 301
+[[redirects]]
+  from = "/linkedin-queens-answers/*"
+  to = "/linkedin-queens-answer-today"
+  status = 301
+[[redirects]]
+  from = "/linkedin-tango-answers"
+  to = "/linkedin-tango-answer-today"
+  status = 301
+[[redirects]]
+  from = "/linkedin-tango-answers/*"
+  to = "/linkedin-tango-answer-today"
+  status = 301
+[[redirects]]
+  from = "/linkedin-zip-answers"
+  to = "/linkedin-zip-answer-today"
+  status = 301
+[[redirects]]
+  from = "/linkedin-zip-answers/*"
+  to = "/linkedin-zip-answer-today"
+  status = 301
+[[redirects]]
+  from = "/linkedin-mini-sudoku-answers"
+  to = "/linkedin-mini-sudoku-answer-today"
+  status = 301
+[[redirects]]
+  from = "/linkedin-mini-sudoku-answers/*"
+  to = "/linkedin-mini-sudoku-answer-today"
+  status = 301
+[[redirects]]
+  from = "/sudoku-game-answers"
+  to = "/sudoku-answer-today"
+  status = 301
+[[redirects]]
+  from = "/sudoku-game-answers/*"
+  to = "/sudoku-answer-today"
+  status = 301
+[[redirects]]
+  from = "/mini-crossword-answers"
+  to = "/mini-crossword-answers-today"
+  status = 301
+[[redirects]]
+  from = "/mini-crossword-answers/*"
+  to = "/mini-crossword-answers-today"
+  status = 301
+[[redirects]]
+  from = "/queens-game-answers"
+  to = "/queens-game-answer-today"
+  status = 301
+[[redirects]]
+  from = "/queens-game-answers/*"
+  to = "/queens-game-answer-today"
+  status = 301
+[[redirects]]
+  from = "/tango-game-answers"
+  to = "/tango-game-answer-today"
+  status = 301
+[[redirects]]
+  from = "/tango-game-answers/*"
+  to = "/tango-game-answer-today"
+  status = 301
+[[redirects]]
+  from = "/zip-game-answers"
+  to = "/zip-game-answer-today"
+  status = 301
+[[redirects]]
+  from = "/zip-game-answers/*"
+  to = "/zip-game-answer-today"
+  status = 301
+[[redirects]]
+  from = "/word-search"
+  to = "/word-search-puzzle"
+  status = 301
+[[redirects]]
+  from = "/word-search/*"
+  to = "/word-search-puzzle"
   status = 301

@@ -96,7 +96,7 @@ const CHROME: Chrome = {
   gameIcon: "🧩",
   nav: [
     [HOME, "Home"],
-    ["/sudoku-game-answers", "Sudoku Game"],
+    ["/sudoku-answer-today", "Sudoku Game"],
   ],
   footer: "",
   css: HUB_CSS + CSS,

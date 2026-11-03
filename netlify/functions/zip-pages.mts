@@ -34,6 +34,6 @@ export default async (req: Request) => {
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with ZIP_HOME)
-  path: ["/zip-game-answers", "/zip-game-answers/:date"],
+  path: ["/zip-game-answer-today", "/zip-game-answer-today/:date"],
   method: "GET",
 };

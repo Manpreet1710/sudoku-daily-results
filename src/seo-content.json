@@ -1,5 +1,5 @@
 {
-  "/todays-wordle-answer": {
+  "/nyt-wordle-answer-today": {
     "name": "Wordle",
     "what": "Wordle is the New York Times word game where you guess a hidden five-letter word in six tries. After each guess, green tiles mark letters in the right place, yellow tiles mark letters in the word but in the wrong place, and grey tiles mark letters that are not in the word. A new word appears every day.",
     "how": [
@@ -33,7 +33,7 @@
       ]
     ]
   },
-  "/connections-hints-today": {
+  "/nyt-connections-hints-answers-today": {
     "name": "Connections",
     "what": "Connections is a New York Times word-grouping game. You get 16 words and must sort them into four groups of four that share something in common. The groups are coloured yellow, green, blue and purple, from the most straightforward to the trickiest, and you can make only four mistakes.",
     "how": [
@@ -67,7 +67,7 @@
       ]
     ]
   },
-  "/spelling-bee-answers": {
+  "/nyt-spelling-bee-answers-today": {
     "name": "Spelling Bee",
     "what": "Spelling Bee is the New York Times word puzzle built on a hive of seven letters. Make as many words as you can, each at least four letters long and each containing the centre letter. Letters can repeat, and at least one word in the puzzle, the pangram, uses all seven letters.",
     "how": [
@@ -101,7 +101,7 @@
       ]
     ]
   },
-  "/todays-nyt-strands-hints-spangram-answers": {
+  "/nyt-strands-hints-spangram-answers-today": {
     "name": "Strands",
     "what": "Strands is a New York Times word-search puzzle with a theme. A 6×8 grid of letters hides several theme words and one spangram that crosses the board from one side to the opposite side. Join touching letters, including diagonals, to spell the words, and every letter is used exactly once.",
     "how": [
@@ -135,7 +135,7 @@
       ]
     ]
   },
-  "/nyt-pips-todays-hints-answers": {
+  "/nyt-pips-hints-answers-today": {
     "name": "Pips",
     "what": "Pips is a New York Times domino puzzle. Place every domino on the board so that each coloured region follows its rule: a sum, greater-than, less-than, equal or not-equal condition shown in the diamond at the corner of the region. Pips comes in easy, medium and hard boards.",
     "how": [
@@ -169,7 +169,7 @@
       ]
     ]
   },
-  "/nyt-sudoku-todays-hints-answers": {
+  "/nyt-sudoku-hints-answers-today": {
     "name": "NYT Sudoku",
     "what": "The New York Times publishes three Sudoku puzzles every day: easy, medium and hard. Each is a standard 9×9 grid where every row, column and 3×3 box must contain the digits 1 to 9 exactly once. This page solves each one with a logic engine and checks the result against the NYT's own answer.",
     "how": [
@@ -203,7 +203,7 @@
       ]
     ]
   },
-  "/linkedin-queens-answers": {
+  "/linkedin-queens-answer-today": {
     "name": "Queens",
     "what": "Queens is a logic puzzle played on a square grid that is split into coloured regions. Your job is to place one queen in every row, every column and every colour region, with no two queens touching, not even diagonally. Every board has a logical route to the answer, so no guessing is needed.",
     "how": [
@@ -237,7 +237,7 @@
       ]
     ]
   },
-  "/linkedin-tango-answers": {
+  "/linkedin-tango-answer-today": {
     "name": "Tango",
     "what": "Tango is a 6×6 logic puzzle played with suns and moons. Fill the grid so that every row and column holds exactly three of each symbol, never more than two of the same symbol side by side, and every = and × sign between cells is respected.",
     "how": [
@@ -271,7 +271,7 @@
       ]
     ]
   },
-  "/linkedin-zip-answers": {
+  "/linkedin-zip-answer-today": {
     "name": "Zip",
     "what": "Zip is a path puzzle. Draw one continuous line that starts at the number 1, visits every numbered checkpoint in order, and fills every cell of the grid exactly once. Thick walls block the line, so you can never cross them.",
     "how": [
@@ -305,7 +305,7 @@
       ]
     ]
   },
-  "/linkedin-mini-sudoku-answers": {
+  "/linkedin-mini-sudoku-answer-today": {
     "name": "Mini Sudoku",
     "what": "Mini Sudoku is a compact 6×6 version of Sudoku. Fill the grid so that every row, every column and every outlined region contains the digits 1 to 6 exactly once. It is quick to play and uses the same logic as the classic puzzle.",
     "how": [
@@ -339,16 +339,16 @@
       ]
     ]
   },
-  "/queens-game-answers": {
-    "alias": "/linkedin-queens-answers"
+  "/queens-game-answer-today": {
+    "alias": "/linkedin-queens-answer-today"
   },
-  "/tango-game-answers": {
-    "alias": "/linkedin-tango-answers"
+  "/tango-game-answer-today": {
+    "alias": "/linkedin-tango-answer-today"
   },
-  "/zip-game-answers": {
-    "alias": "/linkedin-zip-answers"
+  "/zip-game-answer-today": {
+    "alias": "/linkedin-zip-answer-today"
   },
-  "/sudoku-game-answers": {
+  "/sudoku-answer-today": {
     "name": "Daily Sudoku",
     "what": "The Sudoku Daily Challenge is a 9×9 Sudoku with a new puzzle every day. Fill the grid so that every row, column and 3×3 box holds the digits 1 to 9 exactly once. Here you get a verified solution and a replayable timeline that explains each deduction.",
     "how": [
@@ -382,7 +382,7 @@
       ]
     ]
   },
-  "/mini-crossword-answers": {
+  "/mini-crossword-answers-today": {
     "name": "Mini Crossword",
     "what": "The Mini Crossword is a small daily crossword with short across and down clues. It can be solved in a couple of minutes, and the answers cross each other, so each solved word helps with the next.",
     "how": [
@@ -416,7 +416,7 @@
       ]
     ]
   },
-  "/word-search": {
+  "/word-search-puzzle": {
     "name": "Word Search",
     "what": "Word Search is a classic puzzle where you find a list of words hidden in a grid of letters. Words run across, down and diagonally, and on the hardest level they can also run backwards. This version is free, unlimited and runs entirely in your browser.",
     "how": [

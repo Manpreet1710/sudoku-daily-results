@@ -35,6 +35,6 @@ export default async (req: Request) => {
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with MINI_SUDOKU_HOME)
-  path: ["/linkedin-mini-sudoku-answers", "/yesterdays-linkedin-mini-sudoku-answers", "/linkedin-mini-sudoku-answers/:date"],
+  path: ["/linkedin-mini-sudoku-answer-today", "/yesterdays-linkedin-mini-sudoku-answers", "/linkedin-mini-sudoku-answer-today/:date"],
   method: "GET",
 };

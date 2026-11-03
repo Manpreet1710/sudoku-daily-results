@@ -12,6 +12,6 @@ export default async () =>
   });
 
 export const config: Config = {
-  path: "/word-search",
+  path: "/word-search-puzzle",
   method: "GET",
 };

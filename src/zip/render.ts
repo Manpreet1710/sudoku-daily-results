@@ -2,7 +2,7 @@ import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate,
 import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { ZipResult } from "./store.ts";
 
-export const ZIP_HOME = "/zip-game-answers";
+export const ZIP_HOME = "/zip-game-answer-today";
 export const zipSitemapPaths = () => [ZIP_HOME];
 
 const CHROME: Chrome = {

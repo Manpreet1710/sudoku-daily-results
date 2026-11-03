@@ -35,6 +35,6 @@ export default async (req: Request) => {
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with STRANDS_HOME)
-  path: ["/todays-nyt-strands-hints-spangram-answers", "/yesterdays-nyt-strands-hints-spangram-answers", "/todays-nyt-strands-hints-spangram-answers/:date"],
+  path: ["/nyt-strands-hints-spangram-answers-today", "/yesterdays-nyt-strands-hints-spangram-answers", "/nyt-strands-hints-spangram-answers-today/:date"],
   method: "GET",
 };

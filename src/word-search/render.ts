@@ -1,6 +1,6 @@
 import { layout, type Chrome } from "../render.ts";
 
-export const WORD_SEARCH_HOME = "/word-search";
+export const WORD_SEARCH_HOME = "/word-search-puzzle";
 export const wordSearchSitemapPaths = () => [WORD_SEARCH_HOME];
 
 const CHROME: Chrome = {
@@ -186,7 +186,7 @@ const BODY = /* html */ `
     <p style="margin:0">Your best times are saved in this browser only.</p>
   </section>
 </div>
-<script src="/assets/word-search.js" defer></script>
+<script src="/puzzle-assets/word-search.js" defer></script>
 `;
 
 export function renderWordSearch() {

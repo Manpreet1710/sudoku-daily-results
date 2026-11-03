@@ -3,7 +3,7 @@ import { historyBoard, historyBoards, historyDate, historyRow, renderHistory } f
 import { cellCol, cellRow, spansBoard } from "./solver.ts";
 import type { StrandsResult } from "./store.ts";
 
-export const STRANDS_HOME = "/todays-nyt-strands-hints-spangram-answers";
+export const STRANDS_HOME = "/nyt-strands-hints-spangram-answers-today";
 export const STRANDS_YESTERDAY = "/yesterdays-nyt-strands-hints-spangram-answers";
 export const strandsPath = (isHome: boolean) => (isHome ? STRANDS_HOME : STRANDS_YESTERDAY);
 export const strandsSitemapPaths = () => [STRANDS_HOME, STRANDS_YESTERDAY];

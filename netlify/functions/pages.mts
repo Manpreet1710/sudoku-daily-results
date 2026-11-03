@@ -45,7 +45,7 @@ const html = (body: string, tag: string, maxAge: number) =>
 export default async (req: Request) => {
   const path = new URL(req.url).pathname.replace(/\/+$/, "") || "/";
 
-  if (path === "/sitemap.xml") {
+  if (path === "/sitemap-games.xml") {
     const res = html(renderSitemap([...wordleSitemapPaths(), ...connectionsSitemapPaths(), ...spellingBeeSitemapPaths(), ...queensSitemapPaths(), ...tangoSitemapPaths(), ...strandsSitemapPaths(), ...miniSitemapPaths(), ...miniSudokuSitemapPaths(), ...zipSitemapPaths(), ...linkedinQueensSitemapPaths(), ...linkedinTangoSitemapPaths(), ...linkedinZipSitemapPaths(), ...pipsSitemapPaths(), ...nytSudokuSitemapPaths(), ...wordSearchSitemapPaths()]), "sudoku-index", 3600);
     res.headers.set("Content-Type", "application/xml; charset=utf-8");
     return res;
@@ -71,6 +71,6 @@ export default async (req: Request) => {
 };
 
 export const config: Config = {
-  path: ["/sudoku-game-answers", "/sudoku-game-answers/:date", "/results/:date", "/sitemap.xml"],
+  path: ["/sudoku-answer-today", "/sudoku-answer-today/:date", "/results/:date", "/sitemap-games.xml"],
   method: "GET",
 };

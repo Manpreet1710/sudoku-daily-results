@@ -3,7 +3,7 @@ import { historyDate, historyRow, renderHistory } from "../history.ts";
 import { wordleFacts, wordleHints } from "./hints.ts";
 import type { WordleResult } from "./store.ts";
 
-export const WORDLE_HOME = "/todays-wordle-answer";
+export const WORDLE_HOME = "/nyt-wordle-answer-today";
 export const WORDLE_YESTERDAY = "/yesterdays-wordle-answer";
 export const wordlePath = (isHome: boolean) => (isHome ? WORDLE_HOME : WORDLE_YESTERDAY);
 export const wordleSitemapPaths = () => [WORDLE_HOME, WORDLE_YESTERDAY];

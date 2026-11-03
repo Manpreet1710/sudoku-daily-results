@@ -4,7 +4,7 @@ import { historyBoard, historyBoards, historyDate, renderHistory } from "../hist
 import { NYT_LEVELS, type NytLevel } from "./nyt.ts";
 import type { NytSudokuLevelResult, NytSudokuResult } from "./store.ts";
 
-export const NYT_SUDOKU_HOME = "/nyt-sudoku-todays-hints-answers";
+export const NYT_SUDOKU_HOME = "/nyt-sudoku-hints-answers-today";
 export const NYT_SUDOKU_YESTERDAY = "/nyt-sudoku-yesterdays-hints-answers";
 export const nytSudokuPath = (isHome: boolean) => (isHome ? NYT_SUDOKU_HOME : NYT_SUDOKU_YESTERDAY);
 export const nytSudokuSitemapPaths = () => [NYT_SUDOKU_HOME, NYT_SUDOKU_YESTERDAY];
@@ -132,7 +132,7 @@ ${dateNav(nav)}
 ${isHome ? nytSudokuHistory(past) : ""}
 
 <script type="application/json" id="nsData">${jsonForScript(data)}</script>
-<script src="/assets/nyt-sudoku.js" defer></script>`;
+<script src="/puzzle-assets/nyt-sudoku.js" defer></script>`;
 
   return layout(
     `NYT Sudoku Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Easy, Medium & Hard Solutions`,

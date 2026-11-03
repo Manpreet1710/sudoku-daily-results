@@ -3,7 +3,7 @@ import { historyBoard, historyBoards, historyDate, historyRow, renderHistory } f
 import type { MiniEntry, MiniPuzzle } from "./api.ts";
 import type { MiniResult } from "./store.ts";
 
-export const MINI_CROSSWORD_HOME = "/mini-crossword-answers";
+export const MINI_CROSSWORD_HOME = "/mini-crossword-answers-today";
 export const miniSitemapPaths = () => [MINI_CROSSWORD_HOME];
 
 const CHROME: Chrome = {

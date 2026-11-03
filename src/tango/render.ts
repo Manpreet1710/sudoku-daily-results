@@ -2,7 +2,7 @@ import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate,
 import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { TangoResult } from "./store.ts";
 
-export const TANGO_HOME = "/tango-game-answers";
+export const TANGO_HOME = "/tango-game-answer-today";
 export const tangoSitemapPaths = () => [TANGO_HOME];
 
 const CHROME: Chrome = {

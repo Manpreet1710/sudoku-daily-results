@@ -34,6 +34,6 @@ export default async (req: Request) => {
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with MINI_CROSSWORD_HOME)
-  path: ["/mini-crossword-answers", "/mini-crossword-answers/:date"],
+  path: ["/mini-crossword-answers-today", "/mini-crossword-answers-today/:date"],
   method: "GET",
 };
