@@ -1,4 +1,4 @@
-import { esc, layout, shortDate, type Chrome } from "../render.ts";
+import { esc, gameIconSvg, layout, shortDate, type Chrome } from "../render.ts";
 import { HUBS, HUB_CSS, type Hub, type HubGame } from "../hub/render.ts";
 
 export const HOME = "/";
@@ -124,7 +124,7 @@ export function renderHome(latest: Record<string, string | undefined> = {}) {
     const date = latest[g.href];
     const sub = date ? `<i></i>Latest · ${esc(shortDate(date))}` : esc(g.note ?? "Daily puzzle");
     return `<a class="home-tile" href="${g.href}" style="--c1:${g.c1};--c2:${g.c2}" data-q="${esc(`${g.name} ${g.title ?? ""} ${g.tags.join(" ")}`.toLowerCase())}">
-  <span class="hub-icon" aria-hidden="true">${g.icon}</span>
+  <span class="hub-icon" aria-hidden="true">${gameIconSvg(g.href)}</span>
   <div><b>${esc(g.title ?? `${g.name} Solver`)}</b><small>${sub}</small></div>
   <em aria-hidden="true">→</em>
 </a>`;
@@ -145,7 +145,7 @@ export function renderHome(latest: Record<string, string | undefined> = {}) {
 <div class="hub-section-title"><h2>Browse by category</h2><span>${total} games</span></div>
 <div class="home-cats">
   ${CATEGORIES.map((c) => `<a class="home-cat" href="#${c.id}" style="--g:${c.hub.grad}">
-    <div class="home-cat-icons">${c.hub.games.slice(0, 5).map((g) => `<span style="--c1:${g.c1};--c2:${g.c2}" aria-hidden="true">${g.icon}</span>`).join("")}</div>
+    <div class="home-cat-icons">${c.hub.games.slice(0, 5).map((g) => `<span style="--c1:${g.c1};--c2:${g.c2}" aria-hidden="true">${gameIconSvg(g.href)}</span>`).join("")}</div>
     <h3>${esc(c.name)}</h3>
     <p>${esc(c.hub.games.map((g) => g.name).join(" · "))}</p>
     <span class="home-cat-go">${c.hub.games.length} games · Browse →</span>

@@ -2,6 +2,7 @@ import { SEO } from "./seo-content.ts";
 import { HISTORY_CSS, historyBoard, historyBoards, historyDate, renderHistory } from "./history.ts";
 import type { DailyResult } from "./store.ts";
 import { cellName } from "./solver.ts";
+import { LOGO_SVG } from "./logo.ts";
 
 const SITE_TITLE = process.env.SITE_TITLE || "Daily Puzzle Solvers";
 // Public origin used for canonical links and the sitemap; set SITE_URL when the site is served behind another domain
@@ -169,6 +170,7 @@ a:hover { color: var(--accent-ink); }
   text-decoration: none;
 }
 .brand:hover { color: var(--ink); }
+.brand-logo { display: block; height: 32px; width: auto; }
 
 .brand-icon {
   display: inline-flex;
@@ -339,10 +341,13 @@ a:hover { color: var(--accent-ink); }
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: var(--soft);
-  font-size: 17px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08), 0 2px 6px -3px rgba(15, 23, 42, 0.25);
 }
-.game-tab[aria-current="page"] .tab-icon { background: var(--surface); }
+.game-tab .tab-icon svg { width: 24px; height: 24px; }
+/* Game artwork sits on a white tile everywhere, like the main site */
+.more-icon, .hub-icon, .home-cat-icons span { background: #fff !important; }
+.more-icon svg, .hub-icon svg, .home-cat-icons svg { width: 68%; height: 68%; }
 .game-tab .tab-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .game-tab .tag {
   flex: none;
@@ -890,6 +895,7 @@ footer a:hover { color: var(--accent); }
   .brand-name { font-size: 15px; line-height: 1.15; }
   .sub-nav .nav-link:first-child { display: none; }
   .brand-icon { width: 34px; height: 34px; }
+  .brand-logo { height: 26px; }
   .nav-link { padding: 8px 10px; }
   .header-right { gap: 4px; }
   .games-menu > summary { padding: 0 12px; }
@@ -1024,6 +1030,42 @@ const GAME_META: Record<string, { blurb: string; c1: string; c2: string }> = {
   "/zip-game-answer-today": { blurb: "Daily Zip puzzles, with hints before the full route.", c1: "#22d3ee", c2: "#4f46e5" },
 };
 
+// Game artwork shared with the main Words With Letters site (_includes/home/game-art.html), 48x48 on a white tile
+const GAME_ART: Record<string, string> = {
+  wordle: '<rect x="5" y="9" width="11" height="11" rx="2.5" fill="#6aaa64"/><rect x="18.5" y="9" width="11" height="11" rx="2.5" fill="#c9b458"/><rect x="32" y="9" width="11" height="11" rx="2.5" fill="#787c7e"/><rect x="5" y="23" width="11" height="11" rx="2.5" fill="#6aaa64"/><rect x="18.5" y="23" width="11" height="11" rx="2.5" fill="#6aaa64"/><rect x="32" y="23" width="11" height="11" rx="2.5" fill="#c9b458"/><rect x="5" y="37" width="38" height="4" rx="2" fill="#d3d6da"/>',
+  connections: '<rect x="5" y="5" width="18" height="18" rx="4" fill="#f9df6d"/><rect x="25" y="5" width="18" height="18" rx="4" fill="#a0c35a"/><rect x="5" y="25" width="18" height="18" rx="4" fill="#b0c4ef"/><rect x="25" y="25" width="18" height="18" rx="4" fill="#ba81c5"/>',
+  spellingbee: '<path d="M24 4l9 5.2v10.4L24 24.8l-9-5.2V9.2z" fill="#f7da21"/><path d="M14.5 21l9 5.2v10.4l-9 5.2-9-5.2V26.2z" fill="#e6e6e6"/><path d="M33.5 21l9 5.2v10.4l-9 5.2-9-5.2V26.2z" fill="#e6e6e6"/><text x="24" y="19" text-anchor="middle" font-size="10" font-weight="900" fill="#1e1b2e" font-family="Arial,sans-serif">B</text>',
+  strands: '<rect x="4" y="4" width="40" height="40" rx="8" fill="#e8f3fb"/><path d="M13 13 L24 24 L35 13 M24 24 L24 36" stroke="#5ab0e6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M13 35 L35 35" stroke="#f5c84c" stroke-width="7" stroke-linecap="round"/><g fill="#1e1b2e"><circle cx="13" cy="13" r="2.4"/><circle cx="24" cy="24" r="2.4"/><circle cx="35" cy="13" r="2.4"/><circle cx="24" cy="35" r="2.4"/><circle cx="13" cy="35" r="2.4"/><circle cx="35" cy="35" r="2.4"/></g>',
+  pips: '<rect x="6" y="9" width="36" height="17" rx="4" fill="#fff" stroke="#1e1b2e" stroke-width="2.5"/><path d="M24 9v17" stroke="#1e1b2e" stroke-width="2.5"/><g fill="#e11d48"><circle cx="13" cy="14" r="2.2"/><circle cx="17.5" cy="21" r="2.2"/><circle cx="30" cy="17.5" r="2.2"/><circle cx="36" cy="14" r="2.2"/><circle cx="36" cy="21" r="2.2"/></g><rect x="10" y="30" width="28" height="11" rx="3" fill="#fbbf24"/><rect x="24" y="30" width="14" height="11" rx="3" fill="#a855f7"/>',
+  sudoku: '<rect x="5" y="5" width="38" height="38" rx="6" fill="#fff" stroke="#4f46e5" stroke-width="2.5"/><path d="M17.7 5v38M30.3 5v38M5 17.7h38M5 30.3h38" stroke="#c7d2fe" stroke-width="2"/><g font-family="Arial,sans-serif" font-weight="900" font-size="9" text-anchor="middle"><text x="11.3" y="14.6" fill="#4f46e5">5</text><text x="24" y="27.2" fill="#4f46e5">3</text><text x="36.6" y="39.8" fill="#e11d48">9</text><text x="36.6" y="14.6" fill="#1e1b2e">1</text><text x="11.3" y="39.8" fill="#1e1b2e">7</text></g>',
+  queens: '<rect x="5" y="5" width="19" height="19" fill="#bfa4f5"/><rect x="24" y="5" width="19" height="19" fill="#f8c78d"/><rect x="5" y="24" width="19" height="19" fill="#9fd6a7"/><rect x="24" y="24" width="19" height="19" fill="#9bc4f6"/><rect x="5" y="5" width="38" height="38" rx="6" fill="none" stroke="#1e1b2e" stroke-width="2.5"/><path transform="translate(8 10)" d="M0 9 L1.3 2 L4.3 5 L6.5 0 L8.7 5 L11.7 2 L13 9 Z" fill="#1e1b2e"/><path transform="translate(27 29)" d="M0 9 L1.3 2 L4.3 5 L6.5 0 L8.7 5 L11.7 2 L13 9 Z" fill="#1e1b2e"/>',
+  tango: '<circle cx="15" cy="17" r="8" fill="#fbbf24"/><g stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round"><path d="M15 4v2.5M15 27.5V30M2 17h2.5M25.5 17H28M5.8 7.8l1.8 1.8M22.4 24.4l1.8 1.8M5.8 26.2l1.8-1.8M22.4 9.6l1.8-1.8"/></g><path d="M38 28a9 9 0 1 1-9.5-12A7 7 0 0 0 38 28z" fill="#3b82f6" transform="translate(2 8)"/>',
+  zip: '<path d="M12 12 H36 V24 H12 V36 H36" fill="none" stroke="#f97316" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><g font-family="Arial,sans-serif" font-weight="900" font-size="9" text-anchor="middle" fill="#fff"><circle cx="12" cy="12" r="7" fill="#1e1b2e"/><text x="12" y="15.2">1</text><circle cx="36" cy="24" r="7" fill="#1e1b2e"/><text x="36" y="27.2">2</text><circle cx="36" cy="36" r="7" fill="#1e1b2e"/><text x="36" y="39.2">3</text></g>',
+  minisudoku: '<rect x="6" y="6" width="36" height="36" rx="6" fill="#fff" stroke="#0d9488" stroke-width="2.5"/><path d="M18 6v36M30 6v36M6 24h36" stroke="#99f6e4" stroke-width="2"/><g font-family="Arial,sans-serif" font-weight="900" font-size="10" text-anchor="middle"><text x="12" y="19" fill="#0d9488">2</text><text x="24" y="37" fill="#0d9488">6</text><text x="36" y="19" fill="#1e1b2e">4</text></g>',
+  crossword: '<rect x="5" y="5" width="38" height="38" rx="5" fill="#fff" stroke="#1e1b2e" stroke-width="2.5"/><g fill="#1e1b2e"><rect x="5" y="5" width="12.7" height="12.7"/><rect x="30.3" y="30.3" width="12.7" height="12.7"/><rect x="30.3" y="5" width="12.7" height="12.7" opacity="0"/></g><path d="M17.7 5v38M30.3 5v38M5 17.7h38M5 30.3h38" stroke="#1e1b2e" stroke-width="1.6"/><rect x="17.7" y="17.7" width="25.3" height="12.6" fill="#fde68a" opacity=".85"/><g font-family="Arial,sans-serif" font-weight="900" font-size="8" fill="#1e1b2e" text-anchor="middle"><text x="24" y="27">U</text><text x="36.6" y="27">P</text></g>',
+  wordsearch: '<rect x="5" y="5" width="38" height="38" rx="6" fill="#fff"/><g font-family="Arial,sans-serif" font-weight="800" font-size="8" fill="#6b7280" text-anchor="middle"><text x="12" y="15">K</text><text x="24" y="15">W</text><text x="36" y="15">E</text><text x="12" y="27">P</text><text x="24" y="27">O</text><text x="36" y="27">A</text><text x="12" y="39">R</text><text x="24" y="39">D</text><text x="36" y="39">T</text></g><path d="M9 12 L39 40" stroke="#ec4899" stroke-width="7" stroke-linecap="round" opacity=".35"/><circle cx="31" cy="31" r="7" fill="none" stroke="#1e1b2e" stroke-width="3"/><path d="m36 36 6 6" stroke="#1e1b2e" stroke-width="3.5" stroke-linecap="round"/>',
+};
+const GAME_ART_BY_HREF: Record<string, string> = {
+  "/nyt-wordle-answer-today": "wordle",
+  "/nyt-connections-hints-answers-today": "connections",
+  "/nyt-spelling-bee-answers-today": "spellingbee",
+  "/nyt-strands-hints-spangram-answers-today": "strands",
+  "/nyt-pips-hints-answers-today": "pips",
+  "/nyt-sudoku-hints-answers-today": "sudoku",
+  "/linkedin-queens-answer-today": "queens",
+  "/linkedin-tango-answer-today": "tango",
+  "/linkedin-zip-answer-today": "zip",
+  "/linkedin-mini-sudoku-answer-today": "minisudoku",
+  "/sudoku-answer-today": "sudoku",
+  "/mini-crossword-answers-today": "crossword",
+  "/queens-game-answer-today": "queens",
+  "/tango-game-answer-today": "tango",
+  "/zip-game-answer-today": "zip",
+  "/word-search-puzzle": "wordsearch",
+};
+export const gameIconSvg = (href: string) =>
+  `<svg viewBox="0 0 48 48" aria-hidden="true" focusable="false">${GAME_ART[GAME_ART_BY_HREF[href]] ?? '<circle cx="24" cy="24" r="14" fill="#a78bfa"/>'}</svg>`;
+
 export function layout(
   title: string,
   description: string,
@@ -1035,7 +1077,7 @@ export function layout(
   const here = (href: string) => (href === canonicalPath ? ' aria-current="page"' : "");
   const tab = (g: (typeof GAMES)[number]) =>
     `<a href="${g.href}" class="game-tab"${g.href === chrome.brandHref ? ' aria-current="page"' : ""}>` +
-    `<span class="tab-icon">${g.icon}</span><span class="tab-name">${esc(g.label)}</span>` +
+    `<span class="tab-icon">${gameIconSvg(g.href)}</span><span class="tab-name">${esc(g.label)}</span>` +
     `<span class="tag">${g.tag}</span></a>`;
   const games = (["NYT", "LinkedIn", "More puzzles"] as const)
     .map((group) => `<div class="games-group-title">${group}</div>${GAMES.filter((g) => g.group === group).map(tab).join("")}`)
@@ -1065,10 +1107,12 @@ ${seo.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p>
   // "Try more" cards for the other games of the current game's group (NYT, LinkedIn, ...)
   const current = GAMES.find((g) => g.href === chrome.brandHref);
   const moreGames = current
-    ? `<section class="more-games"><h2>Try more ${current.group === "More puzzles" ? "puzzles" : `${current.group} games`}</h2><div class="more-grid">${GAMES.filter((g) => g.group === current.group && g !== current)
+    ? `<section class="more-games"><h2>More ${current.group === "More puzzles" ? "puzzle" : `${current.group} game`} answers</h2><div class="more-grid">${GAMES.filter((g) => g.group === current.group && g !== current)
         .map((g) => {
           const m = GAME_META[g.href] ?? { blurb: "", c1: "#6366f1", c2: "#4f46e5" };
-          return `<a class="more-card" href="${g.href}" style="--c1:${m.c1};--c2:${m.c2}"><span class="more-icon">${g.icon}</span><span class="more-name">${esc(g.label)}</span><span class="more-blurb">${esc(m.blurb)}</span><span class="more-cta">Play now <i>→</i></span></a>`;
+          // These are answer pages, not playable games; only Word Search is played on the site
+          const playable = g.href === "/word-search-puzzle";
+          return `<a class="more-card" href="${g.href}" style="--c1:${m.c1};--c2:${m.c2}"><span class="more-icon">${gameIconSvg(g.href)}</span><span class="more-name">${esc(playable ? g.label : `${g.label} Answers`)}</span><span class="more-blurb">${esc(m.blurb)}</span><span class="more-cta">${playable ? "Play free" : "See today's answer"} <i>→</i></span></a>`;
         })
         .join("")}</div></section>`
     : "";
@@ -1117,13 +1161,7 @@ ${noindex ? '<meta name="robots" content="noindex">' : ""}
 <header class="site">
   <div class="bar-wrap">
     <div class="bar">
-      <a class="brand" href="/">
-        <span class="brand-icon">${chrome.gameIcon ?? "🧩"}</span>
-        <div class="brand-meta">
-          <span class="brand-name">${esc(chrome.brand)}</span>
-          <span class="brand-sub">Daily Solutions &amp; Hints</span>
-        </div>
-      </a>
+      <a class="brand" href="/">${LOGO_SVG}</a>
       <div class="header-right">
         <nav class="sub-nav" aria-label="Page">${sub}</nav>
         <details class="games-menu" id="gamesMenu">
