@@ -3,6 +3,7 @@ import { HISTORY_CSS, historyBoard, historyBoards, historyDate, renderHistory } 
 import type { DailyResult } from "./store.ts";
 import { cellName } from "./solver.ts";
 import { LOGO_SVG } from "./logo.ts";
+import { CLOSE_ICON, MENU_ICON, SITE_HEADER_CSS, SITE_MENU_HTML } from "./site-header.ts";
 
 const SITE_TITLE = process.env.SITE_TITLE || "Daily Puzzle Solvers";
 // Public origin used for canonical links and the sitemap; set SITE_URL when the site is served behind another domain
@@ -30,7 +31,7 @@ export const shortDate = (iso: string) =>
   });
 
 const STYLES = /* css */ `
-:root, [data-theme="light"] {
+:root {
   --font-sans: 'Plus Jakarta Sans', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
@@ -72,43 +73,6 @@ const STYLES = /* css */ `
   --shadow-sm: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
   --shadow: 0 4px 6px -1px rgba(16, 24, 40, 0.06), 0 2px 4px -2px rgba(16, 24, 40, 0.04);
   --shadow-lg: 0 12px 24px -4px rgba(16, 24, 40, 0.08), 0 4px 6px -4px rgba(16, 24, 40, 0.03);
-  --header-bg: rgba(255, 255, 255, 0.94);
-}
-
-[data-theme="dark"] {
-  --bg: #090d16;
-  --bg-pattern: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-  --surface: #111827;
-  --surface-elevated: #1a2234;
-  --surface-hover: #1e293b;
-  --soft: #161f30;
-  --soft-border: rgba(255, 255, 255, 0.08);
-  --line: #1e293b;
-  --line-strong: #94a3b8;
-
-  --ink: #f8fafc;
-  --ink-2: #cbd5e1;
-  --muted: #8292aa;
-
-  --accent: #6366f1;
-  --accent-ink: #a5b4fc;
-  --accent-soft: rgba(99, 102, 241, 0.16);
-  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
-  --accent-glow: rgba(99, 102, 241, 0.35);
-
-  --hl: rgba(234, 179, 8, 0.3);
-  --hl-glow: rgba(234, 179, 8, 0.45);
-  --elim: rgba(239, 68, 68, 0.25);
-  --elim-ink: #f87171;
-  --good: #10b981;
-  --good-soft: rgba(16, 185, 129, 0.15);
-  --warning: #f59e0b;
-  --warning-soft: rgba(245, 158, 11, 0.15);
-
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
-  --shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 14px 34px rgba(0, 0, 0, 0.6);
-  --header-bg: rgba(11, 15, 25, 0.88);
 }
 
 * { box-sizing: border-box; }
@@ -133,77 +97,15 @@ a:hover { color: var(--accent-ink); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--radius-sm); }
 [id] { scroll-margin-top: 96px; }
 
-/* Sticky Header & Navigation */
-.site {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: var(--header-bg);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--line);
-  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.05);
-}
-
-.bar-wrap {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-.bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 64px;
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: 800;
-  font-size: 18px;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  text-decoration: none;
-}
-.brand:hover { color: var(--ink); }
-.brand-logo { display: block; height: 32px; width: auto; }
-
-.brand-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--accent-gradient);
-  color: #fff;
-  font-size: 17px;
-  font-weight: 800;
-  box-shadow: 0 3px 10px var(--accent-glow);
-}
-
-.brand-meta {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-.brand-name { font-weight: 800; font-size: 16px; color: var(--ink); }
-.brand-sub { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
+/* Today / Yesterday tabs under the header */
+.sub-bar { background: var(--surface); border-bottom: 1px solid var(--line); }
 .sub-nav {
   display: flex;
   align-items: center;
   gap: 4px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 8px 20px;
 }
 
 .nav-link {
@@ -238,129 +140,9 @@ a:hover { color: var(--accent-ink); }
   50% { opacity: 0.5; transform: scale(0.85); }
 }
 
-.theme-btn {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  color: var(--ink-2);
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  padding: 0;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
-}
-.theme-btn:hover {
-  background: var(--soft);
-  border-color: var(--accent);
-  color: var(--accent);
-  transform: translateY(-1px);
-}
-.theme-btn svg { width: 18px; height: 18px; fill: currentColor; }
-
-/* Games dropdown */
-.games-menu { position: relative; margin: 0; background: none; border: 0; box-shadow: none; overflow: visible; }
-.games-menu:hover, .games-menu[open] { border: 0; box-shadow: none; }
-.games-menu > summary {
-  list-style: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 38px;
-  padding: 0 14px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-  color: var(--ink);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.15s ease;
-  user-select: none;
-}
-.games-menu > summary::-webkit-details-marker { display: none; }
-.games-menu > summary::after {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: translateY(-2px) rotate(45deg);
-  transition: transform 0.2s ease;
-}
-.games-menu[open] > summary::after { transform: translateY(1px) rotate(-135deg); }
-.games-menu > summary:hover, .games-menu[open] > summary { border-color: var(--accent); background: var(--soft); }
-.games-panel {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 10px);
-  width: min(560px, calc(100vw - 32px));
-  padding: 12px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  z-index: 60;
-}
-.games-group-title {
-  grid-column: 1 / -1;
-  padding: 8px 12px 2px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.games-group-title:first-child { padding-top: 2px; }
-.game-tab {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  text-decoration: none;
-  color: var(--ink);
-  font-size: 14px;
-  font-weight: 600;
-  transition: background 0.15s ease;
-}
-.game-tab:hover { background: var(--soft); color: var(--ink); }
-.game-tab[aria-current="page"] { background: var(--accent-soft); color: var(--accent-ink); }
-.game-tab .tab-icon {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08), 0 2px 6px -3px rgba(15, 23, 42, 0.25);
-}
-.game-tab .tab-icon svg { width: 24px; height: 24px; }
 /* Game artwork sits on a white tile everywhere, like the main site */
 .more-icon, .hub-icon, .home-cat-icons span { background: #fff !important; }
 .more-icon svg, .hub-icon svg, .home-cat-icons svg { width: 68%; height: 68%; }
-.game-tab .tab-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.game-tab .tag {
-  flex: none;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 2px 7px;
-  border-radius: 99px;
-  background: var(--soft);
-  color: var(--muted);
-}
-.game-tab[aria-current="page"] .tag { background: var(--surface); color: var(--accent-ink); }
 
 /* Page Layout */
 .wrap {
@@ -520,7 +302,7 @@ details[open] {
   border-color: var(--accent);
   box-shadow: var(--shadow);
 }
-details:not(.games-menu) summary {
+details summary {
   cursor: pointer;
   font-weight: 700;
   font-size: 15px;
@@ -533,7 +315,7 @@ details:not(.games-menu) summary {
   transition: background 0.15s ease;
 }
 details summary::-webkit-details-marker { display: none; }
-details:not(.games-menu) summary::after {
+details summary::after {
   content: "";
   position: absolute;
   right: 22px;
@@ -546,16 +328,16 @@ details:not(.games-menu) summary::after {
   transform: rotate(45deg);
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
-details[open]:not(.games-menu) summary::after {
+details[open] summary::after {
   transform: rotate(-135deg);
   margin-top: -2px;
   border-color: var(--accent);
 }
-details:not(.games-menu) summary:hover { background: var(--soft); }
-details[open]:not(.games-menu) summary { border-bottom: 1px solid var(--line); background: var(--surface); }
-details:not(.games-menu) > :not(summary) { margin-left: 20px; margin-right: 20px; }
-details:not(.games-menu) > :nth-child(2) { margin-top: 16px; }
-details:not(.games-menu) > :last-child { margin-bottom: 20px; }
+details summary:hover { background: var(--soft); }
+details[open] summary { border-bottom: 1px solid var(--line); background: var(--surface); }
+details > :not(summary) { margin-left: 20px; margin-right: 20px; }
+details > :nth-child(2) { margin-top: 16px; }
+details > :last-child { margin-bottom: 20px; }
 details p { margin-top: 0; color: var(--ink-2); line-height: 1.6; }
 
 /* Sudoku Board Styling in Crisp White Theme */
@@ -888,20 +670,11 @@ footer a:hover { color: var(--accent); }
 
 @media (max-width: 640px) {
   .wrap { padding: 20px 16px 60px; }
-  .bar-wrap { padding: 0 16px; }
+  .sub-nav { padding: 8px 16px; }
   .card { padding: 16px; }
-  .brand-sub { display: none; }
-  .brand { min-width: 0; gap: 10px; }
-  .brand-name { font-size: 15px; line-height: 1.15; }
-  .sub-nav .nav-link:first-child { display: none; }
-  .brand-icon { width: 34px; height: 34px; }
-  .brand-logo { height: 26px; }
   .nav-link { padding: 8px 10px; }
-  .header-right { gap: 4px; }
-  .games-menu > summary { padding: 0 12px; }
-  .games-menu { position: static; }
-  .games-panel { left: 16px; right: 16px; width: auto; top: 68px; position: fixed; grid-template-columns: 1fr; max-height: calc(100vh - 88px); overflow-y: auto; }
 }
+${SITE_HEADER_CSS}
 ${HISTORY_CSS}
 `;
 
@@ -1075,14 +848,6 @@ export function layout(
   chrome = SUDOKU_CHROME
 ) {
   const here = (href: string) => (href === canonicalPath ? ' aria-current="page"' : "");
-  const tab = (g: (typeof GAMES)[number]) =>
-    `<a href="${g.href}" class="game-tab"${g.href === chrome.brandHref ? ' aria-current="page"' : ""}>` +
-    `<span class="tab-icon">${gameIconSvg(g.href)}</span><span class="tab-name">${esc(g.label)}</span>` +
-    `<span class="tag">${g.tag}</span></a>`;
-  const games = (["NYT", "LinkedIn", "More puzzles"] as const)
-    .map((group) => `<div class="games-group-title">${group}</div>${GAMES.filter((g) => g.group === group).map(tab).join("")}`)
-    .join("");
-
   // Written guide (what it is, how to play, tips, FAQ) on result pages; not-found pages skip it
   const seo = SEO[chrome.brandHref];
   const guide =
@@ -1117,6 +882,8 @@ ${seo.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p>
         .join("")}</div></section>`
     : "";
 
+  // Today / Yesterday tabs; the mega menu covers everything else
+  const hasTabs = chrome.nav.some(([, label]) => label.toLowerCase() === "yesterday");
   const sub = chrome.nav
     .slice(0, 2)
     .map(([href, label]) => {
@@ -1127,7 +894,7 @@ ${seo.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p>
     .join("");
 
   return `<!doctype html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -1145,40 +912,26 @@ ${noindex ? '<meta name="robots" content="noindex">' : ""}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- Theme initialization: Defaults to Crisp White Theme -->
-<script>
-(() => {
-  const saved = localStorage.getItem("puzzle_theme_v2");
-  const theme = saved === "dark" ? "dark" : "light";
-  document.documentElement.setAttribute("data-theme", theme);
-})();
-</script>
 
 <style>${STYLES}${chrome.css ?? ""}</style>
 </head>
-<body>
+<body class="wg-home">
 
-<header class="site">
-  <div class="bar-wrap">
-    <div class="bar">
-      <a class="brand" href="/">${LOGO_SVG}</a>
-      <div class="header-right">
-        <nav class="sub-nav" aria-label="Page">${sub}</nav>
-        <details class="games-menu" id="gamesMenu">
-          <summary aria-label="All games">Games</summary>
-          <nav class="games-panel" aria-label="Puzzle Games">${games}</nav>
-        </details>
-        <button id="themeToggle" class="theme-btn" aria-label="Toggle dark/light theme" title="Toggle theme">
-          <svg viewBox="0 0 24 24" id="themeIcon">
-            <path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>
-          </svg>
-        </button>
-      </div>
+<a class="wg-skip" href="#main-content">Skip to content</a>
+<header class="wg-header" id="header">
+  <div class="wg-header__bar">
+    <button id="button-toggle" class="navbar-toggler wg-burger" type="button" aria-label="Open menu" aria-controls="navbarSupportedContent" aria-expanded="false">
+      <img src="${MENU_ICON}" alt="" width="24" height="24">
+    </button>
+    <a id="home-link" class="wg-logo" href="/" title="Words With Letters">${LOGO_SVG}</a>
+    <div id="navbarSupportedContent" class="wg-nav">
+      ${SITE_MENU_HTML}
     </div>
   </div>
 </header>
+${hasTabs ? `<div class="sub-bar"><nav class="sub-nav" aria-label="Page">${sub}</nav></div>` : ""}
 
-<main class="wrap">
+<main class="wrap" id="main-content">
 ${body}
 ${guide}
 ${moreGames}
@@ -1194,33 +947,48 @@ ${moreGames}
 </footer>
 
 <script>
-// Global Theme Toggle & Keyboard Navigation
+// Mega Menu & Keyboard Navigation
 (() => {
-  const btn = document.getElementById("themeToggle");
-  const html = document.documentElement;
-  const sunSvg = '<svg viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.06 1.06c.39.39 1.03.39 1.41 0a.996.996 0 000-1.41l-1.06-1.06zm1.06-10.96a.996.996 0 000-1.41.996.996 0 00-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36a.996.996 0 000-1.41.996.996 0 00-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>';
-  const moonSvg = '<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>';
+  const items = [...document.querySelectorAll(".wg-menu__item")];
+  const closeAll = (except) => items.forEach((li) => {
+    if (li === except) return;
+    li.classList.remove("is-open");
+    li.querySelector(".wg-menu__btn")?.setAttribute("aria-expanded", "false");
+  });
+  items.forEach((li) => {
+    const btn = li.querySelector(".wg-menu__btn");
+    if (!btn) return;
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = !li.classList.contains("is-open");
+      closeAll(li);
+      li.classList.toggle("is-open", open);
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  });
+  document.addEventListener("click", (e) => { if (!e.target.closest(".wg-menu")) closeAll(); });
+  // Desktop: hovering another item closes a menu that was opened by click
+  const hoverMenu = window.matchMedia("(hover: hover) and (min-width: 992px)");
+  items.forEach((li) => li.addEventListener("mouseenter", () => { if (hoverMenu.matches) closeAll(li); }));
+  window.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const open = document.querySelector(".wg-menu__item.is-open .wg-menu__btn");
+    closeAll();
+    if (open) open.focus();
+  });
 
-  function updateIcon() {
-    const isDark = html.getAttribute("data-theme") === "dark";
-    if (btn) btn.innerHTML = isDark ? sunSvg : moonSvg;
-  }
-  updateIcon();
-
-  if (btn) {
-    btn.onclick = () => {
-      const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
-      html.setAttribute("data-theme", next);
-      localStorage.setItem("puzzle_theme_v2", next);
-      updateIcon();
-    };
-  }
-
-  // Games dropdown closes on an outside click or Escape
-  const menu = document.getElementById("gamesMenu");
-  if (menu) {
-    document.addEventListener("click", (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
-    window.addEventListener("keydown", (e) => { if (e.key === "Escape") menu.open = false; });
+  // Mobile drawer
+  const burger = document.getElementById("button-toggle");
+  const drawer = document.getElementById("navbarSupportedContent");
+  if (burger && drawer) {
+    burger.addEventListener("click", () => {
+      const open = drawer.classList.toggle("show");
+      drawer.style.display = open ? "block" : "";
+      burger.querySelector("img").src = open ? "${CLOSE_ICON}" : "${MENU_ICON}";
+      burger.setAttribute("aria-expanded", open ? "true" : "false");
+      burger.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+      document.body.classList.toggle("wg-lock", open);
+    });
   }
 
   // Arrow key day navigation

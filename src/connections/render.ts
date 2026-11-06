@@ -3,7 +3,7 @@ import { historyDate, historyDot, historyRow, renderHistory } from "../history.t
 import type { ConnectionsResult } from "./store.ts";
 
 export const CONNECTIONS_HOME = "/nyt-connections-hints-answers-today";
-export const CONNECTIONS_YESTERDAY = "/connections-hints-yesterday";
+export const CONNECTIONS_YESTERDAY = "/nyt-connections-hints-answers-yesterday";
 export const connectionsPath = (isHome: boolean) => (isHome ? CONNECTIONS_HOME : CONNECTIONS_YESTERDAY);
 export const connectionsSitemapPaths = () => [CONNECTIONS_HOME, CONNECTIONS_YESTERDAY];
 
@@ -93,10 +93,6 @@ const CHROME: Chrome = {
 .gw-p { background: #e9d5ff; color: #581c87; border: 1px solid #d8b4fe; }
 
 /* Dark Theme overrides */
-[data-theme="dark"] .gw-y { background: rgba(234, 179, 8, 0.2); color: #fef08a; border-color: rgba(234, 179, 8, 0.4); }
-[data-theme="dark"] .gw-g { background: rgba(34, 197, 94, 0.2); color: #bbf7d0; border-color: rgba(34, 197, 94, 0.4); }
-[data-theme="dark"] .gw-b { background: rgba(59, 130, 246, 0.2); color: #bfdbfe; border-color: rgba(59, 130, 246, 0.4); }
-[data-theme="dark"] .gw-p { background: rgba(168, 85, 247, 0.2); color: #e9d5ff; border-color: rgba(168, 85, 247, 0.4); }
 
 @media (max-width: 480px) {
   .words-grid { gap: 6px; }

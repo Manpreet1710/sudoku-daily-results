@@ -4,7 +4,7 @@ import { BOX_REGIONS, cellName } from "./solver.ts";
 import type { MiniSudokuResult } from "./store.ts";
 
 export const MINI_SUDOKU_HOME = "/linkedin-mini-sudoku-answer-today";
-export const MINI_SUDOKU_YESTERDAY = "/yesterdays-linkedin-mini-sudoku-answers";
+export const MINI_SUDOKU_YESTERDAY = "/linkedin-mini-sudoku-answer-yesterday";
 export const miniSudokuPath = (isHome: boolean) => (isHome ? MINI_SUDOKU_HOME : MINI_SUDOKU_YESTERDAY);
 export const miniSudokuSitemapPaths = () => [MINI_SUDOKU_HOME, MINI_SUDOKU_YESTERDAY];
 

@@ -4,7 +4,7 @@ import { spellingBeeFacts, spellingBeeHints } from "./hints.ts";
 import type { SpellingBeeResult } from "./store.ts";
 
 export const SPELLING_BEE_HOME = "/nyt-spelling-bee-answers-today";
-export const SPELLING_BEE_YESTERDAY = "/yesterdays-spelling-bee-answers";
+export const SPELLING_BEE_YESTERDAY = "/nyt-spelling-bee-answers-yesterday";
 export const spellingBeePath = (isHome: boolean) => (isHome ? SPELLING_BEE_HOME : SPELLING_BEE_YESTERDAY);
 export const spellingBeeSitemapPaths = () => [SPELLING_BEE_HOME, SPELLING_BEE_YESTERDAY];
 
@@ -85,11 +85,6 @@ const CHROME: Chrome = {
   color: #713f12;
   font-weight: 800;
   box-shadow: 0 4px 12px rgba(234, 179, 8, 0.35);
-}
-[data-theme="dark"] .gw span.pg {
-  background: linear-gradient(135deg, rgba(234, 179, 8, 0.3) 0%, rgba(202, 138, 4, 0.4) 100%);
-  border-color: #eab308;
-  color: #fef08a;
 }
 `,
 };

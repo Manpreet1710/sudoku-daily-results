@@ -4,7 +4,7 @@ import { DIFFICULTIES, type Cell, type PipsDifficulty, type PipsPuzzle } from ".
 import type { PipsResult } from "./store.ts";
 
 export const PIPS_HOME = "/nyt-pips-hints-answers-today";
-export const PIPS_YESTERDAY = "/nyt-pips-yesterdays-hints-answers";
+export const PIPS_YESTERDAY = "/nyt-pips-hints-answers-yesterday";
 export const pipsPath = (isHome: boolean) => (isHome ? PIPS_HOME : PIPS_YESTERDAY);
 export const pipsSitemapPaths = () => [PIPS_HOME, PIPS_YESTERDAY];
 

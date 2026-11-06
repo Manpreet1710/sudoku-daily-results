@@ -76,7 +76,7 @@
   status = 301
 [[redirects]]
   from = "/connections-hint-yesterday"
-  to = "/connections-hints-yesterday"
+  to = "/nyt-connections-hints-answers-yesterday"
   status = 301
 [[redirects]]
   from = "/today-wordle-answer"
@@ -88,7 +88,7 @@
   status = 301
 [[redirects]]
   from = "/yesterday-wordle-answer"
-  to = "/yesterdays-wordle-answer"
+  to = "/nyt-wordle-answer-yesterday"
   status = 301
 [[redirects]]
   from = "/spelling-bee"
@@ -100,7 +100,7 @@
   status = 301
 [[redirects]]
   from = "/spelling-bee-yesterday"
-  to = "/yesterdays-spelling-bee-answers"
+  to = "/nyt-spelling-bee-answers-yesterday"
   status = 301
 [[redirects]]
   from = "/strands"
@@ -112,7 +112,7 @@
   status = 301
 [[redirects]]
   from = "/strands-yesterday"
-  to = "/yesterdays-nyt-strands-hints-spangram-answers"
+  to = "/nyt-strands-hints-spangram-answers-yesterday"
   status = 301
 [[redirects]]
   from = "/pips"
@@ -124,7 +124,7 @@
   status = 301
 [[redirects]]
   from = "/pips-yesterday"
-  to = "/nyt-pips-yesterdays-hints-answers"
+  to = "/nyt-pips-hints-answers-yesterday"
   status = 301
 [[redirects]]
   from = "/nyt-sudoku"
@@ -136,7 +136,7 @@
   status = 301
 [[redirects]]
   from = "/nyt-sudoku-yesterday"
-  to = "/nyt-sudoku-yesterdays-hints-answers"
+  to = "/nyt-sudoku-hints-answers-yesterday"
   status = 301
 [[redirects]]
   from = "/linkedin-queens"
@@ -148,7 +148,7 @@
   status = 301
 [[redirects]]
   from = "/linkedin-queens-yesterday"
-  to = "/yesterdays-linkedin-queens-answers"
+  to = "/linkedin-queens-answer-yesterday"
   status = 301
 [[redirects]]
   from = "/linkedin-tango"
@@ -160,7 +160,7 @@
   status = 301
 [[redirects]]
   from = "/linkedin-tango-yesterday"
-  to = "/yesterdays-linkedin-tango-answers"
+  to = "/linkedin-tango-answer-yesterday"
   status = 301
 [[redirects]]
   from = "/linkedin-zip"
@@ -172,7 +172,7 @@
   status = 301
 [[redirects]]
   from = "/linkedin-zip-yesterday"
-  to = "/yesterdays-linkedin-zip-answers"
+  to = "/linkedin-zip-answer-yesterday"
   status = 301
 [[redirects]]
   from = "/linkedin-mini-sudoku"
@@ -184,7 +184,7 @@
   status = 301
 [[redirects]]
   from = "/linkedin-mini-sudoku-yesterday"
-  to = "/yesterdays-linkedin-mini-sudoku-answers"
+  to = "/linkedin-mini-sudoku-answer-yesterday"
   status = 301
 [[redirects]]
   from = "/daily-sudoku-yesterday"
@@ -403,4 +403,86 @@
 [[redirects]]
   from = "/word-search/*"
   to = "/word-search-puzzle"
+  status = 301
+
+# Yesterday slugs now mirror the today slugs: previous slugs -> new slugs (permanent)
+[[redirects]]
+  from = "/yesterdays-wordle-answer"
+  to = "/nyt-wordle-answer-yesterday"
+  status = 301
+[[redirects]]
+  from = "/yesterdays-wordle-answer/*"
+  to = "/nyt-wordle-answer-yesterday"
+  status = 301
+[[redirects]]
+  from = "/connections-hints-yesterday"
+  to = "/nyt-connections-hints-answers-yesterday"
+  status = 301
+[[redirects]]
+  from = "/connections-hints-yesterday/*"
+  to = "/nyt-connections-hints-answers-yesterday"
+  status = 301
+[[redirects]]
+  from = "/yesterdays-spelling-bee-answers"
+  to = "/nyt-spelling-bee-answers-yesterday"
+  status = 301
+[[redirects]]
+  from = "/yesterdays-spelling-bee-answers/*"
+  to = "/nyt-spelling-bee-answers-yesterday"
+  status = 301
+[[redirects]]
+  from = "/yesterdays-nyt-strands-hints-spangram-answers"
+  to = "/nyt-strands-hints-spangram-answers-yesterday"
+  status = 301
+[[redirects]]
+  from = "/yesterdays-nyt-strands-hints-spangram-answers/*"
+  to = "/nyt-strands-hints-spangram-answers-yesterday"
+  status = 301
+[[redirects]]
+  from = "/nyt-pips-yesterdays-hints-answers"
+  to = "/nyt-pips-hints-answers-yesterday"
+  status = 301
+[[redirects]]
+  from = "/nyt-pips-yesterdays-hints-answers/*"
+  to = "/nyt-pips-hints-answers-yesterday"
+  status = 301
+[[redirects]]
+  from = "/nyt-sudoku-yesterdays-hints-answers"
+  to = "/nyt-sudoku-hints-answers-yesterday"
+  status = 301
+[[redirects]]
+  from = "/nyt-sudoku-yesterdays-hints-answers/*"
+  to = "/nyt-sudoku-hints-answers-yesterday"
+  status = 301
+[[redirects]]
+  from = "/yesterdays-linkedin-queens-answers"
+  to = "/linkedin-queens-answer-yesterday"
+  status = 301
+[[redirects]]
+  from = "/yesterdays-linkedin-queens-answers/*"
+  to = "/linkedin-queens-answer-yesterday"
+  status = 301
+[[redirects]]
+  from = "/yesterdays-linkedin-tango-answers"
+  to = "/linkedin-tango-answer-yesterday"
+  status = 301
+[[redirects]]
+  from = "/yesterdays-linkedin-tango-answers/*"
+  to = "/linkedin-tango-answer-yesterday"
+  status = 301
+[[redirects]]
+  from = "/yesterdays-linkedin-zip-answers"
+  to = "/linkedin-zip-answer-yesterday"
+  status = 301
+[[redirects]]
+  from = "/yesterdays-linkedin-zip-answers/*"
+  to = "/linkedin-zip-answer-yesterday"
+  status = 301
+[[redirects]]
+  from = "/yesterdays-linkedin-mini-sudoku-answers"
+  to = "/linkedin-mini-sudoku-answer-yesterday"
+  status = 301
+[[redirects]]
+  from = "/yesterdays-linkedin-mini-sudoku-answers/*"
+  to = "/linkedin-mini-sudoku-answer-yesterday"
   status = 301

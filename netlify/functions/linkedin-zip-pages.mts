@@ -35,6 +35,6 @@ export default async (req: Request) => {
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with LINKEDIN_ZIP_HOME)
-  path: ["/linkedin-zip-answer-today", "/yesterdays-linkedin-zip-answers", "/linkedin-zip-answer-today/:date"],
+  path: ["/linkedin-zip-answer-today", "/linkedin-zip-answer-yesterday", "/linkedin-zip-answer-today/:date"],
   method: "GET",
 };
