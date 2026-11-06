@@ -3,7 +3,7 @@ import { historyBoard, historyBoards, historyDate, renderHistory } from "../hist
 import type { QueensPuzzleResult, LinkedInQueensResult } from "./store.ts";
 
 export const LINKEDIN_QUEENS_HOME = "/linkedin-queens-answer-today";
-export const LINKEDIN_QUEENS_YESTERDAY = "/yesterdays-linkedin-queens-answers";
+export const LINKEDIN_QUEENS_YESTERDAY = "/linkedin-queens-answer-yesterday";
 export const linkedinQueensPath = (isHome: boolean) => (isHome ? LINKEDIN_QUEENS_HOME : LINKEDIN_QUEENS_YESTERDAY);
 export const linkedinQueensSitemapPaths = () => [LINKEDIN_QUEENS_HOME, LINKEDIN_QUEENS_YESTERDAY];
 

@@ -35,6 +35,6 @@ export default async (req: Request) => {
 
 export const config: Config = {
   // Literal strings only: Netlify reads this statically (keep in sync with SPELLING_BEE_HOME)
-  path: ["/nyt-spelling-bee-answers-today", "/yesterdays-spelling-bee-answers", "/nyt-spelling-bee-answers-today/:date"],
+  path: ["/nyt-spelling-bee-answers-today", "/nyt-spelling-bee-answers-yesterday", "/nyt-spelling-bee-answers-today/:date"],
   method: "GET",
 };

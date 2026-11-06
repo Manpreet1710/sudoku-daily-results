@@ -5,7 +5,7 @@ import { NYT_LEVELS, type NytLevel } from "./nyt.ts";
 import type { NytSudokuLevelResult, NytSudokuResult } from "./store.ts";
 
 export const NYT_SUDOKU_HOME = "/nyt-sudoku-hints-answers-today";
-export const NYT_SUDOKU_YESTERDAY = "/nyt-sudoku-yesterdays-hints-answers";
+export const NYT_SUDOKU_YESTERDAY = "/nyt-sudoku-hints-answers-yesterday";
 export const nytSudokuPath = (isHome: boolean) => (isHome ? NYT_SUDOKU_HOME : NYT_SUDOKU_YESTERDAY);
 export const nytSudokuSitemapPaths = () => [NYT_SUDOKU_HOME, NYT_SUDOKU_YESTERDAY];
 

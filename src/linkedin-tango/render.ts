@@ -3,7 +3,7 @@ import { historyBoard, historyBoards, historyDate, renderHistory } from "../hist
 import type { LinkedInTangoResult } from "./store.ts";
 
 export const LINKEDIN_TANGO_HOME = "/linkedin-tango-answer-today";
-export const LINKEDIN_TANGO_YESTERDAY = "/yesterdays-linkedin-tango-answers";
+export const LINKEDIN_TANGO_YESTERDAY = "/linkedin-tango-answer-yesterday";
 export const linkedinTangoPath = (isHome: boolean) => (isHome ? LINKEDIN_TANGO_HOME : LINKEDIN_TANGO_YESTERDAY);
 export const linkedinTangoSitemapPaths = () => [LINKEDIN_TANGO_HOME, LINKEDIN_TANGO_YESTERDAY];
 

@@ -3,7 +3,7 @@ import { historyBoard, historyBoards, historyDate, renderHistory } from "../hist
 import type { LinkedInZipResult } from "./store.ts";
 
 export const LINKEDIN_ZIP_HOME = "/linkedin-zip-answer-today";
-export const LINKEDIN_ZIP_YESTERDAY = "/yesterdays-linkedin-zip-answers";
+export const LINKEDIN_ZIP_YESTERDAY = "/linkedin-zip-answer-yesterday";
 export const linkedinZipPath = (isHome: boolean) => (isHome ? LINKEDIN_ZIP_HOME : LINKEDIN_ZIP_YESTERDAY);
 export const linkedinZipSitemapPaths = () => [LINKEDIN_ZIP_HOME, LINKEDIN_ZIP_YESTERDAY];
 
