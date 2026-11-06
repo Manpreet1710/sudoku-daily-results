@@ -1,4 +1,6 @@
-// Header mega menu shared with the main Words With Letters site; keep in sync with it
+// Header mega menu and footer shared with the main Words With Letters site; keep in sync with it
+import { LOGO_SVG } from "./logo.ts";
+
 export const MENU_ICON = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23fff%22 stroke-width=%222%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M4 7h16M4 12h16M4 17h16%22/%3E%3C/svg%3E";
 export const CLOSE_ICON = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23fff%22 stroke-width=%222%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M6 6l12 12M18 6 6 18%22/%3E%3C/svg%3E";
 
@@ -260,4 +262,52 @@ export const SITE_HEADER_CSS = /* css */ `
 .wg-header ::before, .wg-header ::after { box-sizing: border-box; }
 .wg-home .wg-header button, .wg-home .wg-header button:hover { box-shadow: none; transform: none; border-radius: 10px; }
 .wg-home .wg-burger:hover { background: transparent; }
+`;
+
+// Second copy of the logo on the page, so its gradient ids must differ
+const FOOTER_LOGO = LOGO_SVG.replace(/wgLogoTile/g, "wgLogoTileFooter");
+
+export const SITE_FOOTER_HTML = `<footer class="wg-footer"> <div class="wg-footer__inner"> <div class="wg-footer__brand"> <a href="/" aria-label="Word with letters">${FOOTER_LOGO}</a> <p>Free word solvers, daily hints and puzzle helpers.</p> <div class="wg-footer__social"><a href="https://www.facebook.com/" rel="noopener" target="_blank" aria-label="facebook"><img src="/puzzle-assets/facebook.svg" alt="" width="20" height="20" loading="lazy"></a><a href="https://www.instagram.com/" rel="noopener" target="_blank" aria-label="instagram"><img src="/puzzle-assets/instagram.svg" alt="" width="20" height="20" loading="lazy"></a><a href="https://www.linkedin.com/" rel="noopener" target="_blank" aria-label="linkden"><img src="/puzzle-assets/linkedin.svg" alt="" width="20" height="20" loading="lazy"></a><a href="https://www.twitter.com/" rel="noopener" target="_blank" aria-label="twitter"><img src="/puzzle-assets/twitter.svg" alt="" width="20" height="20" loading="lazy"></a></div> </div><div class="wg-footer__col"><h3>Daily Answers</h3><a href="/nyt-wordle-answer-today">Wordle Answer Today</a><a href="/nyt-connections-hints-answers-today">Connections Hints & Answers</a><a href="/nyt-spelling-bee-answers-today">Spelling Bee Answers</a><a href="/nyt-strands-hints-spangram-answers-today">Strands Hints & Spangram</a><a href="/nyt-pips-hints-answers-today">Pips Hints & Answers</a><a href="/nyt-sudoku-hints-answers-today">NYT Sudoku Hints</a></div><div class="wg-footer__col"><h3>Word Finders</h3><a href="/five-letter-words-with-these-letters">5 Letter Words</a><a href="/x-letter-words-with-letters">Words by Length</a><a href="/anagram-word-finder">Anagram Word Finder</a><a href="/jumble-word-finder">Jumble Word Finder</a><a href="/make-words-with-these-letters">Make Words From Letters</a><h3 class="wg-footer__sub">Other Languages</h3><a href="/french-word-unscrambler">French Word Unscrambler</a><a href="/german-word-unscrambler">German Word Unscrambler</a><a href="/italian-word-unscrambler">Italian Word Unscrambler</a><a href="/spanish-word-unscrambler">Spanish Word Unscrambler</a></div><div class="wg-footer__col"><h3>Tools</h3><a href="/wordle-solver">Wordle Solver</a><a href="/letter-unscrambler-into-words">Word Unscrambler</a><a href="/word-generator-from-letters">Anagram Solver</a><a href="/find-words-with-letters-in-certain-positions">Words in Certain Positions</a><a href="/find-words-that-start-with-the-letters">Words Starting With</a></div><div class="wg-footer__col"><h3>Company</h3><a href="/terms-and-conditions">Terms of use</a><a href="/privacy-policy">Privacy Policy</a><a href="/disclaimer">Disclaimer</a><a href="/about">About</a><a href="/blog/">Blog</a><h3 class="wg-footer__sub">Network sites</h3><a href="/blog" rel="noopener">Blog</a><a href="/allpages" rel="noopener">Popular Pages</a><a href="/vowels" rel="noopener">Vowels</a><a href="/words-with-silent-letters" rel="noopener">Words with silent letters</a><a href="/long-words-with-letters" rel="noopener">Long words with letters</a><a href="/short-words-with-letters" rel="noopener">Short words with letters</a></div> </div> </footer>`;
+
+export const SITE_FOOTER_CSS = /* css */ `
+.wg-home {
+  --wg-gap: 80px;
+}
+.wg-footer { margin-top: var(--wg-gap); background: var(--wg-header); color: #cfc9e6; padding: 56px 16px 24px; border-radius: 48px 48px 0 0; }
+.wg-footer__inner { display: grid; grid-template-columns: 1.4fr repeat(4, 1fr); gap: 32px; max-width: 1200px; margin: 0 auto; }
+.wg-footer__brand p { margin: 16px 0; color: #a59fc0; max-width: 28ch; }
+.wg-footer__social { display: flex; gap: 8px; }
+.wg-home .wg-footer__social a { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: rgba(255, 255, 255, .08); }
+.wg-footer__col { display: flex; flex-direction: column; }
+.wg-footer__col h3 { margin: 0 0 12px; color: #fff; font-size: 14px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.wg-footer__sub { margin-top: 24px !important; }
+.wg-home .wg-footer__col a { display: block; padding: 6px 0; min-height: 32px; color: #cfc9e6; font-size: 15px; text-decoration: none; }
+.wg-home .wg-footer__col a:hover { color: #fff; text-decoration: underline; }
+.wg-home .wg-footer + .footer-bottom { background: var(--wg-header) !important; color: #a59fc0 !important; margin: 0 !important; padding: 16px; }
+.wg-home .footer-bottom p { color: #a59fc0; }
+@media (max-width: 1023.98px) {
+  .wg-footer__inner { grid-template-columns: repeat(3, 1fr); }
+  .wg-footer__brand { grid-column: 1 / -1; }
+}
+@media (max-width: 767.98px) {
+  .wg-footer { border-radius: 32px 32px 0 0; }
+  .wg-footer__inner { grid-template-columns: 1fr 1fr; }
+}
+.wg-home .wg-footer__col a { min-height: 44px; display: flex; align-items: center; padding: 0; }
+.wg-home .wg-footer .wg-logo-svg { height: 32px; width: auto; display: block; }
+.wg-home .wg-footer .wg-logo-svg .st1 { fill: #ffffff !important; }
+.wg-home .wg-footer .wg-logo-svg .wg-logo-with { fill: #a59fc0; }
+.wg-home .wg-footer .wg-logo-svg .wg-logo-accent { fill: #d8b4fe; }
+.wg-home .wg-footer + .footer-bottom { display: flex !important; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 24px; max-width: none; padding: 18px max(16px, calc((100% - 1200px) / 2 + 16px)); }
+.wg-home .wg-footer + .footer-bottom p { margin: 0; text-align: left; font-size: 14px; }
+.wg-home .wg-footer + .footer-bottom center { display: contents; }
+@media (max-width: 767.98px) {
+  .wg-home .wg-footer + .footer-bottom { justify-content: center; text-align: center; }
+  .wg-home .wg-footer + .footer-bottom p { text-align: center; }
+}
+.wg-home .wg-footer__col a { line-height: 1.45; padding: 7px 0; }
+/* The page wrap already leaves room above the footer */
+.wg-home .wg-footer { margin-top: 0; }
+.wg-footer, .footer-bottom { font-family: 'Poppins', sans-serif; }
+.wg-home .wg-footer a { text-decoration: none; }
 `;

@@ -8,7 +8,6 @@ const CHROME: Chrome = {
   brandHref: WORD_SEARCH_HOME,
   gameIcon: "🔍",
   nav: [[WORD_SEARCH_HOME, "Play"]],
-  footer: "Free unlimited word search puzzles. Everything runs in your browser — no sign-up, nothing is stored on our servers.",
   css: /* css */ `
 .ws [hidden] { display: none !important; }
 .ws-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow); }

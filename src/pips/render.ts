@@ -16,7 +16,6 @@ const CHROME: Chrome = {
     [PIPS_HOME, "Today"],
     [PIPS_YESTERDAY, "Yesterday"],
   ],
-  footer: "Daily hints and answers for the New York Times Pips. Not affiliated with or endorsed by The New York Times.",
   css: /* css */ `
 .pips-app [hidden] { display: none !important; }
 .pips-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }

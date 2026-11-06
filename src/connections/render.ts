@@ -15,8 +15,6 @@ const CHROME: Chrome = {
     [CONNECTIONS_HOME, "Today"],
     [CONNECTIONS_YESTERDAY, "Yesterday"],
   ],
-  footer:
-    "Daily hints and answers for the New York Times Connections. Not affiliated with or endorsed by The New York Times.",
   css: /* css */ `
 .words-grid {
   display: grid;

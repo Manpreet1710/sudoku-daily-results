@@ -16,8 +16,6 @@ const CHROME: Chrome = {
     [MINI_SUDOKU_HOME, "Today"],
     [MINI_SUDOKU_YESTERDAY, "Yesterday"],
   ],
-  footer:
-    "Hints and step-by-step solutions for the daily LinkedIn Mini Sudoku, computed by our own logic solver. Not affiliated with or endorsed by LinkedIn.",
   css: /* css */ `
 .mboard {
   width: min(380px, 100%);

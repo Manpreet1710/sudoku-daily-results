@@ -12,8 +12,6 @@ const CHROME: Chrome = {
   nav: [
     [TANGO_HOME, "Today"],
   ],
-  footer:
-    "Hints and step-by-step solutions for daily Tango puzzles on tango-unlimited.com, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn or tango-unlimited.com.",
   css: /* css */ `
 .tboard {
   width: min(390px, 100%);

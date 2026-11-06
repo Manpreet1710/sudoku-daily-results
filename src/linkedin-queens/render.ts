@@ -15,8 +15,6 @@ const CHROME: Chrome = {
     [LINKEDIN_QUEENS_HOME, "Today"],
     [LINKEDIN_QUEENS_YESTERDAY, "Yesterday"],
   ],
-  footer:
-    "Hints and step-by-step solutions for the daily LinkedIn Queens puzzle, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn.",
   css: /* css */ `
 .qboard {
   width: min(440px, 100%);

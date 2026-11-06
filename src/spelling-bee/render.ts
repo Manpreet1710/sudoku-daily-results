@@ -16,8 +16,6 @@ const CHROME: Chrome = {
     [SPELLING_BEE_HOME, "Today"],
     [SPELLING_BEE_YESTERDAY, "Yesterday"],
   ],
-  footer:
-    "Daily hints and solutions for the New York Times Spelling Bee. Not affiliated with or endorsed by The New York Times.",
   css: /* css */ `
 .hive-wrap {
   display: flex;

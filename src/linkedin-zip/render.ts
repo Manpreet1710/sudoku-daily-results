@@ -15,8 +15,6 @@ const CHROME: Chrome = {
     [LINKEDIN_ZIP_HOME, "Today"],
     [LINKEDIN_ZIP_YESTERDAY, "Yesterday"],
   ],
-  footer:
-    "Hints and step-by-step route solutions for the daily LinkedIn Zip puzzle, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn.",
   css: /* css */ `
 .zboard {
   width: min(420px, 100%);

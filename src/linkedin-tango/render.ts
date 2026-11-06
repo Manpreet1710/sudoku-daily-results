@@ -15,8 +15,6 @@ const CHROME: Chrome = {
     [LINKEDIN_TANGO_HOME, "Today"],
     [LINKEDIN_TANGO_YESTERDAY, "Yesterday"],
   ],
-  footer:
-    "Hints and step-by-step solutions for the daily LinkedIn Tango puzzle, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn.",
   css: /* css */ `
 .tboard {
   width: min(390px, 100%);

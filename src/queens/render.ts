@@ -12,8 +12,6 @@ const CHROME: Chrome = {
   nav: [
     [QUEENS_HOME, "Today"],
   ],
-  footer:
-    "Hints and step-by-step solutions for daily Queens puzzles on playqueensgame.com, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn or playqueensgame.com.",
   css: /* css */ `
 .qboard {
   width: min(440px, 100%);

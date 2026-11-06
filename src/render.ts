@@ -3,7 +3,7 @@ import { HISTORY_CSS, historyBoard, historyBoards, historyDate, renderHistory } 
 import type { DailyResult } from "./store.ts";
 import { cellName } from "./solver.ts";
 import { LOGO_SVG } from "./logo.ts";
-import { CLOSE_ICON, MENU_ICON, SITE_HEADER_CSS, SITE_MENU_HTML } from "./site-header.ts";
+import { CLOSE_ICON, MENU_ICON, SITE_FOOTER_CSS, SITE_FOOTER_HTML, SITE_HEADER_CSS, SITE_MENU_HTML } from "./site-header.ts";
 
 const SITE_TITLE = process.env.SITE_TITLE || "Daily Puzzle Solvers";
 // Public origin used for canonical links and the sitemap; set SITE_URL when the site is served behind another domain
@@ -641,33 +641,6 @@ ol.steps li.active .t { color: #0f172a; }
   .datenav a { justify-content: center; }
 }
 
-/* Footer */
-footer {
-  border-top: 1px solid var(--line);
-  background: var(--surface);
-  margin-top: auto;
-}
-footer .in {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 32px 20px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.6;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-footer a { color: var(--muted); text-decoration: underline; }
-footer a:hover { color: var(--accent); }
-.footer-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
 @media (max-width: 640px) {
   .wrap { padding: 20px 16px 60px; }
   .sub-nav { padding: 8px 16px; }
@@ -675,6 +648,7 @@ footer a:hover { color: var(--accent); }
   .nav-link { padding: 8px 10px; }
 }
 ${SITE_HEADER_CSS}
+${SITE_FOOTER_CSS}
 ${HISTORY_CSS}
 `;
 
@@ -747,7 +721,6 @@ export interface Chrome {
   brand: string;
   brandHref: string;
   nav: [href: string, label: string][];
-  footer: string;
   css?: string;
   gameIcon?: string;
 }
@@ -758,7 +731,6 @@ const SUDOKU_CHROME: Chrome = {
   nav: [
     [RESULT_PREFIX, "Today"],
   ],
-  footer: "Puzzles from the sudoku.com Daily Challenge. Solutions and step-by-step logic computed independently by our open-source solver.",
   gameIcon: "🔢",
 };
 
@@ -937,14 +909,10 @@ ${guide}
 ${moreGames}
 </main>
 
-<footer>
-  <div class="in">
-    <div class="footer-row">
-      ${chrome.footer ? `<p style="margin:0">${esc(chrome.footer)}</p>` : "<span></span>"}
-      <a href="#top" style="font-weight:600">Back to top ↑</a>
-    </div>
-  </div>
-</footer>
+${SITE_FOOTER_HTML}
+<div class="footer-bottom">
+  <p>Copyright © 2026 All rights reserved to wordswithletters</p>
+</div>
 
 <script>
 // Mega Menu & Keyboard Navigation

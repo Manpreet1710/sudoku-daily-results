@@ -86,7 +86,6 @@ const CSS = /* css */ `
 .home-tile small i { width: 7px; height: 7px; border-radius: 50%; background: #10b981; }
 .home-tile em { font-style: normal; color: var(--accent); font-weight: 800; }
 .home-empty { text-align: center; color: var(--muted); padding: 40px 0; font-weight: 600; }
-.home-note { margin-top: 40px; font-size: 13px; color: var(--muted); text-align: center; }
 [hidden] { display: none !important; }
 `;
 
@@ -98,7 +97,6 @@ const CHROME: Chrome = {
     [HOME, "Home"],
     ["/sudoku-answer-today", "Sudoku Game"],
   ],
-  footer: "",
   css: HUB_CSS + CSS,
 };
 
@@ -169,7 +167,6 @@ ${CATEGORIES.map((c) => `<section data-group id="${c.id}">
     mainEntity: FAQ.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
   }).replace(/</g, "\\u003c")}</script>
 
-<p class="home-note">${esc(CHROME.footer)}</p>
 <script>${SEARCH_SCRIPT}</script>`;
 
   return layout(

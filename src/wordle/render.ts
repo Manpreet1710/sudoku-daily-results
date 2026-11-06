@@ -16,8 +16,6 @@ const CHROME: Chrome = {
     [WORDLE_HOME, "Today"],
     [WORDLE_YESTERDAY, "Yesterday"],
   ],
-  footer:
-    "Daily hints and answers for the New York Times Wordle. Not affiliated with or endorsed by The New York Times.",
   css: /* css */ `
 .tiles-wrap {
   display: flex;

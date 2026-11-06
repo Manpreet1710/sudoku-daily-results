@@ -17,7 +17,6 @@ const CHROME: Chrome = {
     [NYT_SUDOKU_HOME, "Today"],
     [NYT_SUDOKU_YESTERDAY, "Yesterday"],
   ],
-  footer: "Step-by-step solutions for the daily New York Times Sudoku, computed independently by our open-source solver and checked against the NYT's own answer. Not affiliated with or endorsed by The New York Times.",
   css: /* css */ `
 .ns-level[hidden] { display: none !important; }
 `,

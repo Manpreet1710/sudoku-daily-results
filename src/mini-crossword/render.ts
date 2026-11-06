@@ -13,8 +13,6 @@ const CHROME: Chrome = {
   nav: [
     [MINI_CROSSWORD_HOME, "Today"],
   ],
-  footer:
-    "Clues, hints and answers for the daily Mini Crossword on minicrossword.com. Not affiliated with or endorsed by that site.",
   css: /* css */ `
 .xboard-wrap {
   display: flex;

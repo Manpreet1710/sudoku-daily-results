@@ -16,8 +16,6 @@ const CHROME: Chrome = {
     [STRANDS_HOME, "Today"],
     [STRANDS_YESTERDAY, "Yesterday"],
   ],
-  footer:
-    "Daily hints and answers for the New York Times Strands. Word positions are worked out by our own solver. Not affiliated with or endorsed by The New York Times.",
   css: /* css */ `
 .sboard-wrap {
   display: flex;

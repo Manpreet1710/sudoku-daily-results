@@ -12,8 +12,6 @@ const CHROME: Chrome = {
   nav: [
     [ZIP_HOME, "Today"],
   ],
-  footer:
-    "Hints and step-by-step route solutions for daily Zip puzzles on zipgameunlimited.com, computed independently by our logic solver. Not affiliated with or endorsed by LinkedIn or zipgameunlimited.com.",
   css: /* css */ `
 .zboard {
   width: min(420px, 100%);
