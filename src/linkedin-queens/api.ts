@@ -10,8 +10,9 @@ export interface LinkedInQueensSource {
   siteQueens: [number, number][]; // LinkedIn's own answer, for cross-checking only
 }
 
-// Names our page colors know, so a hint can say "the green region"; LinkedIn only sends numbers
-const COLOR_NAMES = ["red", "orange", "yellow", "green", "teal", "blue", "purple", "pink", "lime", "gray", "gold"];
+// LinkedIn's color ids by name, so the board uses the same color for each region as linkedin.com
+// (0-6 checked against puzzle #923 on the site) and a hint can say "the green region"
+const COLOR_NAMES = ["purple", "orange", "blue", "green", "gray", "red", "yellow", "brown", "pink", "teal", "cyan"];
 
 export async function fetchLinkedInQueens(): Promise<LinkedInQueensSource> {
   const { puzzleId, puzzle: p } = await fetchLinkedInGame(LINKEDIN_GAME.queens, "queensGamePuzzle", "queens");
@@ -19,7 +20,7 @@ export async function fetchLinkedInQueens(): Promise<LinkedInQueensSource> {
   const n = p?.gridSize;
   if (!Number.isInteger(n) || n < 4 || n > 16 || p.colorGrid?.length !== n || p.solution?.length !== n) throw bad("queens grid");
 
-  // LinkedIn numbers its colors arbitrarily (6, 4, 0, ...); give each one a region index in order of first appearance
+  // Region index in order of first appearance; the color name comes from LinkedIn's id
   const ids: number[] = [];
   const grid: number[][] = p.colorGrid.map((row: any) => {
     if (!Array.isArray(row?.colors) || row.colors.length !== n) throw bad("color row");
@@ -32,5 +33,5 @@ export async function fetchLinkedInQueens(): Promise<LinkedInQueensSource> {
   const siteQueens = p.solution.map((q: any): [number, number] => [q.row, q.col]);
   if (siteQueens.some(([r, c]: [number, number]) => !Number.isInteger(r) || !Number.isInteger(c))) throw bad("queen positions");
 
-  return { puzzleId, board: { size: n, colors: ids.map((_, i) => COLOR_NAMES[i] ?? `region ${i + 1}`), grid }, siteQueens };
+  return { puzzleId, board: { size: n, colors: ids.map((id, i) => COLOR_NAMES[id] ?? `region ${i + 1}`), grid }, siteQueens };
 }

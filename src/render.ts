@@ -374,6 +374,8 @@ details p { margin-top: 0; color: var(--ink-2); line-height: 1.6; }
 .cell:nth-child(n+73) { border-bottom: 0; }
 
 .cell.given { font-weight: 800; color: #0f172a; }
+#board .cell.solved:empty { cursor: pointer; }
+#board .cell.solved:empty:hover { background: var(--accent-soft); }
 .cell.solved { color: var(--accent); font-weight: 700; }
 .cell.current {
   background: var(--hl) !important;
@@ -1010,7 +1012,7 @@ export function renderResult(r: DailyResult, nav: { newer: string | null; older:
     })
     .join("");
 
-  const data = JSON.stringify({ puzzle: r.puzzle, steps: res.steps }).replace(/</g, "\\u003c");
+  const data = JSON.stringify({ puzzle: r.puzzle, solution: res.solution, steps: res.steps }).replace(/</g, "\\u003c");
 
   const body = `
 <div class="page-header">
@@ -1032,7 +1034,7 @@ ${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
   </section>
 
   <section>
-    <p class="gm-help"><b>Place one</b> to reveal the next logical move, <b>play</b> to watch the whole solve, or <b>click any step</b> in the timeline to preview it.</p>
+    <p class="gm-help"><b>Place one</b> to reveal the next logical move, <b>play</b> to watch the whole solve, <b>click any step</b> in the timeline to preview it, or <b>tap an empty cell</b> to reveal just that answer.</p>
     <div class="gm-actions" style="margin-top:0">
       <button class="gm-btn" id="next" type="button">💡 Place one</button>
       <button class="gm-btn primary" id="last" type="button">Show full solution</button>
@@ -1071,7 +1073,7 @@ ${isHome ? sudokuHistory(past) : ""}
 <script type="application/json" id="data">${data}</script>
 <script>
 (() => {
-  const { puzzle, steps } = JSON.parse(document.getElementById("data").textContent);
+  const { puzzle, solution, steps } = JSON.parse(document.getElementById("data").textContent);
   const cells = [...document.querySelectorAll("#board .cell")];
   const slider = document.getElementById("slider");
   const caption = document.getElementById("caption");
@@ -1081,10 +1083,13 @@ ${isHome ? sudokuHistory(past) : ""}
   const playLabel = document.getElementById("playLabel");
   const speedBtns = [...document.querySelectorAll(".speed-btn")];
 
-  const totalPlace = steps.filter((x) => x.type === "place").length;
+  const blanks = puzzle.split("").filter((d) => d === "0").length;
   let k = 0;
   let timer = null;
   let delay = 350;
+  // Cells revealed one at a time by tapping them, on top of the replayed steps
+  const revealed = new Set();
+  let lastRevealed = null;
 
   speedBtns.forEach((b) => {
     b.onclick = () => {
@@ -1105,15 +1110,22 @@ ${isHome ? sudokuHistory(past) : ""}
     for (let j = 0; j < k; j++) {
       if (steps[j].type === "place") v[steps[j].cell] = steps[j].digit;
     }
+    revealed.forEach((i) => { v[i] = Number(solution[i]); });
     cells.forEach((c, i) => {
       c.textContent = v[i] || "";
       c.classList.remove("current", "elim");
     });
     items.forEach((li) => li.classList.toggle("active", +li.dataset.k === k));
     slider.value = k;
-    const placed = steps.slice(0, k).filter((x) => x.type === "place").length;
-    document.getElementById("stepCount").textContent = placed + " / " + totalPlace + " placed";
-    document.getElementById("doneMsg").hidden = k < steps.length;
+    const filled = v.filter((d, i) => d && puzzle[i] === "0").length;
+    document.getElementById("stepCount").textContent = filled + " / " + blanks + " placed";
+    document.getElementById("doneMsg").hidden = filled < blanks;
+
+    if (lastRevealed !== null) {
+      cells[lastRevealed].classList.add("current");
+      caption.innerHTML = '<span class="step-tag">Revealed</span> <b>' + cn(lastRevealed) + " = " + solution[lastRevealed] + ".</b> Tap another empty cell to reveal it.";
+      return;
+    }
 
     const s = steps[k - 1];
     if (!s) {
@@ -1134,6 +1146,7 @@ ${isHome ? sudokuHistory(past) : ""}
 
   const go = (n) => {
     k = Math.max(0, Math.min(steps.length, n));
+    lastRevealed = null;
     render();
   };
 
@@ -1154,7 +1167,7 @@ ${isHome ? sudokuHistory(past) : ""}
     }
   };
 
-  document.getElementById("first").onclick = () => { stop(); go(0); };
+  document.getElementById("first").onclick = () => { stop(); revealed.clear(); go(0); };
   document.getElementById("last").onclick = () => { stop(); go(steps.length); };
   document.getElementById("prev").onclick = () => { stop(); go(k - 1); };
   // "Place one" jumps to the next step that actually puts a digit on the board
@@ -1167,6 +1180,16 @@ ${isHome ? sudokuHistory(past) : ""}
   slider.oninput = () => { stop(); go(+slider.value); };
   items.forEach((li) => {
     li.onclick = () => { stop(); go(+li.dataset.k); };
+  });
+  // Tapping an empty cell reveals only that cell's answer
+  cells.forEach((c, i) => {
+    c.onclick = () => {
+      if (puzzle[i] !== "0" || c.textContent) return;
+      stop();
+      revealed.add(i);
+      lastRevealed = i;
+      render();
+    };
   });
 
   playBtn.onclick = () => {

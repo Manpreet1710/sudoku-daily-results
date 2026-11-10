@@ -45,6 +45,12 @@ const CHROME: Chrome = {
   font-size: 26px;
   font-weight: 800;
 }
+.gm-board.xplay { display: block; }
+.xplay .xboard-wrap { margin-bottom: 0; }
+.xboard .xhit { fill: transparent; cursor: pointer; }
+.xboard .xhit:hover { fill: rgba(79, 70, 229, 0.08); }
+.xboard .ch[data-i] { fill: #4f46e5; }
+.xplay-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 14px 0 8px; }
 .cw-clues {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
@@ -94,8 +100,9 @@ const CHROME: Chrome = {
 const U = 56;
 const LEVELS = { easy: "Easy", hard: "Hard" } as const;
 
-// The grid with clue numbers; with `solved`, every white square also shows its letter
-function boardSvg(p: MiniPuzzle, solved: boolean) {
+// The grid with clue numbers; with `solved`, every white square also shows its letter. With `play`, each white
+// square gets a tap target and its letter drawn hidden, for the page script to show one at a time.
+function boardSvg(p: MiniPuzzle, solved: boolean, play = false) {
   const n = p.size, W = n * U;
   const letters = new Map<number, string>();
   for (const e of p.across) [...e.answer].forEach((ch, k) => letters.set(e.row * n + e.col + k, ch));
@@ -106,7 +113,12 @@ function boardSvg(p: MiniPuzzle, solved: boolean) {
       const x = (i % n) * U, y = Math.floor(i / n) * U;
       if (black) return `<rect x="${x}" y="${y}" width="${U}" height="${U}" fill="#1e293b"/>`;
       const num = p.numbers[i] ? `<text class="num" x="${x + 4}" y="${y + 4}">${p.numbers[i]}</text>` : "";
-      const ch = solved ? `<text class="ch" x="${x + U / 2}" y="${y + U / 2 + 5}">${esc(letters.get(i) ?? "")}</text>` : "";
+      const at = `x="${x + U / 2}" y="${y + U / 2 + 5}"`;
+      const ch = solved
+        ? `<text class="ch" ${at}>${esc(letters.get(i) ?? "")}</text>`
+        : play
+          ? `<text class="ch" ${at} data-i="${i}" visibility="hidden">${esc(letters.get(i) ?? "")}</text><rect class="xhit" x="${x}" y="${y}" width="${U}" height="${U}" data-i="${i}"/>`
+          : "";
       return `<rect x="${x}" y="${y}" width="${U}" height="${U}" fill="#fff"/>${num}${ch}`;
     })
     .join("");
@@ -126,11 +138,17 @@ function puzzleSection(p: MiniPuzzle, i: number) {
 <div class="gm-stage" data-gm-panel="${p.level}" id="${p.level}"${i === 0 ? "" : " hidden"}>
   <div class="gm-card">
     <p class="gm-meta"><span>${p.size}×${p.size} ${LEVELS[p.level]}${p.title ? ` · ${esc(p.title)}` : ""}</span><span>${words} clues${p.byline ? ` · ${esc(p.byline)}` : ""}</span></p>
-    <div class="gm-board" data-gm-view="puzzle">${boardSvg(p, false)}</div>
+    <div class="gm-board xplay" data-gm-view="puzzle">
+      ${boardSvg(p, false, true)}
+      <div class="xplay-actions">
+        <button type="button" class="gm-btn primary" data-x-all>Reveal all</button>
+        <button type="button" class="gm-btn" data-x-clear>Clear all</button>
+      </div>
+    </div>
     <div class="gm-board" data-gm-view="solution" hidden>${boardSvg(p, true)}</div>
   </div>
   <div>
-    <p class="gm-help">Open a clue for its <b>hint</b>, then the answer. Or reveal the whole grid.</p>
+    <p class="gm-help">Open a clue for its <b>hint</b>, then the answer. <b>Tap any square</b> to reveal its letter, or reveal the whole grid.</p>
     <div class="cw-clues">
       <div><h3>Across</h3>${p.across.map((e) => clue(e, "A")).join("")}</div>
       <div><h3>Down</h3>${p.down.map((e) => clue(e, "D")).join("")}</div>
@@ -141,6 +159,20 @@ function puzzleSection(p: MiniPuzzle, i: number) {
   </div>
 </div>`;
 }
+
+// Letter-by-letter reveal on the puzzle grid
+const MINI_PLAY_SCRIPT = `<script>
+(() => {
+  document.querySelectorAll(".xplay").forEach((card) => {
+    const svg = card.querySelector("svg.xboard");
+    const letters = [...svg.querySelectorAll("text[data-i]")];
+    const set = (t, on) => t.setAttribute("visibility", on ? "visible" : "hidden");
+    svg.querySelectorAll(".xhit").forEach((h) => h.addEventListener("click", () => set(svg.querySelector('text[data-i="' + h.dataset.i + '"]'), true)));
+    card.querySelector("[data-x-all]").addEventListener("click", () => letters.forEach((t) => set(t, true)));
+    card.querySelector("[data-x-clear]").addEventListener("click", () => letters.forEach((t) => set(t, false)));
+  });
+})();
+</script>`;
 
 function miniHistory(past: MiniResult[]) {
   return renderHistory({
@@ -178,7 +210,7 @@ export function renderMiniResult(r: MiniResult, nav: { newer: string | null; old
 
 ${dateNav(nav)}
 ${isHome ? miniHistory(past) : ""}
-${GM_TABS_SCRIPT}${GM_REVEAL_SCRIPT}`;
+${GM_TABS_SCRIPT}${GM_REVEAL_SCRIPT}${MINI_PLAY_SCRIPT}`;
 
   return layout(
     `Mini Crossword Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Clues & Solutions`,

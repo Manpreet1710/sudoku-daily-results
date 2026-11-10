@@ -1,4 +1,6 @@
 import type { Config } from "@netlify/functions";
+import { pageDate } from "../../src/crawl.ts";
+import { linkedinPageDate, linkedinPageMaxAge } from "../../src/linkedin/date.ts";
 import { loadHistory } from "../../src/history.ts";
 import { getMiniSudokuResult, listMiniSudokuDates } from "../../src/mini-sudoku/store.ts";
 import { MINI_SUDOKU_HOME, MINI_SUDOKU_YESTERDAY, renderMiniSudokuNotFound, renderMiniSudokuResult } from "../../src/mini-sudoku/render.ts";
@@ -21,7 +23,7 @@ export default async (req: Request) => {
 
   const dates = await listMiniSudokuDates();
   const isHome = path === MINI_SUDOKU_HOME;
-  const date = dates[isHome ? 0 : 1];
+  const date = pageDate(dates, isHome);
   // Not-found is served as 200 + noindex: netlify dev treats a function 404 as "unhandled" and falls through
   if (!date) return html(renderMiniSudokuNotFound(), "mini-sudoku-index", 60);
 
@@ -30,7 +32,7 @@ export default async (req: Request) => {
 
   const nav = isHome ? { newer: null, older: MINI_SUDOKU_YESTERDAY } : { newer: MINI_SUDOKU_HOME, older: null };
   const past = isHome ? await loadHistory(dates, date, getMiniSudokuResult) : [];
-  return html(renderMiniSudokuResult(r, nav, isHome, past), "mini-sudoku-index", 3600);
+  return html(renderMiniSudokuResult({ ...r, date: linkedinPageDate(r.date, isHome) }, nav, isHome, past), "mini-sudoku-index", linkedinPageMaxAge());
 };
 
 export const config: Config = {

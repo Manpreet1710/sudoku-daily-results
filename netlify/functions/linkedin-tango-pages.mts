@@ -1,4 +1,6 @@
 import type { Config } from "@netlify/functions";
+import { pageDate } from "../../src/crawl.ts";
+import { linkedinPageDate, linkedinPageMaxAge } from "../../src/linkedin/date.ts";
 import { loadHistory } from "../../src/history.ts";
 import { getLinkedInTangoResult, listLinkedInTangoDates } from "../../src/linkedin-tango/store.ts";
 import { LINKEDIN_TANGO_HOME, LINKEDIN_TANGO_YESTERDAY, renderLinkedInTangoNotFound, renderLinkedInTangoResult } from "../../src/linkedin-tango/render.ts";
@@ -21,7 +23,7 @@ export default async (req: Request) => {
 
   const dates = await listLinkedInTangoDates();
   const isHome = path === LINKEDIN_TANGO_HOME;
-  const date = dates[isHome ? 0 : 1];
+  const date = pageDate(dates, isHome);
   // Not-found is served as 200 + noindex: netlify dev treats a function 404 as "unhandled" and falls through
   if (!date) return html(renderLinkedInTangoNotFound(), "linkedin-tango-index", 60);
 
@@ -30,7 +32,7 @@ export default async (req: Request) => {
 
   const nav = isHome ? { newer: null, older: LINKEDIN_TANGO_YESTERDAY } : { newer: LINKEDIN_TANGO_HOME, older: null };
   const past = isHome ? await loadHistory(dates, date, getLinkedInTangoResult) : [];
-  return html(renderLinkedInTangoResult(r, nav, isHome, past), "linkedin-tango-index", 3600);
+  return html(renderLinkedInTangoResult({ ...r, date: linkedinPageDate(r.date, isHome) }, nav, isHome, past), "linkedin-tango-index", linkedinPageMaxAge());
 };
 
 export const config: Config = {

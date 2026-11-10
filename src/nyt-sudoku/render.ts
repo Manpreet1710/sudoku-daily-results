@@ -19,6 +19,8 @@ const CHROME: Chrome = {
   ],
   css: /* css */ `
 .ns-level[hidden] { display: none !important; }
+.ns-level .cell.solved:empty { cursor: pointer; }
+.ns-level .cell.solved:empty:hover { background: var(--accent-soft); }
 `,
 };
 
@@ -54,7 +56,7 @@ function levelSection(l: NytLevel, p: NytSudokuLevelResult, visible: boolean): s
   </section>
 
   <section>
-    <p class="gm-help"><b>Place one</b> to reveal the next logical move, <b>play</b> to watch the whole solve, or <b>click any step</b> in the timeline to preview it.</p>
+    <p class="gm-help"><b>Place one</b> to reveal the next logical move, <b>play</b> to watch the whole solve, <b>click any step</b> in the timeline to preview it, or <b>tap an empty cell</b> to reveal just that answer.</p>
     <div class="gm-actions" style="margin-top:0">
       <button class="gm-btn" data-act="next" type="button">💡 Place one</button>
       <button class="gm-btn primary" data-act="last" type="button">Show full solution</button>
@@ -103,7 +105,7 @@ function nytSudokuHistory(past: NytSudokuResult[]) {
 }
 
 export function renderNytSudokuResult(r: NytSudokuResult, nav: { newer: string | null; older: string | null }, isHome: boolean, past: NytSudokuResult[] = []) {
-  const data = Object.fromEntries(NYT_LEVELS.map((l) => [l, { puzzle: r.levels[l].puzzle, steps: r.levels[l].result.steps }]));
+  const data = Object.fromEntries(NYT_LEVELS.map((l) => [l, { puzzle: r.levels[l].puzzle, solution: r.levels[l].result.solution, steps: r.levels[l].result.steps }]));
 
   const body = `
 <div class="page-header">

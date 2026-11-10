@@ -1,4 +1,6 @@
 import type { Config } from "@netlify/functions";
+import { pageDate } from "../../src/crawl.ts";
+import { linkedinPageDate, linkedinPageMaxAge } from "../../src/linkedin/date.ts";
 import { loadHistory } from "../../src/history.ts";
 import { getLinkedInQueensResult, listLinkedInQueensDates } from "../../src/linkedin-queens/store.ts";
 import { LINKEDIN_QUEENS_HOME, LINKEDIN_QUEENS_YESTERDAY, renderLinkedInQueensNotFound, renderLinkedInQueensResult } from "../../src/linkedin-queens/render.ts";
@@ -21,7 +23,7 @@ export default async (req: Request) => {
 
   const dates = await listLinkedInQueensDates();
   const isHome = path === LINKEDIN_QUEENS_HOME;
-  const date = dates[isHome ? 0 : 1];
+  const date = pageDate(dates, isHome);
   // Not-found is served as 200 + noindex: netlify dev treats a function 404 as "unhandled" and falls through
   if (!date) return html(renderLinkedInQueensNotFound(), "linkedin-queens-index", 60);
 
@@ -30,7 +32,7 @@ export default async (req: Request) => {
 
   const nav = isHome ? { newer: null, older: LINKEDIN_QUEENS_YESTERDAY } : { newer: LINKEDIN_QUEENS_HOME, older: null };
   const past = isHome ? await loadHistory(dates, date, getLinkedInQueensResult) : [];
-  return html(renderLinkedInQueensResult(r, nav, isHome, past), "linkedin-queens-index", 3600);
+  return html(renderLinkedInQueensResult({ ...r, date: linkedinPageDate(r.date, isHome) }, nav, isHome, past), "linkedin-queens-index", linkedinPageMaxAge());
 };
 
 export const config: Config = {

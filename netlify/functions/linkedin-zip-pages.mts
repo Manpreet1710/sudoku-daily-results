@@ -1,4 +1,6 @@
 import type { Config } from "@netlify/functions";
+import { pageDate } from "../../src/crawl.ts";
+import { linkedinPageDate, linkedinPageMaxAge } from "../../src/linkedin/date.ts";
 import { loadHistory } from "../../src/history.ts";
 import { getLinkedInZipResult, listLinkedInZipDates } from "../../src/linkedin-zip/store.ts";
 import { LINKEDIN_ZIP_HOME, LINKEDIN_ZIP_YESTERDAY, renderLinkedInZipNotFound, renderLinkedInZipResult } from "../../src/linkedin-zip/render.ts";
@@ -21,7 +23,7 @@ export default async (req: Request) => {
 
   const dates = await listLinkedInZipDates();
   const isHome = path === LINKEDIN_ZIP_HOME;
-  const date = dates[isHome ? 0 : 1];
+  const date = pageDate(dates, isHome);
   // Not-found is served as 200 + noindex: netlify dev treats a function 404 as "unhandled" and falls through
   if (!date) return html(renderLinkedInZipNotFound(), "linkedin-zip-index", 60);
 
@@ -30,7 +32,7 @@ export default async (req: Request) => {
 
   const nav = isHome ? { newer: null, older: LINKEDIN_ZIP_YESTERDAY } : { newer: LINKEDIN_ZIP_HOME, older: null };
   const past = isHome ? await loadHistory(dates, date, getLinkedInZipResult) : [];
-  return html(renderLinkedInZipResult(r, nav, isHome, past), "linkedin-zip-index", 3600);
+  return html(renderLinkedInZipResult({ ...r, date: linkedinPageDate(r.date, isHome) }, nav, isHome, past), "linkedin-zip-index", linkedinPageMaxAge());
 };
 
 export const config: Config = {

@@ -75,7 +75,10 @@ const CHROME: Chrome = {
   border: 2px solid var(--line);
   box-shadow: none;
   animation: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
+.tile.blank:hover, .tile.blank:focus-visible { border-color: var(--accent); color: var(--accent); }
 .spoiler-box {
   background: var(--surface);
   border: 2px dashed var(--muted);
@@ -137,7 +140,10 @@ export function renderWordleResult(
   const tiles = [...r.solution.toUpperCase()]
     .map((c) => `<div class="tile">${esc(c)}</div>`)
     .join("");
-  const blanks = [...r.solution].map(() => `<div class="tile blank">?</div>`).join("");
+  // Each "?" tile reveals its own letter when tapped
+  const blanks = [...r.solution.toUpperCase()]
+    .map((c, i) => `<div class="tile blank" role="button" tabindex="0" data-letter="${esc(c)}" aria-label="Reveal letter ${i + 1}">?</div>`)
+    .join("");
 
   const body = `
 <div class="page-header">
@@ -157,7 +163,7 @@ export function renderWordleResult(
       <div class="tiles-wrap" data-gm-view="solution" hidden><div class="tiles">${tiles}</div></div>
     </div>
     <div>
-      <p class="gm-help">Open <b>one hint at a time</b> for a gentle nudge, or reveal the full word when you are ready.</p>
+      <p class="gm-help">Open <b>one hint at a time</b> for a gentle nudge, tap a <b>?</b> tile to reveal one letter, or reveal the full word when you are ready.</p>
       ${hints}
       <div class="gm-actions">
         <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
@@ -166,6 +172,31 @@ export function renderWordleResult(
     </div>
   </div>
 </div>
+<script>
+(() => {
+  const tiles = [...document.querySelectorAll(".tile[data-letter]")];
+  const reveal = (t) => {
+    if (!t.classList.contains("blank")) return;
+    t.classList.remove("blank");
+    t.textContent = t.dataset.letter;
+    t.removeAttribute("role");
+    t.removeAttribute("tabindex");
+    t.setAttribute("aria-label", "Letter " + t.dataset.letter);
+    // Last letter tapped: show the full solution as well
+    if (tiles.every((x) => !x.classList.contains("blank"))) {
+      const btn = document.querySelector("[data-gm-reveal]");
+      const solved = document.querySelector('[data-gm-view="solution"]');
+      if (btn && solved && solved.hidden) setTimeout(() => btn.click(), 600);
+    }
+  };
+  tiles.forEach((t) => {
+    t.addEventListener("click", () => reveal(t));
+    t.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); reveal(t); }
+    });
+  });
+})();
+</script>
 
 ${dateNav(nav)}
 ${isHome ? wordleHistory(past) : ""}

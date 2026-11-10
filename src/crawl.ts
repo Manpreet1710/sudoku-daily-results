@@ -18,6 +18,13 @@ export function shiftDate(iso: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+// Today's page shows the newest stored puzzle; yesterday's shows the day right before it, never an older one
+export function pageDate(dates: string[], isHome: boolean): string | undefined {
+  if (isHome || !dates[0]) return dates[0];
+  const day = shiftDate(dates[0], -1);
+  return dates.includes(day) ? day : undefined;
+}
+
 export type CrawlOutcome = { date: string; status: "saved" | "exists" | "not-published" | "error"; detail?: string };
 
 export async function crawlDate(date: string, { force = false } = {}): Promise<CrawlOutcome> {

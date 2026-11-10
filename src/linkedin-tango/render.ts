@@ -29,6 +29,11 @@ const CHROME: Chrome = {
   dominant-baseline: central;
   fill: #334155;
 }
+.gm-board.tplay { display: block; }
+.tboard .thit { fill: transparent; cursor: pointer; }
+.tboard .thit:hover { fill: rgba(15, 23, 42, 0.06); }
+.tboard .tsigns { pointer-events: none; }
+.tplay-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
 .sol-row {
   display: inline-block;
   padding: 6px 12px;
@@ -44,8 +49,9 @@ const CHROME: Chrome = {
 
 const LEVELS = ["", "Easy", "Medium", "Hard"];
 
-// Draws the 6x6 grid with sun/moon symbols and =/x constraint markers
-function boardSvg(board: string, solution?: string) {
+// Draws the 6x6 grid with sun/moon symbols and =/x constraint markers. With `play`, each empty cell gets a tap
+// target and its answer drawn hidden, for the page script to show one cell at a time.
+function boardSvg(board: string, solution?: string, play = false) {
   const n = 6,
     u = 58,
     W = n * u,
@@ -63,9 +69,14 @@ function boardSvg(board: string, solution?: string) {
 
   const symbols = [...board.slice(0, 36)]
     .map((ch, i) =>
-      ch !== "." ? cell(i, ch, false) : solution ? cell(i, solution[i], true) : ""
+      ch !== "." ? cell(i, ch, false) : !solution ? "" : play ? `<g class="tz" data-i="${i}" visibility="hidden">${cell(i, solution[i], true)}</g>` : cell(i, solution[i], true)
     )
     .join("");
+  const hits = play
+    ? [...board.slice(0, 36)]
+        .map((ch, i) => (ch === "." ? `<rect class="thit" x="${(i % n) * u}" y="${Math.floor(i / n) * u}" width="${u}" height="${u}" data-i="${i}"/>` : ""))
+        .join("")
+    : "";
 
   const signs: string[] = [];
   for (let i = 0; i < 36; i++) {
@@ -93,13 +104,13 @@ function boardSvg(board: string, solution?: string) {
     ? `Solved Tango grid: ${[...solution]
         .map((ch) => (ch === "O" ? "sun" : "moon"))
         .join(", ")}`
-    : "Tango grid with given symbols and constraint signs";
+    : `Tango grid with given symbols and constraint signs${play ? "; tap an empty cell to reveal it" : ""}`;
 
   return `<svg class="tboard" viewBox="-2 -2 ${W + 4} ${W + 4}" role="img" aria-label="${esc(
     label
-  )}"><rect x="0" y="0" width="${W}" height="${W}" fill="${bg}"/><path d="${lines}" stroke="#cbd5e1" stroke-width="1.5" fill="none"/><rect x="0" y="0" width="${W}" height="${W}" fill="none" stroke="#0f172a" stroke-width="3.5" rx="8"/>${symbols}${signs.join(
+  )}"><rect x="0" y="0" width="${W}" height="${W}" fill="${bg}"/><path d="${lines}" stroke="#cbd5e1" stroke-width="1.5" fill="none"/><rect x="0" y="0" width="${W}" height="${W}" fill="none" stroke="#0f172a" stroke-width="3.5" rx="8"/>${symbols}${hits}<g class="tsigns">${signs.join(
     ""
-  )}</svg>`;
+  )}</g></svg>`;
 }
 
 const solutionRows = (solution: string) =>
@@ -110,6 +121,20 @@ const solutionRows = (solution: string) =>
         .map((ch) => (ch === "O" ? "☀️ Sun" : "🌙 Moon"))
         .join(" · ")}</span>`
   );
+
+// Cell-by-cell reveal on the puzzle board
+const TANGO_PLAY_SCRIPT = `<script>
+(() => {
+  document.querySelectorAll(".tplay").forEach((card) => {
+    const svg = card.querySelector("svg.tboard");
+    const cells = [...svg.querySelectorAll(".tz")];
+    const set = (g, on) => g.setAttribute("visibility", on ? "visible" : "hidden");
+    svg.querySelectorAll(".thit").forEach((h) => h.addEventListener("click", () => set(svg.querySelector('.tz[data-i="' + h.dataset.i + '"]'), true)));
+    card.querySelector("[data-t-all]").addEventListener("click", () => cells.forEach((g) => set(g, true)));
+    card.querySelector("[data-t-clear]").addEventListener("click", () => cells.forEach((g) => set(g, false)));
+  });
+})();
+</script>`;
 
 function linkedInTangoHistory(past: LinkedInTangoResult[]) {
   return renderHistory({
@@ -154,11 +179,17 @@ export function renderLinkedInTangoResult(
   <div class="gm-stage">
     <div class="gm-card">
       <p class="gm-meta"><span>6×6 · ${givens} given symbols · ${signs} signs</span><span>${LEVELS[r.level]}</span></p>
-      <div class="gm-board" data-gm-view="puzzle">${boardSvg(r.board)}</div>
+      <div class="gm-board tplay" data-gm-view="puzzle">
+        ${boardSvg(r.board, r.solution, true)}
+        <div class="tplay-actions">
+          <button type="button" class="gm-btn primary" data-t-all>Reveal all</button>
+          <button type="button" class="gm-btn" data-t-clear>Clear all</button>
+        </div>
+      </div>
       <div class="gm-board" data-gm-view="solution" hidden>${boardSvg(r.board, r.solution)}</div>
     </div>
     <div>
-      <p class="gm-help">Fill every row and column with <b>3 suns (☀️)</b> and <b>3 moons (🌙)</b>. No more than two of the same symbol can touch. <b>=</b> means identical symbols; <b>×</b> means opposite.</p>
+      <p class="gm-help">Fill every row and column with <b>3 suns (☀️)</b> and <b>3 moons (🌙)</b>. No more than two of the same symbol can touch. <b>=</b> means identical symbols; <b>×</b> means opposite. <b>Tap any empty cell</b> to reveal its symbol.</p>
       ${hints}
       <details>
         <summary>Step-by-Step Logic Timeline (${r.steps.length} steps)</summary>
@@ -183,7 +214,7 @@ export function renderLinkedInTangoResult(
 
 ${dateNav(nav)}
 ${isHome ? linkedInTangoHistory(past) : ""}
-${GM_REVEAL_SCRIPT}`;
+${GM_REVEAL_SCRIPT}${TANGO_PLAY_SCRIPT}`;
 
   return layout(
     `Tango Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Daily Solution & Hints`,

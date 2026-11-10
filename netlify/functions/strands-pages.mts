@@ -1,4 +1,5 @@
 import type { Config } from "@netlify/functions";
+import { pageDate } from "../../src/crawl.ts";
 import { loadHistory } from "../../src/history.ts";
 import { getStrandsResult, listStrandsDates } from "../../src/strands/store.ts";
 import { STRANDS_HOME, STRANDS_YESTERDAY, renderStrandsNotFound, renderStrandsResult } from "../../src/strands/render.ts";
@@ -21,7 +22,7 @@ export default async (req: Request) => {
 
   const dates = await listStrandsDates();
   const isHome = path === STRANDS_HOME;
-  const date = dates[isHome ? 0 : 1];
+  const date = pageDate(dates, isHome);
   // Not-found is served as 200 + noindex: netlify dev treats a function 404 as "unhandled" and falls through
   if (!date) return html(renderStrandsNotFound(), "strands-index", 60);
 

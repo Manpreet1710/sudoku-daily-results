@@ -1,4 +1,5 @@
 import type { Config } from "@netlify/functions";
+import { pageDate } from "../../src/crawl.ts";
 import { loadHistory } from "../../src/history.ts";
 import { getSpellingBeeResult, listSpellingBeeDates } from "../../src/spelling-bee/store.ts";
 import { SPELLING_BEE_HOME, SPELLING_BEE_YESTERDAY, renderSpellingBeeNotFound, renderSpellingBeeResult } from "../../src/spelling-bee/render.ts";
@@ -21,7 +22,7 @@ export default async (req: Request) => {
 
   const dates = await listSpellingBeeDates();
   const isHome = path === SPELLING_BEE_HOME;
-  const date = dates[isHome ? 0 : 1];
+  const date = pageDate(dates, isHome);
   // Not-found is served as 200 + noindex: netlify dev treats a function 404 as "unhandled" and falls through
   if (!date) return html(renderSpellingBeeNotFound(), "spelling-bee-index", 60);
 

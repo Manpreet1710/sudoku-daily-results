@@ -1,4 +1,5 @@
 import type { Config } from "@netlify/functions";
+import { pageDate } from "../../src/crawl.ts";
 import { loadHistory } from "../../src/history.ts";
 import { getWordleResult, listWordleDates } from "../../src/wordle/store.ts";
 import { WORDLE_HOME, WORDLE_YESTERDAY, renderWordleNotFound, renderWordleResult } from "../../src/wordle/render.ts";
@@ -21,7 +22,7 @@ export default async (req: Request) => {
 
   const dates = await listWordleDates();
   const isHome = path === WORDLE_HOME;
-  const date = dates[isHome ? 0 : 1];
+  const date = pageDate(dates, isHome);
   // Not-found is served as 200 + noindex: netlify dev treats a function 404 as "unhandled" and falls through
   if (!date) return html(renderWordleNotFound(), "wordle-index", 60);
 

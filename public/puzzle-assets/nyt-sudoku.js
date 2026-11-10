@@ -8,7 +8,7 @@
   const cn = (i) => "R" + (Math.floor(i / 9) + 1) + "C" + ((i % 9) + 1);
 
   // One replay viewer per difficulty; each only touches the elements inside its own container.
-  function viewer(root, { puzzle, steps }) {
+  function viewer(root, { puzzle, solution, steps }) {
     const $ = (sel) => root.querySelector(sel);
     const cells = [...root.querySelectorAll(".board .cell")];
     const items = [...root.querySelectorAll("ol.steps li")];
@@ -19,24 +19,35 @@
     const playLabel = $(".play-label");
     const speedBtns = [...root.querySelectorAll(".speed-btn")];
 
-    const totalPlace = steps.filter((x) => x.type === "place").length;
+    const blanks = puzzle.split("").filter((d) => d === "0").length;
     const count = $(".ns-count");
     const done = $(".ns-done");
     let k = 0;
     let timer = null;
     let delay = 350;
+    // Cells revealed one at a time by tapping them, on top of the replayed steps
+    const revealed = new Set();
+    let lastRevealed = null;
 
     function render() {
       const v = [...puzzle].map(Number);
       for (let j = 0; j < k; j++) if (steps[j].type === "place") v[steps[j].cell] = steps[j].digit;
+      revealed.forEach((i) => { v[i] = Number(solution[i]); });
       cells.forEach((c, i) => {
         c.textContent = v[i] || "";
         c.classList.remove("current", "elim");
       });
       items.forEach((li) => li.classList.toggle("active", +li.dataset.k === k));
       slider.value = k;
-      count.textContent = steps.slice(0, k).filter((x) => x.type === "place").length + " / " + totalPlace + " placed";
-      done.hidden = k < steps.length;
+      const filled = v.filter((d, i) => d && puzzle[i] === "0").length;
+      count.textContent = filled + " / " + blanks + " placed";
+      done.hidden = filled < blanks;
+
+      if (lastRevealed !== null) {
+        cells[lastRevealed].classList.add("current");
+        caption.innerHTML = '<span class="step-tag">Revealed</span> <b>' + cn(lastRevealed) + " = " + solution[lastRevealed] + ".</b> Tap another empty cell to reveal it.";
+        return;
+      }
 
       const s = steps[k - 1];
       if (!s) {
@@ -52,7 +63,7 @@
       if (active && timer) active.scrollIntoView({ block: "nearest", behavior: "smooth" });
     }
 
-    const go = (n) => { k = Math.max(0, Math.min(steps.length, n)); render(); };
+    const go = (n) => { k = Math.max(0, Math.min(steps.length, n)); lastRevealed = null; render(); };
     const stop = () => {
       if (timer) { clearInterval(timer); timer = null; }
       playIcon.textContent = "▶";
@@ -68,7 +79,7 @@
         if (timer) { clearInterval(timer); timer = setInterval(stepForward, delay); }
       };
     });
-    $('[data-act="first"]').onclick = () => { stop(); go(0); };
+    $('[data-act="first"]').onclick = () => { stop(); revealed.clear(); go(0); };
     $('[data-act="last"]').onclick = () => { stop(); go(steps.length); };
     $('[data-act="prev"]').onclick = () => { stop(); go(k - 1); };
     // "Place one" jumps to the next step that actually puts a digit on the board
@@ -80,6 +91,16 @@
     };
     slider.oninput = () => { stop(); go(+slider.value); };
     items.forEach((li) => { li.onclick = () => { stop(); go(+li.dataset.k); }; });
+    // Tapping an empty cell reveals only that cell's answer
+    cells.forEach((c, i) => {
+      c.onclick = () => {
+        if (puzzle[i] !== "0" || c.textContent) return;
+        stop();
+        revealed.add(i);
+        lastRevealed = i;
+        render();
+      };
+    });
     playBtn.onclick = () => {
       if (timer) { stop(); return; }
       if (k >= steps.length) go(0);

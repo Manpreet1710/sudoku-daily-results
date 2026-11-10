@@ -32,6 +32,10 @@ const CHROME: Chrome = {
 }
 .mboard .given { font-weight: 800; fill: #111827; }
 .mboard .solved { font-weight: 600; fill: #4f46e5; }
+.gm-board.mplay { display: block; }
+.mboard .mhit { fill: transparent; cursor: pointer; }
+.mboard .mhit:hover { fill: rgba(79, 70, 229, 0.08); }
+.mplay-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
 .sol-row {
   display: block;
   padding: 6px 12px;
@@ -49,15 +53,20 @@ const U = 58;
 const N = 6;
 
 // 6x6 grid with its six regions outlined; with `solution`, empty cells show the answer in the accent color
-function boardSvg(puzzle: string, regions: number[], solution?: string) {
+// With `play`, each empty cell gets a tap target and its digit drawn hidden, for the page script to show one at a time
+function boardSvg(puzzle: string, regions: number[], solution?: string, play = false) {
   const W = N * U;
   const digits = [...puzzle]
     .map((d, i) => {
       const x = (i % N) * U + U / 2, y = Math.floor(i / N) * U + U / 2 + 2;
       if (d !== "0") return `<text class="given" x="${x}" y="${y}">${d}</text>`;
-      return solution ? `<text class="solved" x="${x}" y="${y}">${solution[i]}</text>` : "";
+      if (!solution) return "";
+      return `<text class="solved" x="${x}" y="${y}"${play ? ` data-i="${i}" visibility="hidden"` : ""}>${solution[i]}</text>`;
     })
     .join("");
+  const hits = play
+    ? [...puzzle].map((d, i) => (d === "0" ? `<rect class="mhit" x="${(i % N) * U}" y="${Math.floor(i / N) * U}" width="${U}" height="${U}" data-i="${i}"/>` : "")).join("")
+    : "";
   const thin = Array.from({ length: N - 1 }, (_, k) => `M${(k + 1) * U} 0v${W}M0 ${(k + 1) * U}h${W}`).join("");
   // A thick line wherever two neighbouring cells belong to different regions
   let thick = "";
@@ -67,10 +76,24 @@ function boardSvg(puzzle: string, regions: number[], solution?: string) {
     if (r < N - 1 && regions[i] !== regions[i + N]) thick += `M${c * U} ${(r + 1) * U}h${U}`;
   }
   const label = solution ? `Solved Mini Sudoku grid: ${solution}` : `Mini Sudoku grid, row by row: ${puzzle.replace(/0/g, ".")}`;
-  return `<svg class="mboard" viewBox="-2 -2 ${W + 4} ${W + 4}" role="img" aria-label="${esc(label)}"><rect width="${W}" height="${W}" fill="#fff"/><path d="${thin}" stroke="#cbd5e1" stroke-width="1.5" fill="none"/><path d="${thick}" stroke="#1e293b" stroke-width="3" fill="none"/><rect width="${W}" height="${W}" fill="none" stroke="#1e293b" stroke-width="3.5"/>${digits}</svg>`;
+  return `<svg class="mboard" viewBox="-2 -2 ${W + 4} ${W + 4}" role="img" aria-label="${esc(label)}"><rect width="${W}" height="${W}" fill="#fff"/><path d="${thin}" stroke="#cbd5e1" stroke-width="1.5" fill="none"/><path d="${thick}" stroke="#1e293b" stroke-width="3" fill="none"/><rect width="${W}" height="${W}" fill="none" stroke="#1e293b" stroke-width="3.5"/>${digits}${hits}</svg>`;
 }
 
 const level = (r: MiniSudokuResult) => (!r.logical ? "Hard" : r.steps.some((s) => s.tech === "Naked Pair" || s.tech === "Pointing") ? "Medium" : "Easy");
+
+// Cell-by-cell reveal on the puzzle board
+const MINI_SUDOKU_PLAY_SCRIPT = `<script>
+(() => {
+  document.querySelectorAll(".mplay").forEach((card) => {
+    const svg = card.querySelector("svg.mboard");
+    const digits = [...svg.querySelectorAll("text[data-i]")];
+    const set = (t, on) => t.setAttribute("visibility", on ? "visible" : "hidden");
+    svg.querySelectorAll(".mhit").forEach((h) => h.addEventListener("click", () => set(svg.querySelector('text[data-i="' + h.dataset.i + '"]'), true)));
+    card.querySelector("[data-m-all]").addEventListener("click", () => digits.forEach((t) => set(t, true)));
+    card.querySelector("[data-m-clear]").addEventListener("click", () => digits.forEach((t) => set(t, false)));
+  });
+})();
+</script>`;
 
 function miniSudokuHistory(past: MiniSudokuResult[]) {
   return renderHistory({
@@ -112,11 +135,17 @@ export function renderMiniSudokuResult(r: MiniSudokuResult, nav: { newer: string
   <div class="gm-stage">
     <div class="gm-card">
       <p class="gm-meta"><span>${r.puzzleId ? `Puzzle #${r.puzzleId}` : "6×6"}${r.name ? ` · ${esc(r.name)}` : ""} · ${givens} given digits · ${moves} moves</span><span>${lv}</span></p>
-      <div class="gm-board" data-gm-view="puzzle">${boardSvg(r.puzzle, regions)}</div>
+      <div class="gm-board mplay" data-gm-view="puzzle">
+        ${boardSvg(r.puzzle, regions, r.solution, true)}
+        <div class="mplay-actions">
+          <button type="button" class="gm-btn primary" data-m-all>Reveal all</button>
+          <button type="button" class="gm-btn" data-m-clear>Clear all</button>
+        </div>
+      </div>
       <div class="gm-board" data-gm-view="solution" hidden>${boardSvg(r.puzzle, regions, r.solution)}</div>
     </div>
     <div>
-      <p class="gm-help">Fill the grid so every <b>row</b>, <b>column</b> and ${boxes ? "<b>2×3 box</b>" : "<b>outlined region</b>"} holds the digits <b>1 to 6</b> exactly once.</p>
+      <p class="gm-help">Fill the grid so every <b>row</b>, <b>column</b> and ${boxes ? "<b>2×3 box</b>" : "<b>outlined region</b>"} holds the digits <b>1 to 6</b> exactly once. <b>Tap any empty cell</b> to reveal its digit.</p>
       ${hints}
       <details>
         <summary>Step-by-Step Logic Timeline (${r.steps.length} steps)</summary>
@@ -134,7 +163,7 @@ export function renderMiniSudokuResult(r: MiniSudokuResult, nav: { newer: string
 
 ${dateNav(nav)}
 ${isHome ? miniSudokuHistory(past) : ""}
-${GM_REVEAL_SCRIPT}`;
+${GM_REVEAL_SCRIPT}${MINI_SUDOKU_PLAY_SCRIPT}`;
 
   return layout(
     `LinkedIn Mini Sudoku Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Solution & Hints`,
