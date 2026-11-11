@@ -5,7 +5,7 @@
     "how": [
       "Open the hints one at a time. They start with the vowels and the letter pattern and get more specific.",
       "Stop at any hint once you can work out the word yourself.",
-      "Press Show full solution when you want the answer; the tiles flip to the word.",
+      "Press Reveal all to show the whole word at once, or tap a ? tile to reveal one letter. Clear all hides the letters again.",
       "Use the date arrows or the answer history below to check earlier Wordle answers."
     ],
     "tips": [
@@ -39,8 +39,8 @@
     "how": [
       "Read the 16 words in their starting layout.",
       "Open the category hints. Each one gives the title of a group without telling you which words belong to it.",
-      "Press Show full solution to colour the board by group and see all 16 words sorted.",
-      "Open the group list to see each category with its four words."
+      "Press Reveal all to swap the board for the four solved groups, each with its title and words. Clear all brings the 16 words back.",
+      "Use the date arrows or the answer history below to check earlier Connections answers."
     ],
     "tips": [
       "Look for words with more than one meaning: they are often red herrings that fit two groups.",
@@ -73,7 +73,7 @@
     "how": [
       "Look at the honeycomb. The centre letter must appear in every word.",
       "Open the hints one by one. They describe the word count, the pangram and the starting letters.",
-      "Press Show full solution to see the pangrams and the complete word list.",
+      "Press Reveal all under the honeycomb to see the pangrams and the complete word list. Clear all hides them again.",
       "Use the date arrows or the answer history below to see earlier hives."
     ],
     "tips": [
@@ -107,7 +107,7 @@
     "how": [
       "Read the theme clue at the top of the hints.",
       "Open the hints one at a time: they cover the number of words, their first letters and the spangram.",
-      "Press Show full solution to trace every word on the board in its own colour.",
+      "Press Reveal all to trace every word on the board in its own colour and list the spangram and theme words. Clear all hides them again.",
       "Open the lists to see the spangram and the theme words by name."
     ],
     "tips": [
@@ -141,7 +141,7 @@
     "how": [
       "Choose Easy, Medium or Hard with the tabs above the board.",
       "Click a domino to place it, or click a cell to place the correct domino on it. Click again to take it back.",
-      "Use Place one for a single placement, Show full solution for the whole board, and Reset to start again.",
+      "Use Place one for a single placement, Reveal all for the whole board, and Clear all to start again.",
       "Read the rules above the board for what each diamond means."
     ],
     "tips": [
@@ -208,9 +208,9 @@
     "what": "Queens is a logic puzzle played on a square grid that is split into coloured regions. Your job is to place one queen in every row, every column and every colour region, with no two queens touching, not even diagonally. Every board has a logical route to the answer, so no guessing is needed.",
     "how": [
       "Study the coloured regions first. The smallest regions leave you the fewest choices, so they are the best place to start.",
-      "Open one hint at a time. Each hint is a single deduction, so you get a nudge without seeing the whole board.",
-      "Press Show full solution to switch the board to the finished arrangement and see the queen coordinates.",
-      "Open the step-by-step proof to read why each queen has to go where it does."
+      "Tap any cell to reveal a queen or a cross, or tap a colour to reveal the queen in that region.",
+      "Press Reveal all to place every queen and see the queen coordinates. Clear all empties the board.",
+      "Use the date arrows or the answer history below to see earlier puzzles."
     ],
     "tips": [
       "Start with regions that are only one or two cells wide: their queens are almost decided.",
@@ -242,9 +242,9 @@
     "what": "Tango is a 6×6 logic puzzle played with suns and moons. Fill the grid so that every row and column holds exactly three of each symbol, never more than two of the same symbol side by side, and every = and × sign between cells is respected.",
     "how": [
       "Read the signs on the board: = means the two cells hold the same symbol, × means they hold opposite symbols.",
-      "Open a hint for one deduction at a time, without spoiling the rest of the grid.",
-      "Press Show full solution to fill every cell with its sun or moon.",
-      "Open the step-by-step timeline to follow the logic that leads from the given symbols to the finished grid."
+      "Tap any empty cell to reveal its sun or moon, one cell at a time.",
+      "Press Reveal all to fill every cell and see the answer row by row. Clear all empties the board again.",
+      "Use the date arrows or the answer history below to see earlier puzzles."
     ],
     "tips": [
       "If two cells in a row already match, the cells on either side of them must be the opposite symbol.",
@@ -276,9 +276,9 @@
     "what": "Zip is a path puzzle. Draw one continuous line that starts at the number 1, visits every numbered checkpoint in order, and fills every cell of the grid exactly once. Thick walls block the line, so you can never cross them.",
     "how": [
       "Find the checkpoints and the walls. The line has to run from 1 up to the highest number.",
-      "Open a hint for a clue about the start of the route without revealing the full path.",
-      "Press Show full solution to draw the complete route on the board.",
-      "Read the turn-by-turn route list to see the moves between each pair of checkpoints."
+      "Try tracing the route from 1 yourself before you look at the answer.",
+      "Press Reveal all to draw the complete route and see the turn-by-turn moves between each pair of checkpoints.",
+      "Press Clear all to hide the route again, or use the date arrows to see earlier puzzles."
     ],
     "tips": [
       "Cells with only one open neighbour are dead ends, so they must be the start or the end of the line.",
@@ -311,7 +311,7 @@
     "how": [
       "Look at the given digits and the outlined regions. Regions are usually 2×3 boxes but can have other shapes.",
       "Open a hint to see where the next move is, one cell at a time.",
-      "Press Show full solution to fill in the whole grid, with the answers in colour.",
+      "Tap any empty cell to reveal its digit, or press Reveal all to fill in the whole grid. Clear all empties it again.",
       "Open the step-by-step timeline to see which technique unlocks each cell."
     ],
     "tips": [
@@ -388,7 +388,7 @@
     "how": [
       "Read the across and down clues next to the grid.",
       "Open a clue to see a hint first and then the answer.",
-      "Press Show full solution to fill the whole grid with letters.",
+      "Tap any square to reveal its letter, or press Reveal all to fill the whole grid. Clear all empties it again.",
       "Choose a difficulty tab, when there are two puzzles, to move between them."
     ],
     "tips": [

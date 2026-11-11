@@ -1,4 +1,4 @@
-import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { ZipResult } from "./store.ts";
 
@@ -26,6 +26,7 @@ const CHROME: Chrome = {
   dominant-baseline: central;
   fill: #ffffff;
 }
+.zplay-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
 .route-list {
   display: flex;
   flex-direction: column;
@@ -150,6 +151,26 @@ function zipHistory(past: ZipResult[]) {
   });
 }
 
+// Reveal all swaps in the solved board and the route list; Clear all swaps them back
+const ZIP_PLAY_SCRIPT = `<script>
+(() => {
+  document.querySelectorAll(".gm-stage").forEach((stage) => {
+    const all = stage.querySelector("[data-z-all]");
+    if (!all) return;
+    const puzzle = stage.querySelector('[data-gm-view="puzzle"]');
+    const solved = stage.querySelector('[data-gm-view="solution"]');
+    const extra = stage.querySelectorAll("[data-gm-solution-only]");
+    const show = (on) => {
+      puzzle.hidden = on;
+      solved.hidden = !on;
+      extra.forEach((e) => { e.hidden = !on; });
+    };
+    all.addEventListener("click", () => show(true));
+    stage.querySelector("[data-z-clear]").addEventListener("click", () => show(false));
+  });
+})();
+</script>`;
+
 export function renderZipResult(
   r: ZipResult,
   nav: { newer: string | null; older: string | null },
@@ -173,6 +194,7 @@ export function renderZipResult(
   <div class="sub">
     <span class="badge">${LEVELS[r.difficulty] || "Normal"}</span>
     <span class="badge good">Zip Daily</span>
+    <span class="badge">${r.size}×${r.size}</span>
   </div>
 </div>
 
@@ -180,9 +202,12 @@ export function renderZipResult(
   ${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
   <div class="gm-stage">
     <div class="gm-card">
-      <p class="gm-meta"><span>${r.size}×${r.size} · ${r.numbers.length} checkpoints · ${r.walls.length} walls</span><span>${LEVELS[r.difficulty] || "Normal"}</span></p>
       <div class="gm-board" data-gm-view="puzzle">${boardSvg(r, false)}</div>
       <div class="gm-board" data-gm-view="solution" hidden>${boardSvg(r, true)}</div>
+      <div class="zplay-actions">
+        <button type="button" class="gm-btn primary" data-z-all>Reveal all</button>
+        <button type="button" class="gm-btn" data-z-clear>Clear all</button>
+      </div>
     </div>
     <div>
       <p class="gm-help">Draw <b>one continuous line</b> from 1, through each numbered checkpoint in order, filling every cell exactly once without crossing a thick wall.</p>
@@ -206,9 +231,6 @@ export function renderZipResult(
           .join("")}</ol>
         ${r.logical ? "" : '<p style="font-size:13px;color:var(--muted);margin-top:8px">The remaining stretch was validated by exhaustive branch verification.</p>'}
       </details>
-      <div class="gm-actions">
-        <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
-      </div>
       <div data-gm-solution-only hidden>
         <div class="route-list">
           ${route
@@ -228,7 +250,7 @@ export function renderZipResult(
 
 ${dateNav(nav)}
 ${isHome ? zipHistory(past) : ""}
-${GM_REVEAL_SCRIPT}`;
+${ZIP_PLAY_SCRIPT}`;
 
   return layout(
     `Zip Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Daily Solution & Hints`,

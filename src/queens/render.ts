@@ -1,4 +1,4 @@
-import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, GM_TABS_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, GM_TABS_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { QueensPuzzleResult, QueensResult } from "./store.ts";
 
@@ -30,7 +30,7 @@ const CHROME: Chrome = {
 .qboard .qhit { fill: transparent; cursor: pointer; }
 .qboard .qhit:hover { fill: rgba(0, 0, 0, 0.08); }
 .qboard text.qx { font-size: 20px; font-weight: 700; fill: #1e293b; filter: none; }
-.qzones { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; }
+.qzones { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
 .qzone, .qzone:hover {
   background: var(--z);
   border: 1px solid rgba(0, 0, 0, 0.18);
@@ -93,8 +93,6 @@ const PALETTE: Record<string, string> = {
 };
 const fill = (name: string, i: number) => PALETTE[name] ?? `hsl(${(i * 47) % 360} 65% 78%)`;
 
-const LEVELS = ["", "Easy", "Medium", "Hard", "Expert"];
-
 // `play` adds a tap target on every cell and an empty layer for the ♛ / × marks the page script draws
 function boardSvg(p: QueensPuzzleResult, solved: boolean, play = false) {
   const n = p.size,
@@ -148,7 +146,6 @@ function puzzleSection(p: QueensPuzzleResult, i: number) {
         )}</p></details>`
     )
     .join("");
-  const smallest = Math.min(...p.colors.map((_, k) => p.grid.flat().filter((g) => g === k).length));
   // One button per colour region; it reveals that region's queen
   const zones = `<div class="qzones">${p.colors
     .map((c, k) => {
@@ -163,27 +160,22 @@ function puzzleSection(p: QueensPuzzleResult, i: number) {
   return `
 <div class="gm-stage" data-gm-panel="${id}" id="${id}"${i === 0 ? "" : " hidden"}>
   <div class="gm-card">
-    <p class="gm-meta"><span>${p.size}×${p.size} · ${p.colors.length} colour regions</span><span>${LEVELS[p.level] || "Standard"} · smallest region ${smallest} cell${smallest === 1 ? "" : "s"}</span></p>
     <div class="gm-board qplay" data-gm-view="puzzle">
       ${boardSvg(p, false, true)}
-      ${zones}
       <div class="qplay-actions">
         <button type="button" class="gm-btn primary" data-q-all>Reveal all</button>
         <button type="button" class="gm-btn" data-q-clear>Clear all</button>
       </div>
     </div>
-    <div class="gm-board" data-gm-view="solution" hidden>${boardSvg(p, true)}</div>
   </div>
   <div>
     <p class="gm-help"><b>Place ${p.size} queens</b> – one in every row, column and colour region, with no two touching, not even diagonally. <b>Tap any cell</b> to reveal a ♛ or ×, or tap a <b>colour</b> to reveal the queen in that region.</p>
+    ${zones}
     ${hints}
     <details>
       <summary>Step-by-Step Logical Proof (${p.steps.length} steps)</summary>
       <ol class="qsteps">${p.steps.map((s) => `<li>${esc(s.text)}</li>`).join("")}</ol>
     </details>
-    <div class="gm-actions">
-      <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
-    </div>
     <div data-gm-solution-only hidden style="margin-top:14px">
       <p style="font-size:14px;margin:0 0 6px"><b>Queen Coordinates</b></p>
       ${coords}
@@ -202,8 +194,14 @@ const QUEENS_PLAY_SCRIPT = `<script>
     const svg = card.querySelector("svg[data-queens]");
     const marks = svg.querySelector(".qmarks");
     const queens = svg.dataset.queens.split(" ");
-    const zones = [...card.querySelectorAll(".qzone")];
+    const stage = card.closest(".gm-stage");
+    const zones = [...stage.querySelectorAll(".qzone")];
+    const coords = stage.querySelectorAll("[data-gm-solution-only]");
     const shown = new Set();
+    const sync = () => {
+      const all = queens.every((k) => shown.has(k));
+      coords.forEach((e) => { e.hidden = !all; });
+    };
     const mark = (k) => {
       if (shown.has(k)) return;
       shown.add(k);
@@ -216,6 +214,7 @@ const QUEENS_PLAY_SCRIPT = `<script>
       t.textContent = isQueen ? "♛" : "×";
       marks.appendChild(t);
       zones.forEach((z) => { if (z.dataset.q === k) z.classList.add("done"); });
+      sync();
     };
     svg.querySelectorAll(".qhit").forEach((h) => h.addEventListener("click", () => mark(h.dataset.r + "," + h.dataset.c)));
     zones.forEach((z) => z.addEventListener("click", () => mark(z.dataset.q)));
@@ -224,6 +223,7 @@ const QUEENS_PLAY_SCRIPT = `<script>
       marks.textContent = "";
       shown.clear();
       zones.forEach((z) => z.classList.remove("done"));
+      sync();
     });
   });
 })();
@@ -268,7 +268,7 @@ export function renderQueensResult(
 
 ${dateNav(nav)}
 ${isHome ? queensHistory(past) : ""}
-${GM_TABS_SCRIPT}${GM_REVEAL_SCRIPT}${QUEENS_PLAY_SCRIPT}`;
+${GM_TABS_SCRIPT}${QUEENS_PLAY_SCRIPT}`;
 
   return layout(
     `Queens Game Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Daily Solutions`,

@@ -1,4 +1,4 @@
-import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import { historyBoard, historyBoards, historyDate, historyRow, renderHistory } from "../history.ts";
 import { spellingBeeFacts, spellingBeeHints } from "./hints.ts";
 import type { SpellingBeeResult } from "./store.ts";
@@ -17,6 +17,8 @@ const CHROME: Chrome = {
     [SPELLING_BEE_YESTERDAY, "Yesterday"],
   ],
   css: /* css */ `
+.bplay-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+.bee-answers { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
 .hive-wrap {
   display: flex;
   justify-content: center;
@@ -129,6 +131,17 @@ function spellingBeeHistory(past: SpellingBeeResult[]) {
   });
 }
 
+// Reveal all opens the pangrams and word list under the honeycomb; Clear all closes them
+const BEE_PLAY_SCRIPT = `<script>
+(() => {
+  const all = document.querySelector("[data-b-all]");
+  if (!all) return;
+  const answers = document.querySelector(".bee-answers");
+  all.addEventListener("click", () => { answers.hidden = false; });
+  document.querySelector("[data-b-clear]").addEventListener("click", () => { answers.hidden = true; });
+})();
+</script>`;
+
 export function renderSpellingBeeResult(
   r: SpellingBeeResult,
   nav: { newer: string | null; older: string | null },
@@ -161,28 +174,28 @@ export function renderSpellingBeeResult(
   ${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
   <div class="gm-stage">
     <div class="gm-card">
-      <p class="gm-meta"><span>${facts.count} words · 👑 ${facts.pangrams} pangram${facts.pangrams === 1 ? "" : "s"}</span><span>Center letter ${esc(r.center.toUpperCase())}</span></p>
       ${honeycomb(r.center, r.outer)}
-    </div>
-    <div>
-      <p class="gm-help">Every word must include the <b>center letter ${esc(r.center.toUpperCase())}</b> and be at least 4 letters long. Open one hint at a time.</p>
-      ${hints}
-      <div class="gm-actions">
-        <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
+      <div class="bplay-actions">
+        <button type="button" class="gm-btn primary" data-b-all>Reveal all</button>
+        <button type="button" class="gm-btn" data-b-clear>Clear all</button>
       </div>
-      <div data-gm-solution-only hidden style="margin-top:14px">
+      <div class="bee-answers" data-gm-solution-only hidden>
         <p style="font-size:14px;margin:0 0 6px"><b>👑 Pangram${r.pangrams.length === 1 ? "" : "s"}</b> (use all 7 letters)</p>
         <div class="gw">${r.pangrams.map((w) => `<span class="pg">👑 ${esc(w)}</span>`).join("")}</div>
         <p style="font-size:14px;margin:14px 0 6px"><b>All ${facts.count} words</b></p>
         <div class="gw">${words}</div>
       </div>
     </div>
+    <div>
+      <p class="gm-help">Every word must include the <b>center letter ${esc(r.center.toUpperCase())}</b> and be at least 4 letters long. Open one hint at a time.</p>
+      ${hints}
+    </div>
   </div>
 </div>
 
 ${dateNav(nav)}
 ${isHome ? spellingBeeHistory(past) : ""}
-${GM_REVEAL_SCRIPT}`;
+${BEE_PLAY_SCRIPT}`;
 
   return layout(
     `Spelling Bee Hints & Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – NYT Puzzle`,

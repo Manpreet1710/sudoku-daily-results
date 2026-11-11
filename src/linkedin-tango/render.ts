@@ -1,4 +1,4 @@
-import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { LinkedInTangoResult } from "./store.ts";
 
@@ -122,16 +122,21 @@ const solutionRows = (solution: string) =>
         .join(" · ")}</span>`
   );
 
-// Cell-by-cell reveal on the puzzle board
+// Cell-by-cell reveal on the puzzle board; the solution rows show once every cell is revealed
 const TANGO_PLAY_SCRIPT = `<script>
 (() => {
   document.querySelectorAll(".tplay").forEach((card) => {
     const svg = card.querySelector("svg.tboard");
     const cells = [...svg.querySelectorAll(".tz")];
+    const rows = card.closest(".gm-stage").querySelectorAll("[data-gm-solution-only]");
     const set = (g, on) => g.setAttribute("visibility", on ? "visible" : "hidden");
-    svg.querySelectorAll(".thit").forEach((h) => h.addEventListener("click", () => set(svg.querySelector('.tz[data-i="' + h.dataset.i + '"]'), true)));
-    card.querySelector("[data-t-all]").addEventListener("click", () => cells.forEach((g) => set(g, true)));
-    card.querySelector("[data-t-clear]").addEventListener("click", () => cells.forEach((g) => set(g, false)));
+    const sync = () => {
+      const all = cells.every((g) => g.getAttribute("visibility") === "visible");
+      rows.forEach((e) => { e.hidden = !all; });
+    };
+    svg.querySelectorAll(".thit").forEach((h) => h.addEventListener("click", () => { set(svg.querySelector('.tz[data-i="' + h.dataset.i + '"]'), true); sync(); }));
+    card.querySelector("[data-t-all]").addEventListener("click", () => { cells.forEach((g) => set(g, true)); sync(); });
+    card.querySelector("[data-t-clear]").addEventListener("click", () => { cells.forEach((g) => set(g, false)); sync(); });
   });
 })();
 </script>`;
@@ -152,25 +157,13 @@ export function renderLinkedInTangoResult(
   r: LinkedInTangoResult,
   nav: { newer: string | null; older: string | null },
   isHome: boolean, past: LinkedInTangoResult[] = []) {
-  const givens = [...r.board.slice(0, 36)].filter((ch) => ch !== ".").length;
-  const signs = [...r.board.slice(36)].filter((ch) => ch !== ".").length;
-
-  const hints = r.steps
-    .slice(0, 3)
-    .map(
-      (s, i) =>
-        `<details><summary><span class="badge" style="margin-right:6px">Hint ${i + 1}</span> Deduction</summary><p style="margin-top:12px;font-size:15px">${esc(
-          s.text
-        )}</p></details>`
-    )
-    .join("");
-
   const body = `
 <div class="page-header">
   <h1>${isHome ? "Today's " : "Yesterday's "}Tango Answers &amp; Solution</h1>
   <div class="sub">
+    <span class="badge good">Puzzle #${r.puzzleId}</span>
     <span class="badge">${LEVELS[r.level]}</span>
-    <span class="badge good">LinkedIn Tango #${r.puzzleId}</span>
+    <span class="badge">6×6</span>
   </div>
 </div>
 
@@ -178,7 +171,6 @@ export function renderLinkedInTangoResult(
   ${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
   <div class="gm-stage">
     <div class="gm-card">
-      <p class="gm-meta"><span>6×6 · ${givens} given symbols · ${signs} signs</span><span>${LEVELS[r.level]}</span></p>
       <div class="gm-board tplay" data-gm-view="puzzle">
         ${boardSvg(r.board, r.solution, true)}
         <div class="tplay-actions">
@@ -186,25 +178,9 @@ export function renderLinkedInTangoResult(
           <button type="button" class="gm-btn" data-t-clear>Clear all</button>
         </div>
       </div>
-      <div class="gm-board" data-gm-view="solution" hidden>${boardSvg(r.board, r.solution)}</div>
     </div>
     <div>
       <p class="gm-help">Fill every row and column with <b>3 suns (☀️)</b> and <b>3 moons (🌙)</b>. No more than two of the same symbol can touch. <b>=</b> means identical symbols; <b>×</b> means opposite. <b>Tap any empty cell</b> to reveal its symbol.</p>
-      ${hints}
-      <details>
-        <summary>Step-by-Step Logic Timeline (${r.steps.length} steps)</summary>
-        <ol class="steps" style="margin-top:14px">${r.steps
-          .map(
-            (s, i) =>
-              `<li><span class="n">${i + 1}</span><div><span class="t">Step ${i + 1}</span><br><span style="color:var(--ink-2);font-size:14px">${esc(
-                s.text
-              )}</span></div></li>`
-          )
-          .join("")}</ol>
-      </details>
-      <div class="gm-actions">
-        <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
-      </div>
       <div data-gm-solution-only hidden style="display:flex;flex-direction:column;gap:4px;margin-top:14px">${solutionRows(r.solution).join("")}
         ${r.unique ? "" : '<p style="font-size:13px;color:var(--muted);margin-top:10px">Note: This board has multiple valid answers; this is one verified solution.</p>'}
       </div>
@@ -214,7 +190,7 @@ export function renderLinkedInTangoResult(
 
 ${dateNav(nav)}
 ${isHome ? linkedInTangoHistory(past) : ""}
-${GM_REVEAL_SCRIPT}${TANGO_PLAY_SCRIPT}`;
+${TANGO_PLAY_SCRIPT}`;
 
   return layout(
     `Tango Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Daily Solution & Hints`,

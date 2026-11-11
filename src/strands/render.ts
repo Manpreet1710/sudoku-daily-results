@@ -1,4 +1,4 @@
-import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import { historyBoard, historyBoards, historyDate, historyRow, renderHistory } from "../history.ts";
 import { cellCol, cellRow, spansBoard } from "./solver.ts";
 import type { StrandsResult } from "./store.ts";
@@ -17,6 +17,7 @@ const CHROME: Chrome = {
     [STRANDS_YESTERDAY, "Yesterday"],
   ],
   css: /* css */ `
+.splay-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
 .sboard-wrap {
   display: flex;
   justify-content: center;
@@ -144,6 +145,24 @@ function strandsHistory(past: StrandsResult[]) {
   });
 }
 
+// Reveal all swaps in the solved board and the word list; Clear all swaps them back
+const STRANDS_PLAY_SCRIPT = `<script>
+(() => {
+  const all = document.querySelector("[data-s-all]");
+  if (!all) return;
+  const puzzle = document.querySelector('[data-gm-view="puzzle"]');
+  const solved = document.querySelector('[data-gm-view="solution"]');
+  const extra = document.querySelectorAll("[data-gm-solution-only]");
+  const show = (on) => {
+    puzzle.hidden = on;
+    solved.hidden = !on;
+    extra.forEach((e) => { e.hidden = !on; });
+  };
+  all.addEventListener("click", () => show(true));
+  document.querySelector("[data-s-clear]").addEventListener("click", () => show(false));
+})();
+</script>`;
+
 export function renderStrandsResult(r: StrandsResult, nav: { newer: string | null; older: string | null }, isHome: boolean, past: StrandsResult[] = []) {
   const [spangram, ...words] = r.placements;
   const hintHtml = hints(r)
@@ -164,16 +183,16 @@ export function renderStrandsResult(r: StrandsResult, nav: { newer: string | nul
   ${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
   <div class="gm-stage">
     <div class="gm-card">
-      <p class="gm-meta"><span>6×8 · ${words.length} theme words + spangram</span><span>Spangram ${spangram.word.length} letters</span></p>
       <div class="gm-board" data-gm-view="puzzle">${boardSvg(r.board)}</div>
       <div class="gm-board" data-gm-view="solution" hidden>${boardSvg(r.board, r.placements)}</div>
+      <div class="splay-actions">
+        <button type="button" class="gm-btn primary" data-s-all>Reveal all</button>
+        <button type="button" class="gm-btn" data-s-clear>Clear all</button>
+      </div>
     </div>
     <div>
       <p class="gm-help">Join <b>touching letters</b> (diagonals count) to spell the theme words. With the spangram, they use every letter exactly once.</p>
       ${hintHtml}
-      <div class="gm-actions">
-        <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
-      </div>
       <div data-gm-solution-only hidden style="margin-top:14px">
         <p style="font-size:14px;margin:0 0 6px"><b>🧵 Spangram</b></p>
         <div class="gw"><span class="pg">${esc(spangram.word)}</span></div>
@@ -187,7 +206,7 @@ export function renderStrandsResult(r: StrandsResult, nav: { newer: string | nul
 
 ${dateNav(nav)}
 ${isHome ? strandsHistory(past) : ""}
-${GM_REVEAL_SCRIPT}`;
+${STRANDS_PLAY_SCRIPT}`;
 
   return layout(
     `Strands Hints & Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – NYT Puzzle`,

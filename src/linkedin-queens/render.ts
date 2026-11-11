@@ -1,4 +1,4 @@
-import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, GM_TABS_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, GM_TABS_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { QueensPuzzleResult, LinkedInQueensResult } from "./store.ts";
 
@@ -29,13 +29,13 @@ const CHROME: Chrome = {
   fill: #0f172a;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
 }
-/* Square corners like LinkedIn's board; the play board stacks its colour buttons underneath */
+/* Square corners like LinkedIn's board */
 .gm-board svg.qboard { border-radius: 0; }
 .gm-board.qplay { display: block; }
 .qboard .qhit { fill: transparent; cursor: pointer; }
 .qboard .qhit:hover { fill: rgba(0, 0, 0, 0.08); }
 .qboard text.qx { font-size: 20px; font-weight: 700; fill: #1e293b; filter: none; }
-.qzones { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; }
+.qzones { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
 .qzone, .qzone:hover {
   background: var(--z);
   border: 1px solid rgba(0, 0, 0, 0.18);
@@ -69,15 +69,6 @@ const CHROME: Chrome = {
   font-weight: 700;
   font-size: 13px;
   margin: 2px 4px;
-}
-ol.qsteps {
-  padding-left: 20px;
-  margin-top: 14px;
-  color: var(--ink-2);
-}
-ol.qsteps li {
-  margin-bottom: 8px;
-  line-height: 1.5;
 }
 `,
 };
@@ -146,16 +137,6 @@ function boardSvg(p: QueensPuzzleResult, solved: boolean, play = false) {
 
 function puzzleSection(p: QueensPuzzleResult, i: number) {
   const id = `${p.size}x${p.size}`;
-  const hints = p.steps
-    .slice(0, 3)
-    .map(
-      (s, k) =>
-        `<details><summary><span class="badge" style="margin-right:6px">Hint ${k + 1}</span> Deduction</summary><p style="margin-top:12px;font-size:15px">${esc(
-          s.text
-        )}</p></details>`
-    )
-    .join("");
-  const smallest = Math.min(...p.colors.map((_, k) => p.grid.flat().filter((g) => g === k).length));
   // One button per colour region; it reveals that region's queen
   const zones = `<div class="qzones">${p.colors
     .map((c, k) => {
@@ -170,27 +151,17 @@ function puzzleSection(p: QueensPuzzleResult, i: number) {
   return `
 <div class="gm-stage" data-gm-panel="${id}" id="${id}"${i === 0 ? "" : " hidden"}>
   <div class="gm-card">
-    <p class="gm-meta"><span>${p.size}×${p.size} · ${p.colors.length} colour regions</span><span>${LEVELS[p.level] || "Standard"} · smallest region ${smallest} cell${smallest === 1 ? "" : "s"}</span></p>
     <div class="gm-board qplay" data-gm-view="puzzle">
       ${boardSvg(p, false, true)}
-      ${zones}
       <div class="qplay-actions">
         <button type="button" class="gm-btn primary" data-q-all>Reveal all</button>
         <button type="button" class="gm-btn" data-q-clear>Clear all</button>
       </div>
     </div>
-    <div class="gm-board" data-gm-view="solution" hidden>${boardSvg(p, true)}</div>
   </div>
   <div>
     <p class="gm-help"><b>Place ${p.size} queens</b> – one in every row, column and colour region, with no two touching, not even diagonally. <b>Tap any cell</b> to reveal a ♛ or ×, or tap a <b>colour</b> to reveal the queen in that region.</p>
-    ${hints}
-    <details>
-      <summary>Step-by-Step Logical Proof (${p.steps.length} steps)</summary>
-      <ol class="qsteps">${p.steps.map((s) => `<li>${esc(s.text)}</li>`).join("")}</ol>
-    </details>
-    <div class="gm-actions">
-      <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
-    </div>
+    ${zones}
     <div data-gm-solution-only hidden style="margin-top:14px">
       <p style="font-size:14px;margin:0 0 6px"><b>Queen Coordinates</b></p>
       ${coords}
@@ -209,8 +180,14 @@ const QUEENS_PLAY_SCRIPT = `<script>
     const svg = card.querySelector("svg[data-queens]");
     const marks = svg.querySelector(".qmarks");
     const queens = svg.dataset.queens.split(" ");
-    const zones = [...card.querySelectorAll(".qzone")];
+    const stage = card.closest(".gm-stage");
+    const zones = [...stage.querySelectorAll(".qzone")];
+    const coords = stage.querySelectorAll("[data-gm-solution-only]");
     const shown = new Set();
+    const sync = () => {
+      const all = queens.every((k) => shown.has(k));
+      coords.forEach((e) => { e.hidden = !all; });
+    };
     const mark = (k) => {
       if (shown.has(k)) return;
       shown.add(k);
@@ -223,6 +200,7 @@ const QUEENS_PLAY_SCRIPT = `<script>
       t.textContent = isQueen ? "♛" : "×";
       marks.appendChild(t);
       zones.forEach((z) => { if (z.dataset.q === k) z.classList.add("done"); });
+      sync();
     };
     svg.querySelectorAll(".qhit").forEach((h) => h.addEventListener("click", () => mark(h.dataset.r + "," + h.dataset.c)));
     zones.forEach((z) => z.addEventListener("click", () => mark(z.dataset.q)));
@@ -231,6 +209,7 @@ const QUEENS_PLAY_SCRIPT = `<script>
       marks.textContent = "";
       shown.clear();
       zones.forEach((z) => z.classList.remove("done"));
+      sync();
     });
   });
 })();
@@ -253,13 +232,15 @@ export function renderLinkedInQueensResult(
   nav: { newer: string | null; older: string | null },
   isHome: boolean, past: LinkedInQueensResult[] = []) {
   const sizes = r.puzzles.map((p) => `${p.size}×${p.size}`);
+  const single = r.puzzles.length === 1 ? r.puzzles[0] : null;
 
   const body = `
 <div class="page-header">
   <h1>${isHome ? "Today's " : "Yesterday's "}Queens Game Answers &amp; Solutions</h1>
   <div class="sub">
-    <span class="badge">LinkedIn Queens #${r.puzzleId}</span>
-    <span class="badge good">${r.puzzles.length} Puzzle Size${r.puzzles.length === 1 ? "" : "s"}</span>
+    <span class="badge good">Puzzle #${r.puzzleId}</span>
+    ${single && LEVELS[single.level] ? `<span class="badge">${LEVELS[single.level]}</span>` : ""}
+    ${single ? `<span class="badge">${sizes[0]}</span>` : ""}
   </div>
 </div>
 
@@ -268,14 +249,15 @@ export function renderLinkedInQueensResult(
     date: r.date,
     older: nav.older,
     newer: nav.newer,
-    tabs: r.puzzles.map((p) => ({ id: `${p.size}x${p.size}`, label: `${p.size}×${p.size}` })),
+    // A lone size is already in the badges above, so tabs only appear when there is a choice
+    tabs: single ? [] : r.puzzles.map((p) => ({ id: `${p.size}x${p.size}`, label: `${p.size}×${p.size}` })),
   })}
   ${r.puzzles.map(puzzleSection).join("")}
 </div>
 
 ${dateNav(nav)}
 ${isHome ? linkedInQueensHistory(past) : ""}
-${GM_TABS_SCRIPT}${GM_REVEAL_SCRIPT}${QUEENS_PLAY_SCRIPT}`;
+${GM_TABS_SCRIPT}${QUEENS_PLAY_SCRIPT}`;
 
   return layout(
     `Queens Game Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Daily Solutions`,

@@ -1,4 +1,4 @@
-import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import { historyDate, historyDot, historyRow, renderHistory } from "../history.ts";
 import type { ConnectionsResult } from "./store.ts";
 
@@ -16,6 +16,7 @@ const CHROME: Chrome = {
     [CONNECTIONS_YESTERDAY, "Yesterday"],
   ],
   css: /* css */ `
+.cplay-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
 .words-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -124,6 +125,19 @@ function connectionsHistory(past: ConnectionsResult[]) {
   });
 }
 
+// Reveal all swaps the word grid for the solved groups; Clear all swaps it back
+const CONNECTIONS_PLAY_SCRIPT = `<script>
+(() => {
+  const all = document.querySelector("[data-c-all]");
+  if (!all) return;
+  const puzzle = document.querySelector('[data-gm-view="puzzle"]');
+  const solved = document.querySelector('[data-gm-view="solution"]');
+  const show = (on) => { puzzle.hidden = on; solved.hidden = !on; };
+  all.addEventListener("click", () => show(true));
+  document.querySelector("[data-c-clear]").addEventListener("click", () => show(false));
+})();
+</script>`;
+
 export function renderConnectionsResult(
   r: ConnectionsResult,
   nav: { newer: string | null; older: string | null },
@@ -155,16 +169,6 @@ export function renderConnectionsResult(
     )
     .join("");
 
-  const answers = r.groups
-    .map(
-      (g, i) =>
-        `<div style="margin-top:12px"><p style="margin-bottom:8px">${label(i)}: <b>${esc(g.title)}</b></p>` +
-        `<div class="gw">${g.words
-          .map((w) => `<span class="gw-word ${COLORS[i].badge}">${esc(w)}</span>`)
-          .join("")}</div></div>`
-    )
-    .join("");
-
   const body = `
 <div class="page-header">
   <h1>${isHome ? "Today's " : "Yesterday's "}Connections Hints &amp; Answers</h1>
@@ -178,24 +182,23 @@ export function renderConnectionsResult(
   ${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
   <div class="gm-stage">
     <div class="gm-card">
-      <p class="gm-meta"><span>16 words · 4 groups</span><span>Starting layout</span></p>
       <div class="words-grid" data-gm-view="puzzle">${words}</div>
       <div data-gm-view="solution" hidden>${solved}</div>
+      <div class="cplay-actions">
+        <button type="button" class="gm-btn primary" data-c-all>Reveal all</button>
+        <button type="button" class="gm-btn" data-c-clear>Clear all</button>
+      </div>
     </div>
     <div>
       <p class="gm-help">Find <b>four groups of four</b> words that share something in common. Open a hint to see a category title without the words.</p>
       ${hints}
-      <div class="gm-actions">
-        <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
-      </div>
-      <div data-gm-solution-only hidden>${answers}</div>
     </div>
   </div>
 </div>
 
 ${dateNav(nav)}
 ${isHome ? connectionsHistory(past) : ""}
-${GM_REVEAL_SCRIPT}`;
+${CONNECTIONS_PLAY_SCRIPT}`;
 
   return layout(
     `Connections Hints & Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – NYT Daily Puzzle`,

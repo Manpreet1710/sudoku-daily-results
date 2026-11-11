@@ -1,6 +1,6 @@
-import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import { historyDate, historyRow, renderHistory } from "../history.ts";
-import { wordleFacts, wordleHints } from "./hints.ts";
+import { wordleHints } from "./hints.ts";
 import type { WordleResult } from "./store.ts";
 
 export const WORDLE_HOME = "/nyt-wordle-answer-today";
@@ -17,6 +17,7 @@ const CHROME: Chrome = {
     [WORDLE_YESTERDAY, "Yesterday"],
   ],
   css: /* css */ `
+.wplay-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 4px; }
 .tiles-wrap {
   display: flex;
   flex-direction: column;
@@ -120,7 +121,6 @@ export function renderWordleResult(
   r: WordleResult,
   nav: { newer: string | null; older: string | null },
   isHome: boolean, past: WordleResult[] = []) {
-  const facts = wordleFacts(r.solution);
   const hintLabels = [
     "Vowels & Pattern",
     "Letter Repetition",
@@ -137,9 +137,6 @@ export function renderWordleResult(
     )
     .join("");
 
-  const tiles = [...r.solution.toUpperCase()]
-    .map((c) => `<div class="tile">${esc(c)}</div>`)
-    .join("");
   // Each "?" tile reveals its own letter when tapped
   const blanks = [...r.solution.toUpperCase()]
     .map((c, i) => `<div class="tile blank" role="button" tabindex="0" data-letter="${esc(c)}" aria-label="Reveal letter ${i + 1}">?</div>`)
@@ -158,16 +155,15 @@ export function renderWordleResult(
   ${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
   <div class="gm-stage">
     <div class="gm-card">
-      <p class="gm-meta"><span>Wordle #${r.number}</span><span>${facts.vowels} vowel${facts.vowels === 1 ? "" : "s"} · ${facts.unique} unique letters · ${facts.repeated ? "repeated letter" : "no repeats"}</span></p>
-      <div class="tiles-wrap" data-gm-view="puzzle"><div class="tiles">${blanks}</div></div>
-      <div class="tiles-wrap" data-gm-view="solution" hidden><div class="tiles">${tiles}</div></div>
+      <div class="tiles-wrap"><div class="tiles">${blanks}</div></div>
+      <div class="wplay-actions">
+        <button type="button" class="gm-btn primary" data-w-all>Reveal all</button>
+        <button type="button" class="gm-btn" data-w-clear>Clear all</button>
+      </div>
     </div>
     <div>
       <p class="gm-help">Open <b>one hint at a time</b> for a gentle nudge, tap a <b>?</b> tile to reveal one letter, or reveal the full word when you are ready.</p>
       ${hints}
-      <div class="gm-actions">
-        <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
-      </div>
       <p data-gm-solution-only hidden style="font-size:14px;color:var(--muted);margin-top:12px">Wordle #${r.number} solution for ${esc(prettyDate(r.date))}</p>
     </div>
   </div>
@@ -175,6 +171,9 @@ export function renderWordleResult(
 <script>
 (() => {
   const tiles = [...document.querySelectorAll(".tile[data-letter]")];
+  const caption = document.querySelector("[data-gm-solution-only]");
+  // The caption under the hints shows once every letter is out
+  const sync = () => { if (caption) caption.hidden = tiles.some((x) => x.classList.contains("blank")); };
   const reveal = (t) => {
     if (!t.classList.contains("blank")) return;
     t.classList.remove("blank");
@@ -182,13 +181,17 @@ export function renderWordleResult(
     t.removeAttribute("role");
     t.removeAttribute("tabindex");
     t.setAttribute("aria-label", "Letter " + t.dataset.letter);
-    // Last letter tapped: show the full solution as well
-    if (tiles.every((x) => !x.classList.contains("blank"))) {
-      const btn = document.querySelector("[data-gm-reveal]");
-      const solved = document.querySelector('[data-gm-view="solution"]');
-      if (btn && solved && solved.hidden) setTimeout(() => btn.click(), 600);
-    }
+    sync();
   };
+  const hide = (t, i) => {
+    t.classList.add("blank");
+    t.textContent = "?";
+    t.setAttribute("role", "button");
+    t.setAttribute("tabindex", "0");
+    t.setAttribute("aria-label", "Reveal letter " + (i + 1));
+  };
+  document.querySelector("[data-w-all]").addEventListener("click", () => tiles.forEach(reveal));
+  document.querySelector("[data-w-clear]").addEventListener("click", () => { tiles.forEach(hide); sync(); });
   tiles.forEach((t) => {
     t.addEventListener("click", () => reveal(t));
     t.addEventListener("keydown", (e) => {
@@ -199,8 +202,7 @@ export function renderWordleResult(
 </script>
 
 ${dateNav(nav)}
-${isHome ? wordleHistory(past) : ""}
-${GM_REVEAL_SCRIPT}`;
+${isHome ? wordleHistory(past) : ""}`;
 
   return layout(
     `Wordle #${r.number} Answer ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Hints & Solution`,

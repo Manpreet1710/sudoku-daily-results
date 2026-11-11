@@ -1,4 +1,4 @@
-import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, GM_TABS_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, GM_TABS_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import { historyBoard, historyBoards, historyDate, historyRow, renderHistory } from "../history.ts";
 import type { MiniEntry, MiniPuzzle } from "./api.ts";
 import type { MiniResult } from "./store.ts";
@@ -145,16 +145,12 @@ function puzzleSection(p: MiniPuzzle, i: number) {
         <button type="button" class="gm-btn" data-x-clear>Clear all</button>
       </div>
     </div>
-    <div class="gm-board" data-gm-view="solution" hidden>${boardSvg(p, true)}</div>
   </div>
   <div>
     <p class="gm-help">Open a clue for its <b>hint</b>, then the answer. <b>Tap any square</b> to reveal its letter, or reveal the whole grid.</p>
     <div class="cw-clues">
       <div><h3>Across</h3>${p.across.map((e) => clue(e, "A")).join("")}</div>
       <div><h3>Down</h3>${p.down.map((e) => clue(e, "D")).join("")}</div>
-    </div>
-    <div class="gm-actions">
-      <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
     </div>
   </div>
 </div>`;
@@ -210,7 +206,7 @@ export function renderMiniResult(r: MiniResult, nav: { newer: string | null; old
 
 ${dateNav(nav)}
 ${isHome ? miniHistory(past) : ""}
-${GM_TABS_SCRIPT}${GM_REVEAL_SCRIPT}${MINI_PLAY_SCRIPT}`;
+${GM_TABS_SCRIPT}${MINI_PLAY_SCRIPT}`;
 
   return layout(
     `Mini Crossword Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Clues & Solutions`,

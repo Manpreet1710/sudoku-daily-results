@@ -1,4 +1,4 @@
-import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import type { LinkedInZipResult } from "./store.ts";
 
@@ -29,6 +29,7 @@ const CHROME: Chrome = {
   dominant-baseline: central;
   fill: #ffffff;
 }
+.zplay-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
 .route-list {
   display: flex;
   flex-direction: column;
@@ -111,8 +112,6 @@ function boardSvg(r: LinkedInZipResult, withPath: boolean) {
   )}"><rect x="0" y="0" width="${W}" height="${W}" fill="${bg}"/><path d="${grid}" stroke="#e2e8f0" stroke-width="1.5" fill="none"/>${route}<path d="${walls}" stroke="#0f172a" stroke-width="6" stroke-linecap="round" fill="none"/><rect x="0" y="0" width="${W}" height="${W}" fill="none" stroke="#0f172a" stroke-width="4" rx="8"/>${nums}</svg>`;
 }
 
-const where = (n: number, [row, col]: [number, number]) => `Row ${row + 1}, Col ${col + 1}`;
-
 function moves(cells: [number, number][]) {
   const out: [string, number][] = [];
   for (let i = 1; i < cells.length; i++) {
@@ -139,6 +138,26 @@ function routes(r: LinkedInZipResult) {
   });
 }
 
+// Reveal all swaps in the solved board and the route list; Clear all swaps them back
+const ZIP_PLAY_SCRIPT = `<script>
+(() => {
+  document.querySelectorAll(".gm-stage").forEach((stage) => {
+    const all = stage.querySelector("[data-z-all]");
+    if (!all) return;
+    const puzzle = stage.querySelector('[data-gm-view="puzzle"]');
+    const solved = stage.querySelector('[data-gm-view="solution"]');
+    const extra = stage.querySelectorAll("[data-gm-solution-only]");
+    const show = (on) => {
+      puzzle.hidden = on;
+      solved.hidden = !on;
+      extra.forEach((e) => { e.hidden = !on; });
+    };
+    all.addEventListener("click", () => show(true));
+    stage.querySelector("[data-z-clear]").addEventListener("click", () => show(false));
+  });
+})();
+</script>`;
+
 function linkedInZipHistory(past: LinkedInZipResult[]) {
   return renderHistory({
     title: "LinkedIn Zip Solutions History",
@@ -155,25 +174,14 @@ export function renderLinkedInZipResult(
   r: LinkedInZipResult,
   nav: { newer: string | null; older: string | null },
   isHome: boolean, past: LinkedInZipResult[] = []) {
-  const order = [...r.numbers].sort((a, b) => a[2] - b[2]);
-  const first = order[0],
-    last = order.at(-1)!;
   const route = routes(r);
-
-  const hints = [
-    `The path begins at checkpoint 1 in ${where(r.size, [first[0], first[1]])} and finishes at ${
-      last[2]
-    } in ${where(r.size, [last[0], last[1]])}. It must fill every one of the ${r.size * r.size} cells.`,
-    r.steps[0]?.text,
-    `The initial stretch (1 ➔ 2): goes ${route[0]?.text}.`,
-  ].filter(Boolean) as string[];
 
   const body = `
 <div class="page-header">
   <h1>${isHome ? "Today's " : "Yesterday's "}Zip Answers &amp; Solution</h1>
   <div class="sub">
-    <span class="badge">${r.size}×${r.size} Grid</span>
-    <span class="badge good">LinkedIn Zip #${r.puzzleId}</span>
+    <span class="badge good">Puzzle #${r.puzzleId}</span>
+    <span class="badge">${r.size}×${r.size}</span>
   </div>
 </div>
 
@@ -181,35 +189,15 @@ export function renderLinkedInZipResult(
   ${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
   <div class="gm-stage">
     <div class="gm-card">
-      <p class="gm-meta"><span>${r.size}×${r.size} · ${r.numbers.length} checkpoints · ${r.walls.length} walls</span><span>Puzzle #${r.puzzleId}</span></p>
       <div class="gm-board" data-gm-view="puzzle">${boardSvg(r, false)}</div>
       <div class="gm-board" data-gm-view="solution" hidden>${boardSvg(r, true)}</div>
+      <div class="zplay-actions">
+        <button type="button" class="gm-btn primary" data-z-all>Reveal all</button>
+        <button type="button" class="gm-btn" data-z-clear>Clear all</button>
+      </div>
     </div>
     <div>
       <p class="gm-help">Draw <b>one continuous line</b> from 1, through each numbered checkpoint in order, filling every cell exactly once without crossing a thick wall.</p>
-      ${hints
-        .map(
-          (h, i) =>
-            `<details><summary><span class="badge" style="margin-right:6px">Hint ${i + 1}</span> Clue</summary><p style="margin-top:12px;font-size:15px">${esc(
-              h
-            )}</p></details>`
-        )
-        .join("")}
-      <details>
-        <summary>Step-by-Step Logic Proof (${r.steps.length} steps)</summary>
-        <ol class="steps" style="margin-top:14px">${r.steps
-          .map(
-            (s, i) =>
-              `<li><span class="n">${i + 1}</span><div><span class="t">Step ${i + 1}</span><br><span style="color:var(--ink-2);font-size:14px">${esc(
-                s.text
-              )}</span></div></li>`
-          )
-          .join("")}</ol>
-        ${r.logical ? "" : '<p style="font-size:13px;color:var(--muted);margin-top:8px">The remaining stretch was validated by exhaustive branch verification.</p>'}
-      </details>
-      <div class="gm-actions">
-        <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
-      </div>
       <div data-gm-solution-only hidden>
         <div class="route-list">
           ${route
@@ -229,7 +217,7 @@ export function renderLinkedInZipResult(
 
 ${dateNav(nav)}
 ${isHome ? linkedInZipHistory(past) : ""}
-${GM_REVEAL_SCRIPT}`;
+${ZIP_PLAY_SCRIPT}`;
 
   return layout(
     `Zip Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Daily Solution & Hints`,

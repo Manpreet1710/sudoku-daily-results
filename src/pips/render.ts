@@ -49,7 +49,7 @@ const CHROME: Chrome = {
 .pp-dom.used { opacity: .4; }
 .pips-help { font-style: italic; color: var(--ink-2); font-size: 14px; margin: 16px 0 14px; }
 .pips-help b { font-weight: 800; }
-.pips-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.pips-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 14px; }
 .pips-btn { font: inherit; font-weight: 700; font-size: 14px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-pill); padding: 9px 16px; cursor: pointer; }
 .pips-btn:hover { border-color: var(--accent); color: var(--accent); }
 .pips-btn.primary { background: var(--accent-gradient); border-color: transparent; color: #fff; }
@@ -161,16 +161,16 @@ export function renderPipsResult(r: PipsResult, nav: { newer: string | null; old
     <div class="pips-card">
       <p class="pips-meta"><span id="pipsMeta"></span><span id="pipsCount"></span></p>
       <svg id="pipsSvg" role="img" aria-label="Pips board. Click a cell to place its domino."></svg>
+      <div class="pips-actions">
+        <button class="pips-btn" id="pipsHint" type="button">💡 Place one</button>
+        <button class="pips-btn primary" id="pipsSolve" type="button">Reveal all</button>
+        <button class="pips-btn" id="pipsReset" type="button">Clear all</button>
+      </div>
       <p class="pips-done" id="pipsDone" hidden>✅ Solved – every domino is in place.</p>
     </div>
     <div>
       <div class="pips-dominoes" id="pipsDominoes" aria-label="Dominoes"></div>
       <p class="pips-help"><b>Click a domino</b> to place it on the board OR <b>click a cell on the board</b> to place the correct domino. Click again to take it back.</p>
-      <div class="pips-actions">
-        <button class="pips-btn" id="pipsHint" type="button">💡 Place one</button>
-        <button class="pips-btn primary" id="pipsSolve" type="button">Show full solution</button>
-        <button class="pips-btn" id="pipsReset" type="button">↺ Reset</button>
-      </div>
     </div>
   </div>
 </div>

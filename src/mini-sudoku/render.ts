@@ -1,4 +1,4 @@
-import { esc, dateNav, gameBar, GM_REVEAL_SCRIPT, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
+import { esc, dateNav, gameBar, layout, prettyDate, shortDate, type Chrome } from "../render.ts";
 import { historyBoard, historyBoards, historyDate, renderHistory } from "../history.ts";
 import { BOX_REGIONS, cellName } from "./solver.ts";
 import type { MiniSudokuResult } from "./store.ts";
@@ -81,16 +81,22 @@ function boardSvg(puzzle: string, regions: number[], solution?: string, play = f
 
 const level = (r: MiniSudokuResult) => (!r.logical ? "Hard" : r.steps.some((s) => s.tech === "Naked Pair" || s.tech === "Pointing") ? "Medium" : "Easy");
 
-// Cell-by-cell reveal on the puzzle board
+// Cell-by-cell reveal on the puzzle board, plus Reveal all / Clear all buttons
 const MINI_SUDOKU_PLAY_SCRIPT = `<script>
 (() => {
   document.querySelectorAll(".mplay").forEach((card) => {
     const svg = card.querySelector("svg.mboard");
     const digits = [...svg.querySelectorAll("text[data-i]")];
+    const stage = card.closest(".gm-stage");
+    const rows = stage.querySelectorAll("[data-gm-solution-only]");
     const set = (t, on) => t.setAttribute("visibility", on ? "visible" : "hidden");
-    svg.querySelectorAll(".mhit").forEach((h) => h.addEventListener("click", () => set(svg.querySelector('text[data-i="' + h.dataset.i + '"]'), true)));
-    card.querySelector("[data-m-all]").addEventListener("click", () => digits.forEach((t) => set(t, true)));
-    card.querySelector("[data-m-clear]").addEventListener("click", () => digits.forEach((t) => set(t, false)));
+    const sync = () => {
+      const all = digits.every((t) => t.getAttribute("visibility") === "visible");
+      rows.forEach((e) => { e.hidden = !all; });
+    };
+    svg.querySelectorAll(".mhit").forEach((h) => h.addEventListener("click", () => { set(svg.querySelector('text[data-i="' + h.dataset.i + '"]'), true); sync(); }));
+    card.querySelector("[data-m-all]").addEventListener("click", () => { digits.forEach((t) => set(t, true)); sync(); });
+    card.querySelector("[data-m-clear]").addEventListener("click", () => { digits.forEach((t) => set(t, false)); sync(); });
   });
 })();
 </script>`;
@@ -102,14 +108,15 @@ function miniSudokuHistory(past: MiniSudokuResult[]) {
     entries: past.map((r) => ({
       date: r.date,
       heading: `${historyDate(r.date)}`,
-      body: historyBoards([historyBoard(boardSvg(r.puzzle, r.regions ?? BOX_REGIONS, r.solution), esc(r.name ?? "Mini Sudoku"))]),
+      body: historyBoards([historyBoard(boardSvg(r.puzzle, r.regions ?? BOX_REGIONS, r.solution), esc(puzzleTitle(r.name) || "Mini Sudoku"))]),
     })),
   });
 }
 
+// LinkedIn wraps some titles in decorative punctuation, e.g. "\Slashes\".
+const puzzleTitle = (name?: string) => (name ?? "").replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "").trim();
+
 export function renderMiniSudokuResult(r: MiniSudokuResult, nav: { newer: string | null; older: string | null }, isHome: boolean, past: MiniSudokuResult[] = []) {
-  const givens = [...r.puzzle].filter((d) => d !== "0").length;
-  const moves = r.steps.filter((s) => s.cell !== undefined).length;
   const lv = level(r);
   const regions = r.regions ?? BOX_REGIONS;
   const boxes = regions.every((g, i) => g === BOX_REGIONS[i]);
@@ -125,8 +132,9 @@ export function renderMiniSudokuResult(r: MiniSudokuResult, nav: { newer: string
 <div class="page-header">
   <h1>${isHome ? "Today's " : "Yesterday's "}LinkedIn Mini Sudoku Answers</h1>
   <div class="sub">
+    <span class="badge good">Puzzle${r.puzzleId ? ` #${r.puzzleId}` : ""}</span>
     <span class="badge">${lv}</span>
-    <span class="badge good">LinkedIn Mini Sudoku</span>
+    <span class="badge">${N}×${N}</span>
   </div>
 </div>
 
@@ -134,7 +142,6 @@ export function renderMiniSudokuResult(r: MiniSudokuResult, nav: { newer: string
   ${gameBar({ date: r.date, older: nav.older, newer: nav.newer })}
   <div class="gm-stage">
     <div class="gm-card">
-      <p class="gm-meta"><span>${r.puzzleId ? `Puzzle #${r.puzzleId}` : "6×6"}${r.name ? ` · ${esc(r.name)}` : ""} · ${givens} given digits · ${moves} moves</span><span>${lv}</span></p>
       <div class="gm-board mplay" data-gm-view="puzzle">
         ${boardSvg(r.puzzle, regions, r.solution, true)}
         <div class="mplay-actions">
@@ -142,7 +149,6 @@ export function renderMiniSudokuResult(r: MiniSudokuResult, nav: { newer: string
           <button type="button" class="gm-btn" data-m-clear>Clear all</button>
         </div>
       </div>
-      <div class="gm-board" data-gm-view="solution" hidden>${boardSvg(r.puzzle, regions, r.solution)}</div>
     </div>
     <div>
       <p class="gm-help">Fill the grid so every <b>row</b>, <b>column</b> and ${boxes ? "<b>2×3 box</b>" : "<b>outlined region</b>"} holds the digits <b>1 to 6</b> exactly once. <b>Tap any empty cell</b> to reveal its digit.</p>
@@ -153,9 +159,6 @@ export function renderMiniSudokuResult(r: MiniSudokuResult, nav: { newer: string
           .map((s, i) => `<li><span class="n">${i + 1}</span><div><span class="t">${esc(s.tech)}</span><br><span style="color:var(--ink-2);font-size:14px">${esc(s.text)}</span></div></li>`)
           .join("")}</ol>${r.logical ? "" : '<p style="font-size:13px;color:var(--muted);margin-top:10px">The last steps needed a trial, so they are not explained by simple rules.</p>'}
       </details>
-      <div class="gm-actions">
-        <button class="gm-btn primary" type="button" data-gm-reveal="Show full solution">Show full solution</button>
-      </div>
       <div data-gm-solution-only hidden style="margin-top:14px">${rows}</div>
     </div>
   </div>
@@ -163,7 +166,7 @@ export function renderMiniSudokuResult(r: MiniSudokuResult, nav: { newer: string
 
 ${dateNav(nav)}
 ${isHome ? miniSudokuHistory(past) : ""}
-${GM_REVEAL_SCRIPT}${MINI_SUDOKU_PLAY_SCRIPT}`;
+${MINI_SUDOKU_PLAY_SCRIPT}`;
 
   return layout(
     `LinkedIn Mini Sudoku Answers ${isHome ? "Today" : "Yesterday"} (${prettyDate(r.date)}) – Solution & Hints`,
